@@ -1,0 +1,13 @@
+/* 
+  InfoPlist.strings
+  BeautifyMan
+
+  Created by Jatin Soni on 16/07/21.
+  
+*/
+
+"NSCameraUsageDescription" = "Enable camera access so that you can upload and set your profile picture or to take photos during Courses and Marathons for better self-control";
+
+"NSPhotoLibraryAddUsageDescription" = "Enable photo library access so that you can upload and set your profile picture or to take photos during Courses and Marathons for better self-control";
+
+"NSPhotoLibraryUsageDescription" = "Enable photo library access so that you can upload and set your profile picture or to take photos during Courses and Marathons for better self-control";

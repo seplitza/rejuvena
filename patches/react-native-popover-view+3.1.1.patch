@@ -1,0 +1,124 @@
+diff --git a/node_modules/react-native-popover-view/.github/ISSUE_TEMPLATE/bug_report.md b/node_modules/react-native-popover-view/.github/ISSUE_TEMPLATE/bug_report.md
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/.github/ISSUE_TEMPLATE/feature_request.md b/node_modules/react-native-popover-view/.github/ISSUE_TEMPLATE/feature_request.md
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/Example/PopoverExample.xcodeproj/project.pbxproj b/node_modules/react-native-popover-view/Example/PopoverExample.xcodeproj/project.pbxproj
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/Example/PopoverExample.xcodeproj/xcshareddata/xcschemes/PopoverExample.xcscheme b/node_modules/react-native-popover-view/Example/PopoverExample.xcodeproj/xcshareddata/xcschemes/PopoverExample.xcscheme
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/Example/PopoverExampleTests/Info.plist b/node_modules/react-native-popover-view/Example/PopoverExampleTests/Info.plist
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/Example/PopoverExampleTests/PopoverExampleTests.m b/node_modules/react-native-popover-view/Example/PopoverExampleTests/PopoverExampleTests.m
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/Example/iOS/AppDelegate.h b/node_modules/react-native-popover-view/Example/iOS/AppDelegate.h
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/Example/iOS/AppDelegate.m b/node_modules/react-native-popover-view/Example/iOS/AppDelegate.m
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/Example/iOS/Base.lproj/LaunchScreen.xib b/node_modules/react-native-popover-view/Example/iOS/Base.lproj/LaunchScreen.xib
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/Example/iOS/Images.xcassets/AppIcon.appiconset/Contents.json b/node_modules/react-native-popover-view/Example/iOS/Images.xcassets/AppIcon.appiconset/Contents.json
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/Example/iOS/Info.plist b/node_modules/react-native-popover-view/Example/iOS/Info.plist
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/Example/iOS/main.jsbundle b/node_modules/react-native-popover-view/Example/iOS/main.jsbundle
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/Example/iOS/main.m b/node_modules/react-native-popover-view/Example/iOS/main.m
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/Example/index.ios.js b/node_modules/react-native-popover-view/Example/index.ios.js
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/LICENSE b/node_modules/react-native-popover-view/LICENSE
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/README.md b/node_modules/react-native-popover-view/README.md
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/dist/Constants.d.ts b/node_modules/react-native-popover-view/dist/Constants.d.ts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/dist/Constants.js b/node_modules/react-native-popover-view/dist/Constants.js
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/dist/Constants.js.map b/node_modules/react-native-popover-view/dist/Constants.js.map
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/dist/Geometry.d.ts b/node_modules/react-native-popover-view/dist/Geometry.d.ts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/dist/Geometry.js b/node_modules/react-native-popover-view/dist/Geometry.js
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/dist/Geometry.js.map b/node_modules/react-native-popover-view/dist/Geometry.js.map
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/dist/Popover.d.ts b/node_modules/react-native-popover-view/dist/Popover.d.ts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/dist/Popover.js b/node_modules/react-native-popover-view/dist/Popover.js
+index 048126d..713e710 100644
+--- a/node_modules/react-native-popover-view/dist/Popover.js
++++ b/node_modules/react-native-popover-view/dist/Popover.js
+@@ -867,7 +867,7 @@ var BasePopover = /** @class */ (function (_super) {
+             popoverViewStyle.maxWidth = (nextGeom.forcedContentSize || { width: null }).width || undefined;
+             popoverViewStyle.maxHeight = (nextGeom.forcedContentSize || { height: null }).height || undefined;
+         }
+-        return (React.createElement(View, { pointerEvents: "box-none", style: [styles.container, { left: 0 }] },
++        return (React.createElement(View, { pointerEvents: "box-none", style: [styles.container, { left: -8 }] },
+             React.createElement(SafeAreaView, { pointerEvents: "none", forceInset: this.props.safeAreaInsets, style: { position: 'absolute', top: FIX_SHIFT, left: 0, right: 0, bottom: 0 } }, this.props.safeAreaViewContents),
+             React.createElement(Animated.View, { pointerEvents: "box-none", style: containerStyle },
+                 this.props.showBackground && (React.createElement(TouchableWithoutFeedback, { onPress: this.props.onRequestClose },
+diff --git a/node_modules/react-native-popover-view/dist/Popover.js.map b/node_modules/react-native-popover-view/dist/Popover.js.map
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/dist/Utility.d.ts b/node_modules/react-native-popover-view/dist/Utility.d.ts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/dist/Utility.js b/node_modules/react-native-popover-view/dist/Utility.js
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/dist/Utility.js.map b/node_modules/react-native-popover-view/dist/Utility.js.map
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/dist/index.d.ts b/node_modules/react-native-popover-view/dist/index.d.ts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/dist/index.js b/node_modules/react-native-popover-view/dist/index.js
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/dist/index.js.map b/node_modules/react-native-popover-view/dist/index.js.map
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/patches/@types+react-native+0.62.13.patch b/node_modules/react-native-popover-view/patches/@types+react-native+0.62.13.patch
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/src/Constants.ts b/node_modules/react-native-popover-view/src/Constants.ts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/src/Geometry.ts b/node_modules/react-native-popover-view/src/Geometry.ts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/src/Popover.tsx b/node_modules/react-native-popover-view/src/Popover.tsx
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/src/Utility.ts b/node_modules/react-native-popover-view/src/Utility.ts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/src/index.ts b/node_modules/react-native-popover-view/src/index.ts
+old mode 100644
+new mode 100755
+diff --git a/node_modules/react-native-popover-view/tsconfig.json b/node_modules/react-native-popover-view/tsconfig.json
+old mode 100644
+new mode 100755

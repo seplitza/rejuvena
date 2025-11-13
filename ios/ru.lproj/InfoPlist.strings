@@ -1,0 +1,13 @@
+/* 
+  InfoPlist.strings
+  BeautifyMan
+
+  Created by Jatin Soni on 16/07/21.
+  
+*/
+
+"NSCameraUsageDescription" = "Эта функция позволит Вам делать фотографии во время Курсов и Марафонов для лучшего самоконтроля";
+
+"NSPhotoLibraryAddUsageDescription" = "Эта функция позволит выбрать фотографии, которые Вы хотите добавить в галерею Курса или Марафона";
+
+"NSPhotoLibraryUsageDescription" = "Эта функция позволит выбрать фотографии, которые Вы хотите добавить в галерею Курса или Марафона";
