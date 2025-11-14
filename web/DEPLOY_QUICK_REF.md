@@ -8,14 +8,15 @@ cd /Users/alexeipinaev/Documents/Rejuvena
 git init
 git add .
 git commit -m "Initial commit"
-git remote add origin https://github.com/seplitza/Rejuvena.git
+git remote add origin https://github.com/seplitza/rejuvena.git
 git push -u origin main
 ```
 
 ### 2. Configure on GitHub
-1. Go to: **Settings** → **Pages**
+1. Go to: **https://github.com/seplitza/rejuvena/settings/pages**
 2. Source: **GitHub Actions**
-3. Add secret: `NEXT_PUBLIC_API_URL` = `https://api.faceliftnaturally.me`
+3. Go to: **https://github.com/seplitza/rejuvena/settings/secrets/actions**
+4. Add secret: `NEXT_PUBLIC_API_URL` = `https://api.faceliftnaturally.me`
 
 ### 3. Deploy
 ```bash
@@ -33,10 +34,8 @@ cd web
 ## 🌐 Your Site URL
 
 ```
-https://seplitza.github.io/Rejuvena/
+https://seplitza.github.io/rejuvena/
 ```
-
-Example: `https://alexeipinaev.github.io/Rejuvena/`
 
 ---
 
