@@ -16,7 +16,7 @@ git push -u origin main
 1. Go to: **https://github.com/seplitza/rejuvena/settings/pages**
 2. Source: **GitHub Actions**
 3. Go to: **https://github.com/seplitza/rejuvena/settings/secrets/actions**
-4. Add secret: `NEXT_PUBLIC_API_URL` = `https://api.faceliftnaturally.me`
+4. Add secret: `NEXT_PUBLIC_API_URL` = `https://bm-services.azurewebsites.net`
 
 ### 3. Deploy
 ```bash
