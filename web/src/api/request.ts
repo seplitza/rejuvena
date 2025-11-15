@@ -57,14 +57,14 @@ request.interceptors.request.use(
 // Response interceptor
 request.interceptors.response.use(
   (response) => {
-    // Log API calls in development
-    if (process.env.NEXT_PUBLIC_ENV === 'development') {
-      console.log(`API ${response.config.url}`, response.data);
-    }
+    // Log API calls
+    console.log(`✅ API ${response.config.method?.toUpperCase()} ${response.config.url}`, response.data);
     return response.data;
   },
   (error: AxiosError) => {
-    return Promise.reject(handleApiError(error));
+    const apiError = handleApiError(error);
+    console.error(`❌ API Error:`, apiError);
+    return Promise.reject(apiError);
   }
 );
 
@@ -76,22 +76,27 @@ interface ApiError {
 }
 
 function handleApiError(error: AxiosError): ApiError {
+  console.log('Full error object:', error);
+  
   if (error.response) {
     // Server responded with error status
     const data = error.response.data as any;
+    console.log('Error response data:', data);
     return {
-      message: data?.message || 'An error occurred',
+      message: data?.message || data?.error || `Server error (${error.response.status})`,
       status: error.response.status,
-      code: data?.code,
+      code: data?.code || data?.error_description,
     };
   } else if (error.request) {
-    // Request made but no response
+    // Request made but no response - likely CORS or network issue
+    console.log('No response received:', error.request);
     return {
-      message: 'Network error. Please check your connection.',
+      message: 'Cannot connect to server. This might be a CORS issue. Please check the API settings.',
       code: 'NETWORK_ERROR',
     };
   } else {
     // Something else happened
+    console.log('Error:', error.message);
     return {
       message: error.message || 'An unexpected error occurred',
       code: 'UNKNOWN_ERROR',

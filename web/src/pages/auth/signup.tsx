@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -14,6 +14,7 @@ export default function Signup() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -21,8 +22,18 @@ export default function Signup() {
       alert('Please agree to terms and conditions');
       return;
     }
+    console.log('Submitting signup:', { email, firstName, lastName });
     dispatch(signupWithEmail({ email, firstName, lastName }));
   };
+
+  // Redirect to login on success
+  useEffect(() => {
+    if (success) {
+      setTimeout(() => {
+        router.push('/auth/login?registered=true');
+      }, 2000);
+    }
+  }, [success, router]);
 
   return (
     <>
@@ -38,8 +49,14 @@ export default function Signup() {
           </div>
 
           {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
-              {error}
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+              <strong>Error:</strong> {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
+              <strong>Success!</strong> Account created. Redirecting to login...
             </div>
           )}
 
