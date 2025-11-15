@@ -103,7 +103,7 @@ const PhotoDiaryPage: React.FC = () => {
           const ctx = canvas.getContext('2d')!;
 
           // Расчет кропа с учетом отступов
-          const topPadding = 0.05; // 5% сверху
+          const topPadding = 0.15; // 15% сверху
           const bottomPadding = 0.15; // 15% снизу
           
           // Высота области от верха лица до низа с отступами
