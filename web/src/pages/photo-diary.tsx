@@ -103,7 +103,7 @@ const PhotoDiaryPage: React.FC = () => {
           const ctx = canvas.getContext('2d')!;
 
           // Расчет кропа с учетом отступов
-          const topPadding = 0.15; // 15% сверху
+          const topPadding = 0.30; // 30% сверху (увеличено для лучшей детекции InsightFace)
           const bottomPadding = 0.15; // 15% снизу
           
           // Высота области от верха лица до низа с отступами
@@ -213,8 +213,10 @@ const PhotoDiaryPage: React.FC = () => {
           }));
 
           // Определение возраста для фронтального фото через Age-bot API
+          // Отправляем ПОЛНОЕ фото (result), а не обрезанное (croppedImage)
+          // InsightFace сам найдет и обработает лицо
           if (photoKey === 'front') {
-            estimateAge(croppedImage, type);
+            estimateAge(result, type);
           }
 
           setProcessing(false);
