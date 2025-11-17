@@ -143,8 +143,8 @@ const PhotoDiaryPage: React.FC = () => {
       // Извлекаем base64 из data URL
       const base64Data = imageDataUrl.split(',')[1];
       
-      // Используем CORS proxy для обхода Mixed Content блокировки
-      const response = await fetch('https://corsproxy.io/?' + encodeURIComponent('http://37.252.20.170:5000/api/estimate-age'), {
+      // Используем Age-bot API через Cloudflare с SSL
+      const response = await fetch('https://api.seplitza.ru/api/estimate-age', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
