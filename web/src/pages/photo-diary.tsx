@@ -138,6 +138,54 @@ const PhotoDiaryPage: React.FC = () => {
     });
   };
 
+  const savePhotoToServer = async (imageDataUrl: string, type: 'before' | 'after', photoKey: keyof PhotoSet) => {
+    try {
+      console.log(`💾 Saving ${photoKey} photo for ${type} to server...`);
+      
+      // Извлекаем base64 из data URL
+      const base64Data = imageDataUrl.split(',')[1];
+      
+      // Определяем тип фото для API (photoType: 0-5 для 6 кадров)
+      const photoTypeMap: { [key in keyof PhotoSet]: number } = {
+        front: 0,
+        left34: 1,
+        leftProfile: 2,
+        right34: 3,
+        rightProfile: 4,
+        closeup: 5,
+      };
+      
+      const photoType = photoTypeMap[photoKey];
+      const isBeforePhoto = type === 'before';
+      
+      // Сохраняем фото на сервер
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contest/uploadcontestimages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+        },
+        body: JSON.stringify({
+          image: base64Data,
+          photoType: photoType,
+          isBeforePhoto: isBeforePhoto,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Ошибка сохранения фото');
+      }
+
+      const result = await response.json();
+      console.log(`✅ Photo saved:`, result);
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Photo save error:', error);
+      // Не критичная ошибка - фото остаётся в локальном состоянии
+    }
+  };
+
   const estimateAge = async (imageDataUrl: string, type: 'before' | 'after') => {
     console.log(`🎯 Calling estimateAge for ${type}...`);
     try {
@@ -202,6 +250,8 @@ const PhotoDiaryPage: React.FC = () => {
             ...prev,
             [type]: { ...prev[type], [photoKey]: result }
           }));
+          // Сохраняем на сервер
+          await savePhotoToServer(result, type, photoKey);
           setProcessing(false);
           return;
         }
@@ -220,6 +270,9 @@ const PhotoDiaryPage: React.FC = () => {
             ...prev,
             [type]: { ...prev[type], [photoKey]: croppedImage }
           }));
+
+          // Сохраняем обрезанное фото на сервер
+          await savePhotoToServer(croppedImage, type, photoKey);
 
           // Определение возраста для фронтального фото через Age-bot API
           // Отправляем КРОПНУТОЕ фото с 30% padding - InsightFace видит всё лицо
@@ -253,8 +306,73 @@ const PhotoDiaryPage: React.FC = () => {
     }
   };
 
-  const handleDownloadCollage = () => {
-    alert('Функция генерации коллажа будет реализована после интеграции с API');
+  const handleDownloadCollage = async () => {
+    try {
+      setProcessing(true);
+      
+      // Проверяем что все фото загружены
+      const beforePhotos = Object.values(data.before);
+      const afterPhotos = Object.values(data.after);
+      
+      const missingBefore = beforePhotos.filter(p => !p).length;
+      const missingAfter = afterPhotos.filter(p => !p).length;
+      
+      if (missingBefore > 0 || missingAfter > 0) {
+        alert(`Загрузите все фотографии!\nНе хватает: ${missingBefore} фото "До" и ${missingAfter} фото "После"`);
+        setProcessing(false);
+        return;
+      }
+      
+      console.log('🎨 Creating collage...');
+      
+      // Отправляем запрос на создание коллажа
+      const response = await fetch('https://api.seplitza.ru/api/create-collage', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          beforePhotos: beforePhotos,
+          afterPhotos: afterPhotos,
+          botAgeBefore: data.botAgeBefore,
+          botAgeAfter: data.botAgeAfter,
+          realAgeBefore: data.realAgeBefore,
+          realAgeAfter: data.realAgeAfter,
+          weightBefore: data.weightBefore,
+          weightAfter: data.weightAfter,
+          heightBefore: data.heightBefore,
+          heightAfter: data.heightAfter,
+          commentBefore: data.commentBefore,
+          commentAfter: data.commentAfter,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Ошибка создания коллажа');
+      }
+
+      const result = await response.json();
+      
+      if (result.success && result.collage) {
+        // Скачиваем коллаж
+        const link = document.createElement('a');
+        link.href = result.collage;
+        link.download = `rejuvena-collage-${Date.now()}.jpg`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log('✅ Collage downloaded');
+      } else {
+        throw new Error('Не удалось создать коллаж');
+      }
+      
+      setProcessing(false);
+    } catch (error) {
+      console.error('❌ Collage error:', error);
+      alert('Ошибка при создании коллажа. Попробуйте еще раз.');
+      setProcessing(false);
+    }
   };
 
   if (!isAuthenticated) {
@@ -389,9 +507,26 @@ const PhotoDiaryPage: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col items-center">
-                  <div className="w-full aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 border-blue-300 mb-2 relative">
+                  <div className="w-full aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 border-blue-300 mb-2 relative group">
                     {data.before[photoType.id] ? (
-                      <img src={data.before[photoType.id]!} alt="До" className="w-full h-full object-cover" />
+                      <label className="w-full h-full cursor-pointer relative block">
+                        <img src={data.before[photoType.id]!} alt="До" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center">
+                          <span className="text-white font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            Изменить
+                          </span>
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          disabled={processing}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFileUpload('before', photoType.id, file);
+                          }}
+                        />
+                      </label>
                     ) : (
                       <label className="w-full h-full flex items-center justify-center cursor-pointer hover:bg-gray-200 transition">
                         <input
@@ -413,9 +548,26 @@ const PhotoDiaryPage: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col items-center">
-                  <div className="w-full aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 border-blue-300 mb-2 relative">
+                  <div className="w-full aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 border-blue-300 mb-2 relative group">
                     {data.after[photoType.id] ? (
-                      <img src={data.after[photoType.id]!} alt="После" className="w-full h-full object-cover" />
+                      <label className="w-full h-full cursor-pointer relative block">
+                        <img src={data.after[photoType.id]!} alt="После" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center">
+                          <span className="text-white font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            Изменить
+                          </span>
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          disabled={processing}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFileUpload('after', photoType.id, file);
+                          }}
+                        />
+                      </label>
                     ) : (
                       <label className="w-full h-full flex items-center justify-center cursor-pointer hover:bg-gray-200 transition">
                         <input
