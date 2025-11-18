@@ -139,9 +139,11 @@ const PhotoDiaryPage: React.FC = () => {
   };
 
   const estimateAge = async (imageDataUrl: string, type: 'before' | 'after') => {
+    console.log(`🎯 Calling estimateAge for ${type}...`);
     try {
       // Извлекаем base64 из data URL
       const base64Data = imageDataUrl.split(',')[1];
+      console.log(`📸 Image size: ${base64Data.length} chars`);
       
       // Используем Age-bot API через Cloudflare с SSL
       const response = await fetch('https://api.seplitza.ru/api/estimate-age', {
@@ -152,21 +154,28 @@ const PhotoDiaryPage: React.FC = () => {
         body: JSON.stringify({ image: base64Data }),
       });
 
+      console.log(`📡 API response status: ${response.status}`);
+
       if (!response.ok) {
         throw new Error('Ошибка определения возраста');
       }
 
       const result = await response.json();
       
-      if (result.status === 'success' && result.age) {
+      console.log('✅ Age API response:', result);
+      
+      if (result.success && result.age) {
+        console.log(`🎂 Setting age ${result.age} for ${type}`);
         if (type === 'before') {
           setData(prev => ({ ...prev, botAgeBefore: result.age }));
         } else {
           setData(prev => ({ ...prev, botAgeAfter: result.age }));
         }
+      } else {
+        console.error('❌ Age estimation failed:', result.message);
       }
     } catch (error) {
-      console.error('Age estimation error:', error);
+      console.error('❌ Age estimation error:', error);
       // В случае ошибки используем fallback (130-140 для определения что это не реальная оценка)
       const fallbackAge = Math.floor(Math.random() * 11) + 130;
       if (type === 'before') {
@@ -214,8 +223,12 @@ const PhotoDiaryPage: React.FC = () => {
 
           // Определение возраста для фронтального фото через Age-bot API
           // Отправляем КРОПНУТОЕ фото с 30% padding - InsightFace видит всё лицо
+          console.log(`📷 Photo uploaded: ${photoKey} for ${type}`);
           if (photoKey === 'front') {
-            estimateAge(croppedImage, type);
+            console.log(`🔍 Front photo detected - calling estimateAge`);
+            await estimateAge(croppedImage, type);
+          } else {
+            console.log(`⏭️ Skipping age estimation for ${photoKey}`);
           }
 
           setProcessing(false);

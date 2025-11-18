@@ -3,7 +3,7 @@
  * Axios instance with interceptors for web
  */
 
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.faceliftnaturally.me';
 
@@ -40,12 +40,14 @@ const request = axios.create({
 request.interceptors.request.use(
   (config) => {
     const token = AuthTokenManager.get();
-    if (token) {
+    if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     
     // Set user language (you can make this dynamic later)
-    config.headers.UserLanguage = 'en';
+    if (config.headers) {
+      config.headers.UserLanguage = 'en';
+    }
     
     return config;
   },
@@ -56,12 +58,12 @@ request.interceptors.request.use(
 
 // Response interceptor
 request.interceptors.response.use(
-  (response) => {
+  (response: any) => {
     // Log API calls
     console.log(`✅ API ${response.config.method?.toUpperCase()} ${response.config.url}`, response.data);
     return response.data;
   },
-  (error: AxiosError) => {
+  (error: any) => {
     const apiError = handleApiError(error);
     console.error(`❌ API Error:`, apiError);
     return Promise.reject(apiError);
@@ -75,7 +77,7 @@ interface ApiError {
   code?: string;
 }
 
-function handleApiError(error: AxiosError): ApiError {
+function handleApiError(error: any): ApiError {
   console.log('Full error object:', error);
   
   if (error.response) {
