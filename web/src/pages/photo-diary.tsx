@@ -60,10 +60,34 @@ const PhotoDiaryPage: React.FC = () => {
     commentAfter: '',
   });
 
+  // Автосохранение в localStorage при изменении данных
+  useEffect(() => {
+    if (isAuthenticated && user?.id) {
+      const storageKey = `photo_diary_${user.id}`;
+      localStorage.setItem(storageKey, JSON.stringify(data));
+      console.log('💾 Photo diary auto-saved');
+    }
+  }, [data, isAuthenticated, user]);
+
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/auth/login');
       return;
+    }
+    
+    // Загрузка сохраненных данных из localStorage
+    if (user?.id) {
+      const storageKey = `photo_diary_${user.id}`;
+      const savedData = localStorage.getItem(storageKey);
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          setData(parsed);
+          console.log('📂 Loaded saved photo diary from localStorage');
+        } catch (error) {
+          console.error('❌ Failed to load saved data:', error);
+        }
+      }
     }
     
     // Загрузка моделей face-api.js
@@ -80,7 +104,7 @@ const PhotoDiaryPage: React.FC = () => {
     };
     
     loadModels();
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, user]);
 
   const cropFaceImage = async (imageDataUrl: string): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -623,16 +647,57 @@ const PhotoDiaryPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-8 flex justify-center">
-            <button
-              onClick={handleDownloadCollage}
-              className="flex items-center px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition"
-            >
-              скачать коллаж
-              <svg className="ml-2 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+          <div className="mt-8 flex flex-col items-center gap-4">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleDownloadCollage}
+                disabled={processing}
+                className="flex items-center px-8 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold rounded-lg transition"
+              >
+                скачать коллаж
+                <svg className="ml-2 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                </svg>
+              </button>
+              
+              <button
+                onClick={() => {
+                  if (confirm('Удалить все загруженные фотографии? Это действие нельзя отменить.')) {
+                    setData({
+                      before: { front: null, left34: null, leftProfile: null, right34: null, rightProfile: null, closeup: null },
+                      after: { front: null, left34: null, leftProfile: null, right34: null, rightProfile: null, closeup: null },
+                      botAgeBefore: null,
+                      botAgeAfter: null,
+                      realAgeBefore: null,
+                      realAgeAfter: null,
+                      weightBefore: null,
+                      weightAfter: null,
+                      heightBefore: null,
+                      heightAfter: null,
+                      commentBefore: '',
+                      commentAfter: '',
+                    });
+                    if (user?.id) {
+                      localStorage.removeItem(`photo_diary_${user.id}`);
+                    }
+                    alert('Все фотографии удалены');
+                  }
+                }}
+                className="flex items-center px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition"
+              >
+                Очистить всё
+                <svg className="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="text-sm text-gray-500 flex items-center">
+              <svg className="h-4 w-4 mr-1 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-            </button>
+              Фотографии автоматически сохраняются
+            </div>
           </div>
         </main>
 
