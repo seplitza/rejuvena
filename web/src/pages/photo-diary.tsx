@@ -60,12 +60,66 @@ const PhotoDiaryPage: React.FC = () => {
     commentAfter: '',
   });
 
-  // Автосохранение в localStorage при изменении данных
+  // Функция сжатия изображения для localStorage (качество 60%, ~200-400KB на фото)
+  const compressImageForStorage = (dataUrl: string | null): string | null => {
+    if (!dataUrl) return null;
+    
+    try {
+      const img = document.createElement('img');
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      img.src = dataUrl;
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx?.drawImage(img, 0, 0);
+      
+      // Сжимаем для localStorage (60% качества)
+      return canvas.toDataURL('image/jpeg', 0.6);
+    } catch (error) {
+      console.error('Failed to compress image:', error);
+      return dataUrl; // Возвращаем оригинал если не удалось сжать
+    }
+  };
+
+  // Автосохранение в localStorage при изменении данных (с сжатием)
   useEffect(() => {
     if (isAuthenticated && user?.id) {
       const storageKey = `photo_diary_${user.id}`;
-      localStorage.setItem(storageKey, JSON.stringify(data));
-      console.log('💾 Photo diary auto-saved');
+      try {
+        // Создаём копию данных со сжатыми изображениями для localStorage
+        const compressedData = {
+          ...data,
+          before: {
+            front: compressImageForStorage(data.before.front),
+            left34: compressImageForStorage(data.before.left34),
+            leftProfile: compressImageForStorage(data.before.leftProfile),
+            right34: compressImageForStorage(data.before.right34),
+            rightProfile: compressImageForStorage(data.before.rightProfile),
+            closeup: compressImageForStorage(data.before.closeup),
+          },
+          after: {
+            front: compressImageForStorage(data.after.front),
+            left34: compressImageForStorage(data.after.left34),
+            leftProfile: compressImageForStorage(data.after.leftProfile),
+            right34: compressImageForStorage(data.after.right34),
+            rightProfile: compressImageForStorage(data.after.rightProfile),
+            closeup: compressImageForStorage(data.after.closeup),
+          },
+        };
+        
+        localStorage.setItem(storageKey, JSON.stringify(compressedData));
+        console.log('💾 Photo diary auto-saved (compressed for storage)');
+      } catch (error: any) {
+        if (error.name === 'QuotaExceededError') {
+          console.error('❌ LocalStorage quota exceeded! Clearing old data...');
+          // Очищаем старые данные
+          localStorage.removeItem(storageKey);
+          alert('Превышен лимит хранилища. Данные были очищены. Пожалуйста, загрузите фото заново.');
+        } else {
+          console.error('❌ LocalStorage save error:', error);
+        }
+      }
     }
   }, [data, isAuthenticated, user]);
 
@@ -152,6 +206,7 @@ const PhotoDiaryPage: React.FC = () => {
             0, 0, cropSize, cropSize
           );
 
+          // Высокое качество для коллажа
           resolve(canvas.toDataURL('image/jpeg', 0.95));
         } catch (error) {
           reject(error);
@@ -163,6 +218,12 @@ const PhotoDiaryPage: React.FC = () => {
   };
 
   const savePhotoToServer = async (imageDataUrl: string, type: 'before' | 'after', photoKey: keyof PhotoSet) => {
+    // Закомментировано: сохранение на сервер пока не реализовано
+    // Фото сохраняются только в localStorage
+    console.log(`💾 Photo saved locally (server upload disabled): ${photoKey} for ${type}`);
+    return Promise.resolve();
+    
+    /* ВРЕМЕННО ОТКЛЮЧЕНО - backend endpoint не готов
     try {
       console.log(`💾 Saving ${photoKey} photo for ${type} to server...`);
       
@@ -208,6 +269,7 @@ const PhotoDiaryPage: React.FC = () => {
       console.error('❌ Photo save error:', error);
       // Не критичная ошибка - фото остаётся в локальном состоянии
     }
+    */
   };
 
   const estimateAge = async (imageDataUrl: string, type: 'before' | 'after') => {
