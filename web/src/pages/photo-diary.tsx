@@ -44,6 +44,7 @@ const PhotoDiaryPage: React.FC = () => {
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [cropError, setCropError] = useState<string | null>(null);
+  const isDataLoadedRef = useRef(false); // Синхронный флаг что данные загружены
   
   const [data, setData] = useState<PhotoDiaryData>({
     before: { front: null, left34: null, leftProfile: null, right34: null, rightProfile: null, closeup: null },
@@ -84,7 +85,8 @@ const PhotoDiaryPage: React.FC = () => {
 
   // Автосохранение в localStorage при изменении данных (с сжатием)
   useEffect(() => {
-    if (isAuthenticated && user?.id) {
+    // НЕ сохраняем пока данные не загружены из localStorage
+    if (isAuthenticated && user?.id && isDataLoadedRef.current) {
       const storageKey = `photo_diary_${user.id}`;
       try {
         // Создаём копию данных со сжатыми изображениями для localStorage
@@ -123,28 +125,41 @@ const PhotoDiaryPage: React.FC = () => {
     }
   }, [data, isAuthenticated, user]);
 
+  // Проверка авторизации (только redirect)
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/auth/login');
-      return;
     }
-    
-    // Загрузка сохраненных данных из localStorage
-    if (user?.id) {
+  }, [isAuthenticated, router]);
+
+  // Загрузка данных из localStorage (только один раз при монтировании)
+  useEffect(() => {
+    if (user?.id && !isDataLoadedRef.current) {
       const storageKey = `photo_diary_${user.id}`;
       const savedData = localStorage.getItem(storageKey);
+      console.log(`🔍 Looking for saved data with key: ${storageKey}`);
       if (savedData) {
         try {
           const parsed = JSON.parse(savedData);
+          console.log('📂 Loaded saved photo diary from localStorage:', {
+            hasBefore: !!parsed.before?.front,
+            hasAfter: !!parsed.after?.front
+          });
           setData(parsed);
-          console.log('📂 Loaded saved photo diary from localStorage');
         } catch (error) {
           console.error('❌ Failed to load saved data:', error);
         }
+      } else {
+        console.log('ℹ️ No saved data found in localStorage');
       }
+      // Данные загружены (даже если было пусто) - СИНХРОННО
+      isDataLoadedRef.current = true;
+      console.log('✅ Data load complete, auto-save now enabled');
     }
-    
-    // Загрузка моделей face-api.js
+  }, [user?.id]);
+  
+  // Загрузка моделей face-api.js (только один раз)
+  useEffect(() => {
     const loadModels = async () => {
       try {
         const MODEL_URL = '/rejuvena/models';
@@ -157,8 +172,10 @@ const PhotoDiaryPage: React.FC = () => {
       }
     };
     
-    loadModels();
-  }, [isAuthenticated, router, user]);
+    if (!modelsLoaded) {
+      loadModels();
+    }
+  }, [modelsLoaded]);
 
   const cropFaceImage = async (imageDataUrl: string): Promise<string> => {
     return new Promise((resolve, reject) => {
