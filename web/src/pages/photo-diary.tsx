@@ -994,10 +994,10 @@ const PhotoDiaryPage: React.FC = () => {
 
         {/* Модальное окно ручной обрезки */}
         {showCropModal && cropImage && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-auto">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-blue-800">Корректировать обрезку</h2>
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-auto">
+            <div className="bg-white rounded-lg p-4 w-auto max-w-[95vw] max-h-[95vh] flex flex-col">
+              <div className="flex justify-between items-center mb-3">
+                <h2 className="text-xl font-bold text-blue-800">Корректировать обрезку</h2>
                 <button
                   onClick={() => {
                     setShowCropModal(false);
@@ -1011,13 +1011,19 @@ const PhotoDiaryPage: React.FC = () => {
                 </button>
               </div>
 
-              <div className="mb-4 overflow-auto max-h-[60vh]">
+              <div className="mb-3 overflow-auto flex-shrink">
                 <div className="relative inline-block">
                   <img
                     src={cropImage.dataUrl}
                     alt="Crop preview"
-                    className="max-w-full border-2 border-gray-300"
-                    style={{ display: 'block' }}
+                    className="border-2 border-gray-300"
+                    style={{ 
+                      display: 'block',
+                      maxWidth: '85vw',
+                      maxHeight: '60vh',
+                      width: 'auto',
+                      height: 'auto'
+                    }}
                     onLoad={(e) => {
                       const img = e.target as HTMLImageElement;
                       // Обновляем максимальные границы для перетаскивания
@@ -1071,9 +1077,9 @@ const PhotoDiaryPage: React.FC = () => {
               </div>
 
               {/* Управление */}
-              <div className="space-y-4 mb-6">
+              <div className="space-y-3 mb-4 flex-shrink-0">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Размер области обрезки: {cropArea.width}×{cropArea.height}px (квадрат)
                   </label>
                   <input
@@ -1111,19 +1117,19 @@ const PhotoDiaryPage: React.FC = () => {
               </div>
 
               {/* Кнопки */}
-              <div className="flex justify-end gap-3">
+              <div className="flex justify-end gap-2 flex-shrink-0">
                 <button
                   onClick={() => {
                     setShowCropModal(false);
                     setCropImage(null);
                   }}
-                  className="px-6 py-2 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50"
+                  className="px-4 py-2 border-2 border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50"
                 >
                   Отмена
                 </button>
                 <button
                   onClick={handleApplyCrop}
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg"
                 >
                   Сохранить
                 </button>
