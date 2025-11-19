@@ -161,7 +161,6 @@ const PhotoDiaryPage: React.FC = () => {
     
     // Проверяем нужны ли полные данные для сохранения на сервере (1 месяц бесплатно)
     const needsFullAccess = (user as any)?.needsFullAccess;
-    const hasStoredPhotos = Object.values(photoMetadata.before).length > 0 || Object.values(photoMetadata.after).length > 0;
     
     // Счётчик загрузок для отложенного запроса доступа (показываем с 3-го фото)
     const uploadCountKey = `rejuvena_upload_count_${user.id}`;
@@ -169,7 +168,7 @@ const PhotoDiaryPage: React.FC = () => {
     const alreadyPrompted = localStorage.getItem(`rejuvena_access_prompted_${user.id}`) === 'true';
     
     // Показываем запрос только один раз и только с 3-го фото
-    if (needsFullAccess && !hasStoredPhotos && !alreadyPrompted && uploadCount >= 2) {
+    if (needsFullAccess && !alreadyPrompted && uploadCount >= 2) {
       localStorage.setItem(`rejuvena_access_prompted_${user.id}`, 'true'); // Отмечаем что запрос показан
       
       const confirmed = confirm(
@@ -183,6 +182,9 @@ const PhotoDiaryPage: React.FC = () => {
       
       if (!confirmed) {
         console.log('⚠️ User declined server storage');
+        // Не блокируем загрузку, просто не сохраняем на сервер
+        // Увеличиваем счётчик загрузок
+        localStorage.setItem(uploadCountKey, (uploadCount + 1).toString());
         return;
       }
       
@@ -197,6 +199,12 @@ const PhotoDiaryPage: React.FC = () => {
     
     // Увеличиваем счётчик загрузок
     localStorage.setItem(uploadCountKey, (uploadCount + 1).toString());
+    
+    // Если пользователь отказался от доступа, не сохраняем на сервер
+    if (needsFullAccess) {
+      console.log('⚠️ User has limited access, skipping server upload');
+      return;
+    }
     
     try {
       console.log(`📤 Saving original to server: ${photoKey} for ${type}`);
