@@ -89,6 +89,15 @@ const PhotoDiaryPage: React.FC = () => {
     before: {},
     after: {},
   });
+  
+  // Метаданные фотографий (даты, EXIF)
+  const [photoMetadata, setPhotoMetadata] = useState<{
+    before: { [K in keyof PhotoSet]?: { uploadDate: string; exifData?: any } };
+    after: { [K in keyof PhotoSet]?: { uploadDate: string; exifData?: any } };
+  }>({
+    before: {},
+    after: {},
+  });
 
   // Функция сжатия изображения для localStorage
   const compressImageForStorage = (dataUrl: string | null, quality: number = 0.4): string | null => {
@@ -170,7 +179,19 @@ const PhotoDiaryPage: React.FC = () => {
       }
       
       const result = await response.json();
-      console.log(`✅ Original saved to server: ${result.fileId}`);
+      console.log(`✅ Original saved to server: ${result.fileId}`, result.exifData);
+      
+      // Сохраняем метаданные (дата загрузки, EXIF)
+      setPhotoMetadata(prev => ({
+        ...prev,
+        [type]: {
+          ...prev[type],
+          [photoKey]: {
+            uploadDate: result.uploadDate,
+            exifData: result.exifData
+          }
+        }
+      }));
     } catch (error) {
       console.error('❌ Failed to save original to server:', error);
       // Не блокируем загрузку если сервер недоступен
@@ -210,7 +231,11 @@ const PhotoDiaryPage: React.FC = () => {
         // Сохраняем координаты обрезки (очень маленький размер!)
         localStorage.setItem(cropCoordsKey, JSON.stringify(cropCoordinates));
         
-        console.log('💾 Photo diary auto-saved (40% quality display + crop coords)');
+        // Сохраняем метаданные (даты, EXIF)
+        const metadataKey = `photo_diary_metadata_${user.id}`;
+        localStorage.setItem(metadataKey, JSON.stringify(photoMetadata));
+        
+        console.log('💾 Photo diary auto-saved (40% quality display + crop coords + metadata)');
       } catch (error: any) {
         if (error.name === 'QuotaExceededError') {
           console.error('❌ LocalStorage quota exceeded! Clearing display photos...');
@@ -221,7 +246,7 @@ const PhotoDiaryPage: React.FC = () => {
         }
       }
     }
-  }, [data, cropCoordinates, isAuthenticated, user]);
+  }, [data, cropCoordinates, photoMetadata, isAuthenticated, user]);
 
   // Проверка авторизации (только redirect)
   useEffect(() => {
@@ -277,6 +302,19 @@ const PhotoDiaryPage: React.FC = () => {
           console.log('📐 Loaded crop coordinates from localStorage');
         } catch (error) {
           console.error('❌ Failed to load crop coordinates:', error);
+        }
+      }
+      
+      // Загружаем метаданные (даты, EXIF)
+      const metadataKey = `photo_diary_metadata_${user.id}`;
+      const savedMetadata = localStorage.getItem(metadataKey);
+      if (savedMetadata) {
+        try {
+          const parsed = JSON.parse(savedMetadata);
+          setPhotoMetadata(parsed);
+          console.log('📅 Loaded photo metadata from localStorage');
+        } catch (error) {
+          console.error('❌ Failed to load metadata:', error);
         }
       }
       
@@ -972,9 +1010,6 @@ const PhotoDiaryPage: React.FC = () => {
                       <span className="text-gray-400 text-sm">Пример</span>
                     </div>
                   </div>
-                  <p className="text-sm font-medium text-blue-800 text-center whitespace-pre-line">
-                    {photoType.label}
-                  </p>
                 </div>
 
                 <div className="flex flex-col items-center">
@@ -1023,6 +1058,25 @@ const PhotoDiaryPage: React.FC = () => {
                       </label>
                     )}
                   </div>
+                  {photoMetadata.before[photoType.id] && (
+                    <div className="text-xs text-gray-600 text-center w-full px-1">
+                      <div className="truncate">
+                        {photoMetadata.before[photoType.id]?.exifData?.captureDate 
+                          ? `📷 ${new Date(photoMetadata.before[photoType.id]!.exifData.captureDate).toLocaleDateString('ru-RU')}`
+                          : photoMetadata.before[photoType.id]?.exifData?.reason 
+                            ? `⚠️ ${photoMetadata.before[photoType.id]!.exifData.reason}`
+                            : '📷 Дата съемки неизвестна'}
+                      </div>
+                      <div className="truncate">
+                        📤 {new Date(photoMetadata.before[photoType.id]!.uploadDate).toLocaleDateString('ru-RU', { 
+                          year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  <p className="text-sm font-medium text-blue-800 text-center whitespace-pre-line">
+                    {photoType.label}
+                  </p>
                 </div>
 
                 <div className="flex flex-col items-center">
@@ -1071,6 +1125,25 @@ const PhotoDiaryPage: React.FC = () => {
                       </label>
                     )}
                   </div>
+                  {photoMetadata.after[photoType.id] && (
+                    <div className="text-xs text-gray-600 text-center w-full px-1">
+                      <div className="truncate">
+                        {photoMetadata.after[photoType.id]?.exifData?.captureDate 
+                          ? `📷 ${new Date(photoMetadata.after[photoType.id]!.exifData.captureDate).toLocaleDateString('ru-RU')}`
+                          : photoMetadata.after[photoType.id]?.exifData?.reason 
+                            ? `⚠️ ${photoMetadata.after[photoType.id]!.exifData.reason}`
+                            : '📷 Дата съемки неизвестна'}
+                      </div>
+                      <div className="truncate">
+                        📤 {new Date(photoMetadata.after[photoType.id]!.uploadDate).toLocaleDateString('ru-RU', { 
+                          year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  <p className="text-sm font-medium text-blue-800 text-center whitespace-pre-line">
+                    {photoType.label}
+                  </p>
                 </div>
               </div>
             ))}
