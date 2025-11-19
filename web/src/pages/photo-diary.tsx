@@ -778,7 +778,7 @@ const PhotoDiaryPage: React.FC = () => {
                   <div className="w-full aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 border-blue-300 mb-2 relative group">
                     {data.before[photoType.id] ? (
                       <div className="w-full h-full relative">
-                        <img src={data.before[photoType.id]!} alt="До" className="w-full h-full object-cover" />
+                        <img src={data.before[photoType.id]!} alt="До" className="w-full h-full object-contain" />
                         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-200 flex flex-col items-center justify-center gap-2">
                           <label className="text-white font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer hover:underline">
                             Изменить
@@ -826,7 +826,7 @@ const PhotoDiaryPage: React.FC = () => {
                   <div className="w-full aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 border-blue-300 mb-2 relative group">
                     {data.after[photoType.id] ? (
                       <div className="w-full h-full relative">
-                        <img src={data.after[photoType.id]!} alt="После" className="w-full h-full object-cover" />
+                        <img src={data.after[photoType.id]!} alt="После" className="w-full h-full object-contain" />
                         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-200 flex flex-col items-center justify-center gap-2">
                           <label className="text-white font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer hover:underline">
                             Изменить
