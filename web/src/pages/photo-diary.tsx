@@ -224,9 +224,12 @@ const PhotoDiaryPage: React.FC = () => {
       } catch (error: any) {
         if (error.name === 'QuotaExceededError') {
           console.error('❌ LocalStorage quota exceeded! Clearing old data...');
-          // Очищаем старые данные
+          // Очищаем ВСЕ данные (и display, и originals)
           localStorage.removeItem(storageKey);
-          alert('Превышен лимит хранилища. Данные были очищены. Пожалуйста, загрузите фото заново.');
+          localStorage.removeItem(originalsKey);
+          console.log('🗑️ Cleared both display and originals storage');
+          // Не показываем alert каждый раз - это раздражает при автосохранении
+          // alert будет показан только если пользователь сам попытается сохранить
         } else {
           console.error('❌ LocalStorage save error:', error);
         }
@@ -299,26 +302,45 @@ const PhotoDiaryPage: React.FC = () => {
         }
       }
       
-      // ВОССТАНОВЛЕНИЕ: если display photos пустые, но originals есть - восстанавливаем!
-      if (loadedOriginals && loadedData) {
-        let recovered = false;
-        const newData = { ...loadedData };
-        
-        // Проверяем каждое фото before
-        (['front', 'left34', 'leftProfile', 'right34', 'rightProfile', 'closeup'] as const).forEach(photoType => {
-          if (!newData.before[photoType] && loadedOriginals.before[photoType]) {
-            newData.before[photoType] = loadedOriginals.before[photoType];
-            recovered = true;
+      // ВОССТАНОВЛЕНИЕ: если display photos отсутствуют, но originals есть - восстанавливаем!
+      if (loadedOriginals) {
+        if (!loadedData) {
+          // Display photos полностью пусты, но originals есть - создаём новую структуру
+          console.log('♻️ No display photos found, restoring ALL from originals backup!');
+          loadedData = {
+            before: { ...loadedOriginals.before },
+            after: { ...loadedOriginals.after },
+            botAgeBefore: null,
+            botAgeAfter: null,
+            realAgeBefore: null,
+            realAgeAfter: null,
+            weightBefore: null,
+            weightAfter: null,
+            heightBefore: null,
+            heightAfter: null,
+            commentBefore: '',
+            commentAfter: '',
+          };
+        } else {
+          // Display photos частично есть - восстанавливаем недостающие
+          let recovered = false;
+          const newData = { ...loadedData };
+          
+          (['front', 'left34', 'leftProfile', 'right34', 'rightProfile', 'closeup'] as const).forEach(photoType => {
+            if (!newData.before[photoType] && loadedOriginals.before[photoType]) {
+              newData.before[photoType] = loadedOriginals.before[photoType];
+              recovered = true;
+            }
+            if (!newData.after[photoType] && loadedOriginals.after[photoType]) {
+              newData.after[photoType] = loadedOriginals.after[photoType];
+              recovered = true;
+            }
+          });
+          
+          if (recovered) {
+            console.log('♻️ Recovered missing photos from originals backup!');
+            loadedData = newData;
           }
-          if (!newData.after[photoType] && loadedOriginals.after[photoType]) {
-            newData.after[photoType] = loadedOriginals.after[photoType];
-            recovered = true;
-          }
-        });
-        
-        if (recovered) {
-          console.log('♻️ Recovered missing photos from originals backup!');
-          loadedData = newData;
         }
       }
       
