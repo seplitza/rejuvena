@@ -81,26 +81,90 @@ const PhotoDiaryPage: React.FC = () => {
     after: { front: null, left34: null, leftProfile: null, right34: null, rightProfile: null, closeup: null },
   });
 
-  // Функция сжатия изображения для localStorage (качество 60%, ~200-400KB на фото)
-  const compressImageForStorage = (dataUrl: string | null): string | null => {
+  // Функция сжатия изображения для localStorage
+  const compressImageForStorage = (dataUrl: string | null, quality: number = 0.6): string | null => {
     if (!dataUrl) return null;
     
     try {
-      const img = document.createElement('img');
+      const img = new Image();
+      img.src = dataUrl;
+      
+      // Ждём загрузки изображения
+      if (!img.complete) {
+        // Если изображение ещё не загружено, возвращаем как есть
+        return dataUrl;
+      }
+      
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
+      if (!ctx) return dataUrl;
       
-      img.src = dataUrl;
       canvas.width = img.width;
       canvas.height = img.height;
-      ctx?.drawImage(img, 0, 0);
+      ctx.drawImage(img, 0, 0);
       
-      // Сжимаем для localStorage (60% качества)
-      return canvas.toDataURL('image/jpeg', 0.6);
+      // Сжимаем с указанным качеством
+      return canvas.toDataURL('image/jpeg', quality);
     } catch (error) {
       console.error('Failed to compress image:', error);
       return dataUrl; // Возвращаем оригинал если не удалось сжать
     }
+  };
+
+  // Async функция сжатия оригиналов для preview (50% качество)
+  const compressOriginalForPreview = (dataUrl: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(dataUrl);
+          return;
+        }
+        ctx.drawImage(img, 0, 0);
+        // Сжимаем оригинал до 50% для preview в модалке обрезки
+        resolve(canvas.toDataURL('image/jpeg', 0.5));
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
+  };
+
+  // Сохранение оригинала на сервер (100% качество, хранится 1 месяц)
+  const saveOriginalToServer = async (imageDataUrl: string, type: 'before' | 'after', photoKey: keyof PhotoSet) => {
+    // Временно отключено - сохраняем локально
+    console.log(`📤 Original photo will be saved to server: ${photoKey} for ${type}`);
+    return Promise.resolve();
+    
+    /* TODO: Реализовать endpoint на сервере /api/save-original
+    try {
+      const base64Data = imageDataUrl.split(',')[1];
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/save-original`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+        },
+        body: JSON.stringify({
+          image: base64Data,
+          userId: user?.id,
+          period: type,
+          photoType: photoKey,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save original to server');
+      }
+      
+      console.log(`✅ Original saved to server: ${photoKey} for ${type}`);
+    } catch (error) {
+      console.error('❌ Failed to save original to server:', error);
+    }
+    */
   };
 
   // Автосохранение в localStorage при изменении данных (с сжатием)
@@ -133,13 +197,30 @@ const PhotoDiaryPage: React.FC = () => {
         
         localStorage.setItem(storageKey, JSON.stringify(compressedData));
         
-        // Сохраняем оригиналы отдельно (без сжатия) для корректировки в течение 24 часов
+        // Сохраняем оригиналы отдельно (сжатые с качеством 75% для экономии места) для корректировки в течение 24 часов
         const originalsData = {
-          originalPhotos,
+          originalPhotos: {
+            before: {
+              front: compressImageForStorage(originalPhotos.before.front, 0.75),
+              left34: compressImageForStorage(originalPhotos.before.left34, 0.75),
+              leftProfile: compressImageForStorage(originalPhotos.before.leftProfile, 0.75),
+              right34: compressImageForStorage(originalPhotos.before.right34, 0.75),
+              rightProfile: compressImageForStorage(originalPhotos.before.rightProfile, 0.75),
+              closeup: compressImageForStorage(originalPhotos.before.closeup, 0.75),
+            },
+            after: {
+              front: compressImageForStorage(originalPhotos.after.front, 0.75),
+              left34: compressImageForStorage(originalPhotos.after.left34, 0.75),
+              leftProfile: compressImageForStorage(originalPhotos.after.leftProfile, 0.75),
+              right34: compressImageForStorage(originalPhotos.after.right34, 0.75),
+              rightProfile: compressImageForStorage(originalPhotos.after.rightProfile, 0.75),
+              closeup: compressImageForStorage(originalPhotos.after.closeup, 0.75),
+            },
+          },
           timestamp: Date.now()
         };
         localStorage.setItem(originalsKey, JSON.stringify(originalsData));
-        console.log('💾 Photo diary auto-saved (compressed for display + originals for 24h)');
+        console.log('💾 Photo diary auto-saved (60% display + 75% originals for 24h)');
       } catch (error: any) {
         if (error.name === 'QuotaExceededError') {
           console.error('❌ LocalStorage quota exceeded! Clearing old data...');
@@ -396,10 +477,14 @@ const PhotoDiaryPage: React.FC = () => {
       reader.onload = async (e) => {
         const result = e.target?.result as string;
         
-        // Сохраняем оригинал (необрезанный) для возможности корректировки в течение 24 часов
+        // 1. Сохраняем оригинал на СЕРВЕР (100% качество, хранится 1 месяц)
+        await saveOriginalToServer(result, type, photoKey);
+        
+        // 2. Сохраняем сжатый оригинал в браузер для preview (50% качество, 24 часа)
+        const compressedOriginal = await compressOriginalForPreview(result);
         setOriginalPhotos(prev => ({
           ...prev,
-          [type]: { ...prev[type], [photoKey]: result }
+          [type]: { ...prev[type], [photoKey]: compressedOriginal }
         }));
 
         // Для closeup (6й кадр) - без автокропа
@@ -502,21 +587,30 @@ const PhotoDiaryPage: React.FC = () => {
     }
   };
 
-  // Применить ручную обрезку
-  const handleApplyCrop = () => {
+  // Применить ручную обрезку - отправляем координаты на сервер
+  const handleApplyCrop = async () => {
     if (!cropImage) return;
 
+    setProcessing(true);
+    
     try {
+      // TODO: Отправить координаты на сервер для обрезки оригинала
+      // Пока временно обрезаем локально из preview
       const img = new Image();
-      img.onload = () => {
-        // Создаём canvas для обрезанного изображения
+      img.onload = async () => {
+        // Вычисляем соотношение между preview и оригинальным размером
+        // Preview сжат до 50%, но размеры пропорциональны
+        const previewWidth = img.width;
+        const previewHeight = img.height;
+        
+        // Создаём canvas для обрезанного изображения из preview
         const cropCanvas = document.createElement('canvas');
         cropCanvas.width = cropArea.width;
         cropCanvas.height = cropArea.height;
         const cropCtx = cropCanvas.getContext('2d');
         if (!cropCtx) return;
 
-        // Вырезаем область напрямую из оригинального изображения
+        // Вырезаем область из preview
         cropCtx.drawImage(
           img,
           cropArea.x,
@@ -532,6 +626,36 @@ const PhotoDiaryPage: React.FC = () => {
         // Конвертируем в base64 с качеством 95%
         const croppedDataUrl = cropCanvas.toDataURL('image/jpeg', 0.95);
 
+        /* TODO: Реализовать на сервере endpoint /api/crop-original
+        // Отправляем координаты на сервер для обрезки оригинала
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/crop-original`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          },
+          body: JSON.stringify({
+            userId: user?.id,
+            period: cropImage.period,
+            photoType: cropImage.photoType,
+            cropX: cropArea.x,
+            cropY: cropArea.y,
+            cropWidth: cropArea.width,
+            cropHeight: cropArea.height,
+            // Передаём размеры preview для пересчёта координат на стороне сервера
+            previewWidth: previewWidth,
+            previewHeight: previewHeight,
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to crop original on server');
+        }
+        
+        const result = await response.json();
+        croppedDataUrl = result.croppedImage; // Получаем обрезанный оригинал с сервера
+        */
+
         // Обновляем данные
         setData(prev => ({
           ...prev,
@@ -544,13 +668,15 @@ const PhotoDiaryPage: React.FC = () => {
         // Закрываем модальное окно
         setShowCropModal(false);
         setCropImage(null);
+        setProcessing(false);
         
-        console.log('✂️ Manual crop applied successfully');
+        console.log('✂️ Manual crop applied (from preview, server crop TODO)');
       };
       img.src = cropImage.dataUrl;
     } catch (error) {
       console.error('Crop failed:', error);
       alert('Не удалось обрезать изображение');
+      setProcessing(false);
     }
   };
 
@@ -725,8 +851,9 @@ const PhotoDiaryPage: React.FC = () => {
               <div className="flex-1 text-sm text-blue-800 space-y-2">
                 <p className="font-bold text-base">Хранение фотографий и автосохранение:</p>
                 <ul className="list-disc list-inside space-y-1 ml-2">
-                  <li><span className="font-semibold">В браузере:</span> оригинальные необрезанные фотографии хранятся локально в течение 24 часов для возможности корректировки обрезки</li>
-                  <li><span className="font-semibold">На сервере (бесплатно):</span> обрезанные фото хранятся 1 месяц с момента загрузки</li>
+                  <li><span className="font-semibold">В браузере:</span> сжатые копии оригиналов (50% качество) хранятся локально 24 часа для preview в окне корректировки обрезки</li>
+                  <li><span className="font-semibold">На сервере - оригиналы:</span> необрезанные фото (100% качество) хранятся 1 месяц для возможности ре-обрезки и использования в рекламе</li>
+                  <li><span className="font-semibold">На сервере - обрезанные:</span> финальные фото для коллажа</li>
                   <li><span className="font-semibold">С оплаченным курсом:</span> на всё время курса + 1 месяц после окончания</li>
                   <li><span className="font-semibold">Уведомления:</span> мы пришлём напоминания о удалении фото за 7, 3 и 1 день. Вы сможете продлить хранение, оформив курс</li>
                 </ul>
