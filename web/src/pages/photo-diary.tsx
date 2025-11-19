@@ -820,16 +820,18 @@ const PhotoDiaryPage: React.FC = () => {
         body: JSON.stringify({
           beforePhotos: beforePhotos,
           afterPhotos: afterPhotos,
-          botAgeBefore: data.botAgeBefore,
-          botAgeAfter: data.botAgeAfter,
-          realAgeBefore: data.realAgeBefore,
-          realAgeAfter: data.realAgeAfter,
-          weightBefore: data.weightBefore,
-          weightAfter: data.weightAfter,
-          heightBefore: data.heightBefore,
-          heightAfter: data.heightAfter,
-          commentBefore: data.commentBefore,
-          commentAfter: data.commentAfter,
+          metadata: photoMetadata,
+          userInfo: {
+            username: user?.email?.split('@')[0] || user?.name || 'Пользователь',
+            realAgeBefore: data.realAgeBefore,
+            realAgeAfter: data.realAgeAfter,
+            weightBefore: data.weightBefore,
+            weightAfter: data.weightAfter,
+            heightBefore: data.heightBefore,
+            heightAfter: data.heightAfter,
+            commentsBefore: data.commentBefore,
+            commentsAfter: data.commentAfter,
+          },
         }),
       });
 
