@@ -72,6 +72,15 @@ const PhotoDiaryPage: React.FC = () => {
     commentAfter: '',
   });
 
+  // Оригинальные фото (необрезанные) для возможности корректировки в течение 24 часов
+  const [originalPhotos, setOriginalPhotos] = useState<{
+    before: PhotoSet;
+    after: PhotoSet;
+  }>({
+    before: { front: null, left34: null, leftProfile: null, right34: null, rightProfile: null, closeup: null },
+    after: { front: null, left34: null, leftProfile: null, right34: null, rightProfile: null, closeup: null },
+  });
+
   // Функция сжатия изображения для localStorage (качество 60%, ~200-400KB на фото)
   const compressImageForStorage = (dataUrl: string | null): string | null => {
     if (!dataUrl) return null;
@@ -99,6 +108,7 @@ const PhotoDiaryPage: React.FC = () => {
     // НЕ сохраняем пока данные не загружены из localStorage
     if (isAuthenticated && user?.id && isDataLoadedRef.current) {
       const storageKey = `photo_diary_${user.id}`;
+      const originalsKey = `photo_diary_originals_${user.id}`;
       try {
         // Создаём копию данных со сжатыми изображениями для localStorage
         const compressedData = {
@@ -122,7 +132,14 @@ const PhotoDiaryPage: React.FC = () => {
         };
         
         localStorage.setItem(storageKey, JSON.stringify(compressedData));
-        console.log('💾 Photo diary auto-saved (compressed for storage)');
+        
+        // Сохраняем оригиналы отдельно (без сжатия) для корректировки в течение 24 часов
+        const originalsData = {
+          originalPhotos,
+          timestamp: Date.now()
+        };
+        localStorage.setItem(originalsKey, JSON.stringify(originalsData));
+        console.log('💾 Photo diary auto-saved (compressed for display + originals for 24h)');
       } catch (error: any) {
         if (error.name === 'QuotaExceededError') {
           console.error('❌ LocalStorage quota exceeded! Clearing old data...');
@@ -134,7 +151,7 @@ const PhotoDiaryPage: React.FC = () => {
         }
       }
     }
-  }, [data, isAuthenticated, user]);
+  }, [data, originalPhotos, isAuthenticated, user]);
 
   // Проверка авторизации (только redirect)
   useEffect(() => {
@@ -147,6 +164,7 @@ const PhotoDiaryPage: React.FC = () => {
   useEffect(() => {
     if (user?.id && !isDataLoadedRef.current) {
       const storageKey = `photo_diary_${user.id}`;
+      const originalsKey = `photo_diary_originals_${user.id}`;
       const savedData = localStorage.getItem(storageKey);
       console.log(`🔍 Looking for saved data with key: ${storageKey}`);
       if (savedData) {
@@ -163,6 +181,26 @@ const PhotoDiaryPage: React.FC = () => {
       } else {
         console.log('ℹ️ No saved data found in localStorage');
       }
+      
+      // Загружаем оригиналы (если им меньше 24 часов)
+      const savedOriginals = localStorage.getItem(originalsKey);
+      if (savedOriginals) {
+        try {
+          const parsed = JSON.parse(savedOriginals);
+          const age = Date.now() - parsed.timestamp;
+          const hours = age / (1000 * 60 * 60);
+          if (hours < 24) {
+            setOriginalPhotos(parsed.originalPhotos);
+            console.log(`📂 Loaded original photos (age: ${hours.toFixed(1)}h)`);
+          } else {
+            console.log('⏰ Original photos expired (>24h), removing...');
+            localStorage.removeItem(originalsKey);
+          }
+        } catch (error) {
+          console.error('❌ Failed to load original photos:', error);
+        }
+      }
+      
       // Данные загружены (даже если было пусто) - СИНХРОННО
       isDataLoadedRef.current = true;
       console.log('✅ Data load complete, auto-save now enabled');
@@ -357,6 +395,12 @@ const PhotoDiaryPage: React.FC = () => {
       const reader = new FileReader();
       reader.onload = async (e) => {
         const result = e.target?.result as string;
+        
+        // Сохраняем оригинал (необрезанный) для возможности корректировки в течение 24 часов
+        setOriginalPhotos(prev => ({
+          ...prev,
+          [type]: { ...prev[type], [photoKey]: result }
+        }));
 
         // Для closeup (6й кадр) - без автокропа
         if (photoKey === 'closeup') {
@@ -422,25 +466,47 @@ const PhotoDiaryPage: React.FC = () => {
 
   // Открыть модальное окно ручной обрезки
   const openCropModal = (period: 'before' | 'after', photoType: keyof PhotoSet) => {
-    const photoData = data[period][photoType];
+    // Используем ОРИГИНАЛ (необрезанный) если он есть, иначе текущее фото
+    const originalPhoto = originalPhotos[period][photoType];
+    const photoData = originalPhoto || data[period][photoType];
+    
     if (photoData) {
-      setCropImage({ dataUrl: photoData, period, photoType });
-      setShowCropModal(true);
-      // Сбрасываем параметры обрезки
-      setCropArea({ x: 50, y: 50, width: 300, height: 300 });
-      setZoom(1);
+      // Загружаем изображение чтобы узнать его реальные размеры
+      const img = new Image();
+      img.onload = () => {
+        const imgWidth = img.width;
+        const imgHeight = img.height;
+        
+        // Устанавливаем начальный размер области обрезки (min размера изображения)
+        const initialSize = Math.min(imgWidth, imgHeight, 400);
+        const centerX = (imgWidth - initialSize) / 2;
+        const centerY = (imgHeight - initialSize) / 2;
+        
+        setCropImage({ dataUrl: photoData, period, photoType });
+        setCropArea({ 
+          x: Math.max(0, centerX), 
+          y: Math.max(0, centerY), 
+          width: initialSize, 
+          height: initialSize 
+        });
+        setZoom(1);
+        setShowCropModal(true);
+        
+        if (originalPhoto) {
+          console.log(`📷 Opening crop modal with ORIGINAL photo for ${photoType} (${imgWidth}x${imgHeight})`);
+        } else {
+          console.log(`⚠️ No original found, using current photo for ${photoType} (${imgWidth}x${imgHeight})`);
+        }
+      };
+      img.src = photoData;
     }
   };
 
   // Применить ручную обрезку
   const handleApplyCrop = () => {
-    if (!cropImage || !cropCanvasRef.current) return;
+    if (!cropImage) return;
 
     try {
-      const canvas = cropCanvasRef.current;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
       const img = new Image();
       img.onload = () => {
         // Создаём canvas для обрезанного изображения
@@ -450,14 +516,13 @@ const PhotoDiaryPage: React.FC = () => {
         const cropCtx = cropCanvas.getContext('2d');
         if (!cropCtx) return;
 
-        // Вырезаем область с учётом масштаба
-        const scaleFactor = img.width / canvas.width;
+        // Вырезаем область напрямую из оригинального изображения
         cropCtx.drawImage(
           img,
-          cropArea.x * scaleFactor,
-          cropArea.y * scaleFactor,
-          cropArea.width * scaleFactor,
-          cropArea.height * scaleFactor,
+          cropArea.x,
+          cropArea.y,
+          cropArea.width,
+          cropArea.height,
           0,
           0,
           cropArea.width,
@@ -479,6 +544,8 @@ const PhotoDiaryPage: React.FC = () => {
         // Закрываем модальное окно
         setShowCropModal(false);
         setCropImage(null);
+        
+        console.log('✂️ Manual crop applied successfully');
       };
       img.src = cropImage.dataUrl;
     } catch (error) {
@@ -658,8 +725,8 @@ const PhotoDiaryPage: React.FC = () => {
               <div className="flex-1 text-sm text-blue-800 space-y-2">
                 <p className="font-bold text-base">Хранение фотографий и автосохранение:</p>
                 <ul className="list-disc list-inside space-y-1 ml-2">
-                  <li><span className="font-semibold">В браузере:</span> фотографии автоматически сохраняются локально и доступны в течение 24 часов</li>
-                  <li><span className="font-semibold">На сервере (бесплатно):</span> 1 месяц с момента загрузки</li>
+                  <li><span className="font-semibold">В браузере:</span> оригинальные необрезанные фотографии хранятся локально в течение 24 часов для возможности корректировки обрезки</li>
+                  <li><span className="font-semibold">На сервере (бесплатно):</span> обрезанные фото хранятся 1 месяц с момента загрузки</li>
                   <li><span className="font-semibold">С оплаченным курсом:</span> на всё время курса + 1 месяц после окончания</li>
                   <li><span className="font-semibold">Уведомления:</span> мы пришлём напоминания о удалении фото за 7, 3 и 1 день. Вы сможете продлить хранение, оформив курс</li>
                 </ul>
@@ -944,18 +1011,20 @@ const PhotoDiaryPage: React.FC = () => {
                 </button>
               </div>
 
-              <div className="mb-4">
+              <div className="mb-4 overflow-auto max-h-[60vh]">
                 <div className="relative inline-block">
-                  <canvas
-                    ref={cropCanvasRef}
+                  <img
+                    src={cropImage.dataUrl}
+                    alt="Crop preview"
                     className="max-w-full border-2 border-gray-300"
-                    style={{
-                      backgroundImage: `url(${cropImage.dataUrl})`,
-                      backgroundSize: `${zoom * 100}% auto`,
-                      backgroundPosition: 'center',
-                      backgroundRepeat: 'no-repeat',
-                      width: '600px',
-                      height: '600px'
+                    style={{ display: 'block' }}
+                    onLoad={(e) => {
+                      const img = e.target as HTMLImageElement;
+                      // Обновляем максимальные границы для перетаскивания
+                      const maxX = img.width - cropArea.width;
+                      const maxY = img.height - cropArea.height;
+                      if (cropArea.x > maxX) setCropArea(prev => ({ ...prev, x: Math.max(0, maxX) }));
+                      if (cropArea.y > maxY) setCropArea(prev => ({ ...prev, y: Math.max(0, maxY) }));
                     }}
                   />
                   {/* Область обрезки */}
@@ -969,12 +1038,19 @@ const PhotoDiaryPage: React.FC = () => {
                       boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)'
                     }}
                     onMouseDown={(e) => {
-                      const startX = e.clientX - cropArea.x;
-                      const startY = e.clientY - cropArea.y;
+                      e.preventDefault();
+                      const imgElement = e.currentTarget.parentElement?.querySelector('img');
+                      if (!imgElement) return;
+                      
+                      const imgWidth = imgElement.width;
+                      const imgHeight = imgElement.height;
+                      const rect = imgElement.getBoundingClientRect();
+                      const startX = e.clientX - rect.left - cropArea.x;
+                      const startY = e.clientY - rect.top - cropArea.y;
                       
                       const handleMove = (e: MouseEvent) => {
-                        const newX = Math.max(0, Math.min(600 - cropArea.width, e.clientX - startX));
-                        const newY = Math.max(0, Math.min(600 - cropArea.height, e.clientY - startY));
+                        const newX = Math.max(0, Math.min(imgWidth - cropArea.width, e.clientX - rect.left - startX));
+                        const newY = Math.max(0, Math.min(imgHeight - cropArea.height, e.clientY - rect.top - startY));
                         setCropArea(prev => ({ ...prev, x: newX, y: newY }));
                       };
                       
@@ -987,7 +1063,7 @@ const PhotoDiaryPage: React.FC = () => {
                       document.addEventListener('mouseup', handleUp);
                     }}
                   >
-                    <div className="absolute inset-0 flex items-center justify-center text-white text-sm">
+                    <div className="absolute inset-0 flex items-center justify-center text-white text-sm font-bold" style={{ textShadow: '0 0 4px black' }}>
                       Перетащите
                     </div>
                   </div>
@@ -998,43 +1074,39 @@ const PhotoDiaryPage: React.FC = () => {
               <div className="space-y-4 mb-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Масштаб: {zoom.toFixed(1)}x
+                    Размер области обрезки: {cropArea.width}×{cropArea.height}px (квадрат)
                   </label>
                   <input
                     type="range"
-                    min="0.5"
-                    max="3"
-                    step="0.1"
-                    value={zoom}
-                    onChange={(e) => setZoom(parseFloat(e.target.value))}
+                    min="100"
+                    max={(() => {
+                      const img = document.querySelector('.relative.inline-block img') as HTMLImageElement;
+                      if (img) {
+                        return Math.min(img.width, img.height);
+                      }
+                      return 1000;
+                    })()}
+                    step="10"
+                    value={cropArea.width}
+                    onChange={(e) => {
+                      const img = document.querySelector('.relative.inline-block img') as HTMLImageElement;
+                      if (!img) return;
+                      
+                      const newSize = parseInt(e.target.value);
+                      const maxSize = Math.min(img.width, img.height);
+                      const finalSize = Math.min(newSize, maxSize);
+                      
+                      setCropArea(prev => ({
+                        ...prev,
+                        width: finalSize,
+                        height: finalSize,
+                        x: Math.min(prev.x, img.width - finalSize),
+                        y: Math.min(prev.y, img.height - finalSize)
+                      }));
+                    }}
                     className="w-full"
                   />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Размер области: {cropArea.width}px
-                    </label>
-                    <input
-                      type="range"
-                      min="100"
-                      max="500"
-                      step="10"
-                      value={cropArea.width}
-                      onChange={(e) => {
-                        const newSize = parseInt(e.target.value);
-                        setCropArea(prev => ({
-                          ...prev,
-                          width: newSize,
-                          height: newSize,
-                          x: Math.min(prev.x, 600 - newSize),
-                          y: Math.min(prev.y, 600 - newSize)
-                        }));
-                      }}
-                      className="w-full"
-                    />
-                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Область обрезки всегда остаётся квадратной</p>
                 </div>
               </div>
 
