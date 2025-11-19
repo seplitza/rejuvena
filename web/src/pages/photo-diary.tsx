@@ -144,36 +144,37 @@ const PhotoDiaryPage: React.FC = () => {
 
   // Сохранение оригинала на сервер (100% качество, хранится 1 месяц)
   const saveOriginalToServer = async (imageDataUrl: string, type: 'before' | 'after', photoKey: keyof PhotoSet) => {
-    // Временно отключено - сохраняем локально
-    console.log(`📤 Original photo will be saved to server: ${photoKey} for ${type}`);
-    return Promise.resolve();
+    if (!user?.id) {
+      console.log('⚠️ No user ID, skipping server upload');
+      return;
+    }
     
-    /* TODO: Реализовать endpoint на сервере /api/save-original
     try {
-      const base64Data = imageDataUrl.split(',')[1];
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/save-original`, {
+      console.log(`📤 Saving original to server: ${photoKey} for ${type}`);
+      
+      const response = await fetch('https://api.seplitza.ru/api/save-original', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
         },
         body: JSON.stringify({
-          image: base64Data,
-          userId: user?.id,
+          userId: user.id,
           period: type,
           photoType: photoKey,
+          imageData: imageDataUrl, // Полный data URL
         }),
       });
       
       if (!response.ok) {
-        throw new Error('Failed to save original to server');
+        throw new Error(`Server responded with ${response.status}`);
       }
       
-      console.log(`✅ Original saved to server: ${photoKey} for ${type}`);
+      const result = await response.json();
+      console.log(`✅ Original saved to server: ${result.fileId}`);
     } catch (error) {
       console.error('❌ Failed to save original to server:', error);
+      // Не блокируем загрузку если сервер недоступен
     }
-    */
   };
 
   // Автосохранение в localStorage при изменении данных (с сжатием)
@@ -373,9 +374,8 @@ const PhotoDiaryPage: React.FC = () => {
   };
 
   const savePhotoToServer = async (imageDataUrl: string, type: 'before' | 'after', photoKey: keyof PhotoSet) => {
-    // Закомментировано: сохранение на сервер пока не реализовано
-    // Фото сохраняются только в localStorage
-    console.log(`💾 Photo saved locally (server upload disabled): ${photoKey} for ${type}`);
+    // Эта функция для старого API - не используется
+    // Фото сохраняются через saveOriginalToServer
     return Promise.resolve();
     
     /* ВРЕМЕННО ОТКЛЮЧЕНО - backend endpoint не готов
