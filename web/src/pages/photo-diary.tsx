@@ -796,20 +796,36 @@ const PhotoDiaryPage: React.FC = () => {
     try {
       setProcessing(true);
       
-      // Проверяем что все фото загружены
-      const beforePhotos = Object.values(data.before);
-      const afterPhotos = Object.values(data.after);
+      // Собираем только загруженные ряды (хотя бы 1 фото в ряду)
+      const photoTypesOrder: (keyof PhotoSet)[] = ['front', 'left34', 'leftProfile', 'right34', 'rightProfile', 'closeup'];
       
-      const missingBefore = beforePhotos.filter(p => !p).length;
-      const missingAfter = afterPhotos.filter(p => !p).length;
+      const rowsToInclude: {
+        beforePhoto: string | null;
+        afterPhoto: string | null;
+        photoType: keyof PhotoSet;
+      }[] = [];
       
-      if (missingBefore > 0 || missingAfter > 0) {
-        alert(`Загрузите все фотографии!\nНе хватает: ${missingBefore} фото "До" и ${missingAfter} фото "После"`);
+      photoTypesOrder.forEach(photoType => {
+        const hasBefore = !!data.before[photoType];
+        const hasAfter = !!data.after[photoType];
+        
+        // Включаем ряд если есть хотя бы 1 фото
+        if (hasBefore || hasAfter) {
+          rowsToInclude.push({
+            beforePhoto: data.before[photoType] || null,
+            afterPhoto: data.after[photoType] || null,
+            photoType: photoType,
+          });
+        }
+      });
+      
+      if (rowsToInclude.length === 0) {
+        alert('Загрузите хотя бы одну фотографию для создания коллажа!');
         setProcessing(false);
         return;
       }
       
-      console.log('🎨 Creating collage...');
+      console.log(`🎨 Creating collage with ${rowsToInclude.length} rows...`);
       
       // Отправляем запрос на создание коллажа
       const response = await fetch('https://api.seplitza.ru/api/create-collage', {
@@ -818,8 +834,7 @@ const PhotoDiaryPage: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          beforePhotos: beforePhotos,
-          afterPhotos: afterPhotos,
+          rows: rowsToInclude,
           metadata: photoMetadata,
           userInfo: {
             username: user?.email?.split('@')[0] || user?.name || 'Пользователь',
