@@ -499,19 +499,22 @@ const PhotoDiaryPage: React.FC = () => {
           [type]: { ...prev[type], [photoKey]: compressedOriginal }
         }));
 
-        // Для closeup (6й кадр) - без автокропа
-        if (photoKey === 'closeup') {
+        // Для профилей и closeup - сразу ручная обрезка
+        if (photoKey === 'leftProfile' || photoKey === 'rightProfile' || photoKey === 'closeup') {
+          // Сохраняем сжатый для отображения (60%)
+          const compressedForDisplay = compressImageForStorage(result, 0.6);
           setData(prev => ({
             ...prev,
-            [type]: { ...prev[type], [photoKey]: result }
+            [type]: { ...prev[type], [photoKey]: compressedForDisplay }
           }));
-          // Сохраняем на сервер
-          await savePhotoToServer(result, type, photoKey);
           setProcessing(false);
+          
+          // Открываем модалку ручной обрезки сразу
+          setTimeout(() => openCropModal(type, photoKey), 100);
           return;
         }
 
-        // Автокроп для остальных кадров
+        // Автокроп только для front, left34, right34
         if (!modelsLoaded) {
           setCropError('Модели распознавания лиц еще загружаются. Попробуйте через несколько секунд.');
           setProcessing(false);
@@ -635,8 +638,11 @@ const PhotoDiaryPage: React.FC = () => {
           cropArea.height
         );
 
-        // Конвертируем в base64 с качеством 95%
-        const croppedDataUrl = cropCanvas.toDataURL('image/jpeg', 0.95);
+        // Конвертируем в base64 с качеством 95% (высокое качество для сервера)
+        const croppedHighQuality = cropCanvas.toDataURL('image/jpeg', 0.95);
+        
+        // Сжимаем до 60% для отображения в сетке
+        const croppedDataUrl = cropCanvas.toDataURL('image/jpeg', 0.6);
 
         /* TODO: Реализовать на сервере endpoint /api/crop-original
         // Отправляем координаты на сервер для обрезки оригинала
