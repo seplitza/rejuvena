@@ -197,39 +197,17 @@ const PhotoDiaryPage: React.FC = () => {
         
         localStorage.setItem(storageKey, JSON.stringify(compressedData));
         
-        // Сохраняем оригиналы отдельно (сжатые с качеством 75% для экономии места) для корректировки в течение 24 часов
-        const originalsData = {
-          originalPhotos: {
-            before: {
-              front: compressImageForStorage(originalPhotos.before.front, 0.75),
-              left34: compressImageForStorage(originalPhotos.before.left34, 0.75),
-              leftProfile: compressImageForStorage(originalPhotos.before.leftProfile, 0.75),
-              right34: compressImageForStorage(originalPhotos.before.right34, 0.75),
-              rightProfile: compressImageForStorage(originalPhotos.before.rightProfile, 0.75),
-              closeup: compressImageForStorage(originalPhotos.before.closeup, 0.75),
-            },
-            after: {
-              front: compressImageForStorage(originalPhotos.after.front, 0.75),
-              left34: compressImageForStorage(originalPhotos.after.left34, 0.75),
-              leftProfile: compressImageForStorage(originalPhotos.after.leftProfile, 0.75),
-              right34: compressImageForStorage(originalPhotos.after.right34, 0.75),
-              rightProfile: compressImageForStorage(originalPhotos.after.rightProfile, 0.75),
-              closeup: compressImageForStorage(originalPhotos.after.closeup, 0.75),
-            },
-          },
-          timestamp: Date.now()
-        };
-        localStorage.setItem(originalsKey, JSON.stringify(originalsData));
-        console.log('💾 Photo diary auto-saved (60% display + 50% originals for 24h)');
+        // НЕ сохраняем originals в localStorage - они слишком большие и вызывают QuotaExceededError
+        // Вместо этого originals хранятся только в памяти (state) для текущей сессии
+        // В будущем они будут отправляться на сервер через /api/save-original
+        console.log('💾 Photo diary auto-saved (display photos only, 60% quality)');
       } catch (error: any) {
         if (error.name === 'QuotaExceededError') {
-          console.error('❌ LocalStorage quota exceeded! Clearing old data...');
-          // Очищаем ВСЕ данные (и display, и originals)
+          console.error('❌ LocalStorage quota exceeded! Clearing display photos...');
+          // Очищаем только display photos (originals теперь не сохраняются)
           localStorage.removeItem(storageKey);
-          localStorage.removeItem(originalsKey);
-          console.log('🗑️ Cleared both display and originals storage');
+          console.log('🗑️ Cleared display photos storage');
           // Не показываем alert каждый раз - это раздражает при автосохранении
-          // alert будет показан только если пользователь сам попытается сохранить
         } else {
           console.error('❌ LocalStorage save error:', error);
         }
@@ -281,108 +259,14 @@ const PhotoDiaryPage: React.FC = () => {
         console.log('ℹ️ No saved data found in localStorage');
       }
       
-      // Загружаем оригиналы (если им меньше 24 часов)
-      const savedOriginals = localStorage.getItem(originalsKey);
-      let loadedOriginals = null;
-      
-      if (savedOriginals) {
-        try {
-          const parsed = JSON.parse(savedOriginals);
-          const age = Date.now() - parsed.timestamp;
-          const hours = age / (1000 * 60 * 60);
-          if (hours < 24) {
-            loadedOriginals = parsed.originalPhotos;
-            console.log(`📂 Loaded original photos (age: ${hours.toFixed(1)}h)`);
-          } else {
-            console.log('⏰ Original photos expired (>24h), removing...');
-            localStorage.removeItem(originalsKey);
-          }
-        } catch (error) {
-          console.error('❌ Failed to load original photos:', error);
-        }
-      }
-      
-      // ВОССТАНОВЛЕНИЕ: если display photos отсутствуют, но originals есть - восстанавливаем!
-      if (loadedOriginals) {
-        console.log('🔍 Recovery check:', {
-          hasLoadedData: !!loadedData,
-          originalsStructure: {
-            hasBefore: !!loadedOriginals.before,
-            hasAfter: !!loadedOriginals.after,
-            beforeKeys: loadedOriginals.before ? Object.keys(loadedOriginals.before) : [],
-            afterKeys: loadedOriginals.after ? Object.keys(loadedOriginals.after) : []
-          }
-        });
-        
-        if (!loadedData) {
-          // Display photos полностью пусты, но originals есть - создаём новую структуру
-          console.log('♻️ No display photos found, restoring ALL from originals backup!');
-          
-          const beforePhotos = loadedOriginals.before || {};
-          const afterPhotos = loadedOriginals.after || {};
-          
-          loadedData = {
-            before: {
-              front: beforePhotos.front || null,
-              left34: beforePhotos.left34 || null,
-              leftProfile: beforePhotos.leftProfile || null,
-              right34: beforePhotos.right34 || null,
-              rightProfile: beforePhotos.rightProfile || null,
-              closeup: beforePhotos.closeup || null,
-            },
-            after: {
-              front: afterPhotos.front || null,
-              left34: afterPhotos.left34 || null,
-              leftProfile: afterPhotos.leftProfile || null,
-              right34: afterPhotos.right34 || null,
-              rightProfile: afterPhotos.rightProfile || null,
-              closeup: afterPhotos.closeup || null,
-            },
-            botAgeBefore: null,
-            botAgeAfter: null,
-            realAgeBefore: null,
-            realAgeAfter: null,
-            weightBefore: null,
-            weightAfter: null,
-            heightBefore: null,
-            heightAfter: null,
-            commentBefore: '',
-            commentAfter: '',
-          };
-          
-          console.log('♻️ Restored data:', {
-            hasBefore: !!loadedData.before.front,
-            hasAfter: !!loadedData.after.front
-          });
-        } else {
-          // Display photos частично есть - восстанавливаем недостающие
-          let recovered = false;
-          const newData = { ...loadedData };
-          
-          (['front', 'left34', 'leftProfile', 'right34', 'rightProfile', 'closeup'] as const).forEach(photoType => {
-            if (!newData.before[photoType] && loadedOriginals.before[photoType]) {
-              newData.before[photoType] = loadedOriginals.before[photoType];
-              recovered = true;
-            }
-            if (!newData.after[photoType] && loadedOriginals.after[photoType]) {
-              newData.after[photoType] = loadedOriginals.after[photoType];
-              recovered = true;
-            }
-          });
-          
-          if (recovered) {
-            console.log('♻️ Recovered missing photos from originals backup!');
-            loadedData = newData;
-          }
-        }
-      }
+      // Originals больше НЕ сохраняются в localStorage (слишком большие)
+      // Они хранятся только в памяти (state) и при перезагрузке теряются
+      // В будущем будут загружаться с сервера через /api/load-original
       
       // Применяем загруженные данные
       if (loadedData) {
         setData(loadedData);
-      }
-      if (loadedOriginals) {
-        setOriginalPhotos(loadedOriginals);
+        console.log('📂 Restored display photos from localStorage');
       }
       
       // Данные загружены (даже если было пусто) - СИНХРОННО
@@ -1248,7 +1132,7 @@ const PhotoDiaryPage: React.FC = () => {
               <div className="flex-1 text-sm text-blue-800 space-y-2">
                 <p className="font-bold text-base">Хранение фотографий и автосохранение:</p>
                 <ul className="list-disc list-inside space-y-1 ml-2">
-                  <li><span className="font-semibold">В браузере:</span> сжатые копии оригиналов (50% качество) хранятся локально 24 часа для preview в окне корректировки обрезки</li>
+                  <li><span className="font-semibold">В браузере:</span> финальные фото (60% качество) хранятся до перезагрузки страницы. Оригиналы доступны только в текущей сессии для ре-обрезки</li>
                   <li><span className="font-semibold">На сервере - оригиналы:</span> необрезанные фото (100% качество) хранятся 1 месяц для возможности ре-обрезки и использования в рекламе</li>
                   <li><span className="font-semibold">На сервере - обрезанные:</span> финальные фото для коллажа</li>
                   <li><span className="font-semibold">С оплаченным курсом:</span> на всё время курса + 1 месяц после окончания</li>
