@@ -3,7 +3,6 @@ import { useRouter } from 'next/router';
 import { useAppSelector } from '../store/hooks';
 import Head from 'next/head';
 import * as faceapi from 'face-api.js';
-import UserAccessStatus from '@/components/user-access-status';
 
 interface PhotoSet {
   front: string | null;
@@ -73,7 +72,7 @@ const PhotoDiaryPage: React.FC = () => {
     commentAfter: '',
   });
 
-  // Оригинальные фото (необрезанные) - хранятся ТОЛЬКО в памяти текущей сессии
+  // Оригинальные фото (необрезанные) для возможности корректировки в течение 24 часов
   const [originalPhotos, setOriginalPhotos] = useState<{
     before: PhotoSet;
     after: PhotoSet;
@@ -81,17 +80,8 @@ const PhotoDiaryPage: React.FC = () => {
     before: { front: null, left34: null, leftProfile: null, right34: null, rightProfile: null, closeup: null },
     after: { front: null, left34: null, leftProfile: null, right34: null, rightProfile: null, closeup: null },
   });
-  
-  // Координаты обрезки для восстановления из оригиналов с сервера
-  const [cropCoordinates, setCropCoordinates] = useState<{
-    before: { [K in keyof PhotoSet]?: { x: number; y: number; width: number; height: number } };
-    after: { [K in keyof PhotoSet]?: { x: number; y: number; width: number; height: number } };
-  }>({
-    before: {},
-    after: {},
-  });
-  
-  // Метаданные фотографий (даты, EXIF)
+
+  // Метаданные фотографий (даты загрузки, EXIF)
   const [photoMetadata, setPhotoMetadata] = useState<{
     before: { [K in keyof PhotoSet]?: { uploadDate: string; exifData?: any } };
     after: { [K in keyof PhotoSet]?: { uploadDate: string; exifData?: any } };
@@ -101,7 +91,7 @@ const PhotoDiaryPage: React.FC = () => {
   });
 
   // Функция сжатия изображения для localStorage
-  const compressImageForStorage = (dataUrl: string | null, quality: number = 0.4): string | null => {
+  const compressImageForStorage = (dataUrl: string | null, quality: number = 0.6): string | null => {
     if (!dataUrl) return null;
     
     try {
@@ -155,94 +145,82 @@ const PhotoDiaryPage: React.FC = () => {
   // Сохранение оригинала на сервер (100% качество, хранится 1 месяц)
   const saveOriginalToServer = async (imageDataUrl: string, type: 'before' | 'after', photoKey: keyof PhotoSet) => {
     if (!user?.id) {
-      console.log('⚠️ No user ID, skipping server upload');
+      console.log('⚠️ No user ID, skipping metadata save');
       return;
     }
-    
-    // Проверяем нужны ли полные данные для сохранения на сервере (1 месяц бесплатно)
-    const needsFullAccess = (user as any)?.needsFullAccess;
-    
-    // Счётчик загрузок для отложенного запроса доступа (показываем с 3-го фото)
-    const uploadCountKey = `rejuvena_upload_count_${user.id}`;
-    const uploadCount = parseInt(localStorage.getItem(uploadCountKey) || '0');
-    const alreadyPrompted = localStorage.getItem(`rejuvena_access_prompted_${user.id}`) === 'true';
-    
-    // Показываем запрос только один раз и только с 3-го фото
-    if (needsFullAccess && !alreadyPrompted && uploadCount >= 2) {
-      localStorage.setItem(`rejuvena_access_prompted_${user.id}`, 'true'); // Отмечаем что запрос показан
-      
-      const confirmed = confirm(
-        '💾 Хотите сохранить оригиналы фото на сервере?\n\n' +
-        '✅ Бесплатное хранение 1 месяц\n' +
-        '✅ Возможность скачать коллаж\n' +
-        '✅ Восстановление при потере данных\n\n' +
-        'Для этого нам нужен ваш username в Telegram и разрешение присылать уведомление.\n\n' +
-        'Предоставить доступ?'
-      );
-      
-      if (!confirmed) {
-        console.log('⚠️ User declined server storage');
-        // Не блокируем загрузку, просто не сохраняем на сервер
-        // Увеличиваем счётчик загрузок
-        localStorage.setItem(uploadCountKey, (uploadCount + 1).toString());
-        return;
-      }
-      
-      // Перенаправляем на страницу предоставления доступа с предзаполненными данными
-      const params = new URLSearchParams({
-        tg_user_id: (user as any).telegramId || user.id,
-        prefill: 'true'
-      });
-      window.location.href = `/rejuvena/generate-link?${params.toString()}`;
-      return;
-    }
-    
-    // Увеличиваем счётчик загрузок
-    localStorage.setItem(uploadCountKey, (uploadCount + 1).toString());
-    
-    // Если пользователь отказался от доступа, не сохраняем на сервер
-    if (needsFullAccess) {
-      console.log('⚠️ User has limited access, skipping server upload');
-      return;
-    }
-    
+
     try {
-      console.log(`📤 Saving original to server: ${photoKey} for ${type}`);
+      // Извлекаем EXIF метаданные из изображения (если есть)
+      const img = new Image();
+      img.src = imageDataUrl;
       
+      // Даём изображению загрузиться
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+
+      // Пытаемся извлечь EXIF дату из Data URL (если была передана камерой/файлом)
+      let exifData: any = null;
+      
+      // Проверяем, это скриншот или обычное фото
+      // Скриншоты обычно не имеют EXIF данных
+      const isScreenshot = imageDataUrl.length < 50000 || !imageDataUrl.includes('Exif');
+      
+      if (isScreenshot) {
+        exifData = {
+          reason: 'No EXIF data found (screenshot or edited photo)'
+        };
+      } else {
+        // TODO: Для полной реализации нужна библиотека exif-js или piexif
+        // Пока просто отмечаем что данные есть
+        exifData = {
+          captureDate: null, // Будет извлечено позже через библиотеку
+          reason: 'EXIF extraction not yet implemented'
+        };
+      }
+
+      const uploadDate = new Date().toISOString();
+
+      // Сохраняем метаданные локально
+      setPhotoMetadata(prev => ({
+        ...prev,
+        [type]: {
+          ...prev[type],
+          [photoKey]: {
+            uploadDate,
+            exifData
+          }
+        }
+      }));
+
+      console.log(`✅ Metadata saved for ${photoKey} (${type}):`, { uploadDate, exifData });
+
+      /* TODO: Реализовать endpoint на сервере /api/save-original для долгосрочного хранения
+      const base64Data = imageDataUrl.split(',')[1];
       const response = await fetch('https://api.seplitza.ru/api/save-original', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          image: base64Data,
           userId: user.id,
           period: type,
           photoType: photoKey,
-          imageData: imageDataUrl, // Полный data URL
         }),
       });
       
       if (!response.ok) {
-        throw new Error(`Server responded with ${response.status}`);
+        throw new Error('Failed to save original to server');
       }
       
       const result = await response.json();
-      console.log(`✅ Original saved to server: ${result.fileId}`, result.exifData);
-      
-      // Сохраняем метаданные (дата загрузки, EXIF)
-      setPhotoMetadata(prev => ({
-        ...prev,
-        [type]: {
-          ...prev[type],
-          [photoKey]: {
-            uploadDate: result.uploadDate,
-            exifData: result.exifData
-          }
-        }
-      }));
+      console.log(`✅ Original saved to server: ${result.fileId}`);
+      */
     } catch (error) {
-      console.error('❌ Failed to save original to server:', error);
-      // Не блокируем загрузку если сервер недоступен
+      console.error('❌ Failed to save metadata:', error);
+      // Не блокируем загрузку если произошла ошибка
     }
   };
 
@@ -251,7 +229,7 @@ const PhotoDiaryPage: React.FC = () => {
     // НЕ сохраняем пока данные не загружены из localStorage
     if (isAuthenticated && user?.id && isDataLoadedRef.current) {
       const storageKey = `photo_diary_${user.id}`;
-      const cropCoordsKey = `photo_diary_crop_coords_${user.id}`;
+      const originalsKey = `photo_diary_originals_${user.id}`;
       try {
         // Создаём копию данных со сжатыми изображениями для localStorage
         const compressedData = {
@@ -276,25 +254,47 @@ const PhotoDiaryPage: React.FC = () => {
         
         localStorage.setItem(storageKey, JSON.stringify(compressedData));
         
-        // Сохраняем координаты обрезки (очень маленький размер!)
-        localStorage.setItem(cropCoordsKey, JSON.stringify(cropCoordinates));
+        // Сохраняем оригиналы отдельно (сжатые с качеством 75% для экономии места) для корректировки в течение 24 часов
+        const originalsData = {
+          originalPhotos: {
+            before: {
+              front: compressImageForStorage(originalPhotos.before.front, 0.75),
+              left34: compressImageForStorage(originalPhotos.before.left34, 0.75),
+              leftProfile: compressImageForStorage(originalPhotos.before.leftProfile, 0.75),
+              right34: compressImageForStorage(originalPhotos.before.right34, 0.75),
+              rightProfile: compressImageForStorage(originalPhotos.before.rightProfile, 0.75),
+              closeup: compressImageForStorage(originalPhotos.before.closeup, 0.75),
+            },
+            after: {
+              front: compressImageForStorage(originalPhotos.after.front, 0.75),
+              left34: compressImageForStorage(originalPhotos.after.left34, 0.75),
+              leftProfile: compressImageForStorage(originalPhotos.after.leftProfile, 0.75),
+              right34: compressImageForStorage(originalPhotos.after.right34, 0.75),
+              rightProfile: compressImageForStorage(originalPhotos.after.rightProfile, 0.75),
+              closeup: compressImageForStorage(originalPhotos.after.closeup, 0.75),
+            },
+          },
+          timestamp: Date.now()
+        };
+        localStorage.setItem(originalsKey, JSON.stringify(originalsData));
         
         // Сохраняем метаданные (даты, EXIF)
         const metadataKey = `photo_diary_metadata_${user.id}`;
         localStorage.setItem(metadataKey, JSON.stringify(photoMetadata));
         
-        console.log('💾 Photo diary auto-saved (40% quality display + crop coords + metadata)');
+        console.log('💾 Photo diary auto-saved (display + originals + metadata)');
       } catch (error: any) {
         if (error.name === 'QuotaExceededError') {
-          console.error('❌ LocalStorage quota exceeded! Clearing display photos...');
+          console.error('❌ LocalStorage quota exceeded! Clearing old data...');
+          // Очищаем старые данные
           localStorage.removeItem(storageKey);
-          console.log('🗑️ Cleared display photos storage');
+          alert('Превышен лимит хранилища. Данные были очищены. Пожалуйста, загрузите фото заново.');
         } else {
           console.error('❌ LocalStorage save error:', error);
         }
       }
     }
-  }, [data, cropCoordinates, photoMetadata, isAuthenticated, user]);
+  }, [data, originalPhotos, photoMetadata, isAuthenticated, user]);
 
   // Проверка авторизации (только redirect)
   useEffect(() => {
@@ -311,20 +311,17 @@ const PhotoDiaryPage: React.FC = () => {
       const versionKey = `photo_diary_version_${user.id}`;
       const CURRENT_VERSION = '2.0'; // Версия с server-side originals
       
-      // Проверяем версию данных (мягкая миграция - НЕ удаляем фото!)
+      // Проверяем версию данных
       const savedVersion = localStorage.getItem(versionKey);
       if (savedVersion !== CURRENT_VERSION) {
-        console.log(`🔄 Data version update (${savedVersion} → ${CURRENT_VERSION}), migrating data...`);
-        // Не удаляем данные! Только обновляем версию
-        // В будущем здесь можно добавить логику миграции структуры данных
+        console.log(`🔄 Data version mismatch (${savedVersion} !== ${CURRENT_VERSION}), clearing old data...`);
+        localStorage.removeItem(storageKey);
+        localStorage.removeItem(originalsKey);
         localStorage.setItem(versionKey, CURRENT_VERSION);
       }
       
       const savedData = localStorage.getItem(storageKey);
       console.log(`🔍 Looking for saved data with key: ${storageKey}`);
-      
-      let loadedData = null;
-      
       if (savedData) {
         try {
           const parsed = JSON.parse(savedData);
@@ -332,7 +329,7 @@ const PhotoDiaryPage: React.FC = () => {
             hasBefore: !!parsed.before?.front,
             hasAfter: !!parsed.after?.front
           });
-          loadedData = parsed;
+          setData(parsed);
         } catch (error) {
           console.error('❌ Failed to load saved data:', error);
         }
@@ -340,16 +337,22 @@ const PhotoDiaryPage: React.FC = () => {
         console.log('ℹ️ No saved data found in localStorage');
       }
       
-      // Загружаем координаты обрезки
-      const cropCoordsKey = `photo_diary_crop_coords_${user.id}`;
-      const savedCropCoords = localStorage.getItem(cropCoordsKey);
-      if (savedCropCoords) {
+      // Загружаем оригиналы (если им меньше 24 часов)
+      const savedOriginals = localStorage.getItem(originalsKey);
+      if (savedOriginals) {
         try {
-          const parsed = JSON.parse(savedCropCoords);
-          setCropCoordinates(parsed);
-          console.log('📐 Loaded crop coordinates from localStorage');
+          const parsed = JSON.parse(savedOriginals);
+          const age = Date.now() - parsed.timestamp;
+          const hours = age / (1000 * 60 * 60);
+          if (hours < 24) {
+            setOriginalPhotos(parsed.originalPhotos);
+            console.log(`📂 Loaded original photos (age: ${hours.toFixed(1)}h)`);
+          } else {
+            console.log('⏰ Original photos expired (>24h), removing...');
+            localStorage.removeItem(originalsKey);
+          }
         } catch (error) {
-          console.error('❌ Failed to load crop coordinates:', error);
+          console.error('❌ Failed to load original photos:', error);
         }
       }
       
@@ -365,17 +368,6 @@ const PhotoDiaryPage: React.FC = () => {
           console.error('❌ Failed to load metadata:', error);
         }
       }
-      
-      // Применяем загруженные данные
-      if (loadedData) {
-        setData(loadedData);
-        console.log('📂 Restored display photos from localStorage');
-      }
-      
-      // TODO: Загрузить оригиналы с сервера если есть crop coordinates
-      // if (savedCropCoords && Object.keys(parsed.before).length > 0) {
-      //   await loadOriginalsFromServer(user.id);
-      // }
       
       // Данные загружены (даже если было пусто) - СИНХРОННО
       isDataLoadedRef.current = true;
@@ -402,7 +394,7 @@ const PhotoDiaryPage: React.FC = () => {
     }
   }, [modelsLoaded]);
 
-  const cropFaceImage = async (imageDataUrl: string, photoType?: keyof PhotoSet): Promise<string> => {
+  const cropFaceImage = async (imageDataUrl: string): Promise<string> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = async () => {
@@ -423,9 +415,8 @@ const PhotoDiaryPage: React.FC = () => {
           const ctx = canvas.getContext('2d')!;
 
           // Расчет кропа с учетом отступов
-          // Для closeup (6й кадр) - без отступов (0%), для остальных - 20% сверху
-          const topPadding = photoType === 'closeup' ? 0 : 0.20; // 20% сверху для стандартных кадров
-          const bottomPadding = photoType === 'closeup' ? 0 : 0.15; // 15% снизу для стандартных кадров
+          const topPadding = 0.30; // 30% сверху (увеличено для лучшей детекции InsightFace)
+          const bottomPadding = 0.15; // 15% снизу
           
           // Высота области от верха лица до низа с отступами
           const totalHeight = box.height / (1 - topPadding - bottomPadding);
@@ -461,8 +452,9 @@ const PhotoDiaryPage: React.FC = () => {
   };
 
   const savePhotoToServer = async (imageDataUrl: string, type: 'before' | 'after', photoKey: keyof PhotoSet) => {
-    // Эта функция для старого API - не используется
-    // Фото сохраняются через saveOriginalToServer
+    // Закомментировано: сохранение на сервер пока не реализовано
+    // Фото сохраняются только в localStorage
+    console.log(`💾 Photo saved locally (server upload disabled): ${photoKey} for ${type}`);
     return Promise.resolve();
     
     /* ВРЕМЕННО ОТКЛЮЧЕНО - backend endpoint не готов
@@ -582,10 +574,10 @@ const PhotoDiaryPage: React.FC = () => {
           [type]: { ...prev[type], [photoKey]: compressedOriginal }
         }));
 
-        // Для профилей - сразу ручная обрезка
-        if (photoKey === 'leftProfile' || photoKey === 'rightProfile') {
+        // Для профилей и closeup - сразу ручная обрезка
+        if (photoKey === 'leftProfile' || photoKey === 'rightProfile' || photoKey === 'closeup') {
           // Сохраняем сжатый для отображения (60%)
-          const compressedForDisplay = compressImageForStorage(result, 0.4);
+          const compressedForDisplay = compressImageForStorage(result, 0.6);
           setData(prev => ({
             ...prev,
             [type]: { ...prev[type], [photoKey]: compressedForDisplay }
@@ -597,7 +589,7 @@ const PhotoDiaryPage: React.FC = () => {
           return;
         }
 
-        // Автокроп для front, left34, right34, closeup (closeup с 0% отступами)
+        // Автокроп только для front, left34, right34
         if (!modelsLoaded) {
           setCropError('Модели распознавания лиц еще загружаются. Попробуйте через несколько секунд.');
           setProcessing(false);
@@ -605,7 +597,7 @@ const PhotoDiaryPage: React.FC = () => {
         }
 
         try {
-          const croppedImage = await cropFaceImage(result, photoKey);
+          const croppedImage = await cropFaceImage(result);
           
           setData(prev => ({
             ...prev,
@@ -698,54 +690,27 @@ const PhotoDiaryPage: React.FC = () => {
       img.onload = async () => {
         // Вычисляем соотношение между preview и оригинальным размером
         // Preview сжат до 50%, но размеры пропорциональны
-        const previewWidth = img.naturalWidth;  // Реальная ширина изображения
-        const previewHeight = img.naturalHeight; // Реальная высота изображения
-        
-        // ВАЖНО: cropArea содержит координаты относительно отображаемого размера в браузере
-        // Нужно найти элемент img в модальном окне чтобы узнать displayed размер
-        const modalImg = document.querySelector('.crop-modal-image') as HTMLImageElement;
-        if (!modalImg) {
-          console.error('❌ Modal image not found');
-          return;
-        }
-        
-        const displayedWidth = modalImg.width;   // Размер на экране
-        const displayedHeight = modalImg.height;
-        
-        // Вычисляем масштаб между displayed и actual размерами
-        const scaleX = previewWidth / displayedWidth;
-        const scaleY = previewHeight / displayedHeight;
-        
-        // Пересчитываем координаты обрезки в реальные пиксели изображения
-        const actualCropX = Math.round(cropArea.x * scaleX);
-        const actualCropY = Math.round(cropArea.y * scaleY);
-        const actualCropWidth = Math.round(cropArea.width * scaleX);
-        const actualCropHeight = Math.round(cropArea.height * scaleY);
-        
-        console.log(`🔍 Crop coordinates:
-          Display: (${cropArea.x}, ${cropArea.y}) ${cropArea.width}x${cropArea.height}
-          Image: ${displayedWidth}x${displayedHeight} → ${previewWidth}x${previewHeight}
-          Scale: ${scaleX.toFixed(2)}x, ${scaleY.toFixed(2)}x
-          Actual: (${actualCropX}, ${actualCropY}) ${actualCropWidth}x${actualCropHeight}`);
+        const previewWidth = img.width;
+        const previewHeight = img.height;
         
         // Создаём canvas для обрезанного изображения из preview
         const cropCanvas = document.createElement('canvas');
-        cropCanvas.width = actualCropWidth;
-        cropCanvas.height = actualCropHeight;
+        cropCanvas.width = cropArea.width;
+        cropCanvas.height = cropArea.height;
         const cropCtx = cropCanvas.getContext('2d');
         if (!cropCtx) return;
 
-        // Вырезаем область из preview используя РЕАЛЬНЫЕ координаты
+        // Вырезаем область из preview
         cropCtx.drawImage(
           img,
-          actualCropX,
-          actualCropY,
-          actualCropWidth,
-          actualCropHeight,
+          cropArea.x,
+          cropArea.y,
+          cropArea.width,
+          cropArea.height,
           0,
           0,
-          actualCropWidth,
-          actualCropHeight
+          cropArea.width,
+          cropArea.height
         );
 
         // Конвертируем в base64 с качеством 95% (высокое качество для сервера)
@@ -753,9 +718,9 @@ const PhotoDiaryPage: React.FC = () => {
         
         // Создаём уменьшенную версию для отображения (максимум 400x400px под размер окошка)
         const maxDisplaySize = 400;
-        const scale = Math.min(1, maxDisplaySize / Math.max(actualCropWidth, actualCropHeight));
-        const displayWidth = Math.round(actualCropWidth * scale);
-        const displayHeight = Math.round(actualCropHeight * scale);
+        const scale = Math.min(1, maxDisplaySize / Math.max(cropArea.width, cropArea.height));
+        const displayWidth = Math.round(cropArea.width * scale);
+        const displayHeight = Math.round(cropArea.height * scale);
         
         const displayCanvas = document.createElement('canvas');
         displayCanvas.width = displayWidth;
@@ -765,8 +730,8 @@ const PhotoDiaryPage: React.FC = () => {
         
         displayCtx.drawImage(cropCanvas, 0, 0, displayWidth, displayHeight);
         
-        // Сжимаем до 40% для отображения в сетке (экономия места)
-        const croppedDataUrl = displayCanvas.toDataURL('image/jpeg', 0.4);
+        // Сжимаем до 60% для отображения в сетке
+        const croppedDataUrl = displayCanvas.toDataURL('image/jpeg', 0.6);
 
         /* TODO: Реализовать на сервере endpoint /api/crop-original
         // Отправляем координаты на сервер для обрезки оригинала
@@ -806,32 +771,13 @@ const PhotoDiaryPage: React.FC = () => {
             [cropImage.photoType]: croppedDataUrl
           }
         }));
-        
-        // Сохраняем координаты обрезки для восстановления из оригинала с сервера
-        setCropCoordinates(prev => ({
-          ...prev,
-          [cropImage.period]: {
-            ...prev[cropImage.period],
-            [cropImage.photoType]: {
-              x: actualCropX,
-              y: actualCropY,
-              width: actualCropWidth,
-              height: actualCropHeight
-            }
-          }
-        }));
 
         // Закрываем модальное окно
         setShowCropModal(false);
         setCropImage(null);
         setProcessing(false);
         
-        console.log('✂️ Manual crop applied & coordinates saved:', {
-          x: actualCropX,
-          y: actualCropY,
-          width: actualCropWidth,
-          height: actualCropHeight
-        });
+        console.log('✂️ Manual crop applied (from preview, server crop TODO)');
       };
       img.src = cropImage.dataUrl;
     } catch (error) {
@@ -845,63 +791,20 @@ const PhotoDiaryPage: React.FC = () => {
     try {
       setProcessing(true);
       
-      // Проверяем нужны ли полные данные пользователя
-      const needsFullAccess = (user as any)?.needsFullAccess;
-      if (needsFullAccess) {
-        const confirmed = confirm(
-          '📱 Для скачивания коллажа нам нужен ваш username в Telegram и разрешение присылать уведомление.\n\n' +
-          'Это позволит:\n' +
-          '✅ Сохранить фото на сервере на 1 месяц бесплатно\n' +
-          '✅ Персонализировать коллаж\n' +
-          '✅ Получать уведомления о сроке хранения\n\n' +
-          'Предоставить доступ?'
-        );
-        
-        if (!confirmed) {
-          setProcessing(false);
-          return;
-        }
-        
-        // Перенаправляем на страницу предоставления доступа с предзаполненными данными
-        const params = new URLSearchParams({
-          tg_user_id: (user as any).telegramId || user.id,
-          prefill: 'true'
-        });
-        window.location.href = `/rejuvena/generate-link?${params.toString()}`;
+      // Проверяем что все фото загружены
+      const beforePhotos = Object.values(data.before);
+      const afterPhotos = Object.values(data.after);
+      
+      const missingBefore = beforePhotos.filter(p => !p).length;
+      const missingAfter = afterPhotos.filter(p => !p).length;
+      
+      if (missingBefore > 0 || missingAfter > 0) {
+        alert(`Загрузите все фотографии!\nНе хватает: ${missingBefore} фото "До" и ${missingAfter} фото "После"`);
         setProcessing(false);
         return;
       }
       
-      // Собираем только загруженные ряды (хотя бы 1 фото в ряду)
-      const photoTypesOrder: (keyof PhotoSet)[] = ['front', 'left34', 'leftProfile', 'right34', 'rightProfile', 'closeup'];
-      
-      const rowsToInclude: {
-        beforePhoto: string | null;
-        afterPhoto: string | null;
-        photoType: keyof PhotoSet;
-      }[] = [];
-      
-      photoTypesOrder.forEach(photoType => {
-        const hasBefore = !!data.before[photoType];
-        const hasAfter = !!data.after[photoType];
-        
-        // Включаем ряд если есть хотя бы 1 фото
-        if (hasBefore || hasAfter) {
-          rowsToInclude.push({
-            beforePhoto: data.before[photoType] || null,
-            afterPhoto: data.after[photoType] || null,
-            photoType: photoType,
-          });
-        }
-      });
-      
-      if (rowsToInclude.length === 0) {
-        alert('Загрузите хотя бы одну фотографию для создания коллажа!');
-        setProcessing(false);
-        return;
-      }
-      
-      console.log(`🎨 Creating collage with ${rowsToInclude.length} rows...`);
+      console.log('🎨 Creating collage...');
       
       // Отправляем запрос на создание коллажа
       const response = await fetch('https://api.seplitza.ru/api/create-collage', {
@@ -910,19 +813,18 @@ const PhotoDiaryPage: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          rows: rowsToInclude,
-          metadata: photoMetadata,
-          userInfo: {
-            username: user?.email?.split('@')[0] || user?.name || 'Пользователь',
-            realAgeBefore: data.realAgeBefore,
-            realAgeAfter: data.realAgeAfter,
-            weightBefore: data.weightBefore,
-            weightAfter: data.weightAfter,
-            heightBefore: data.heightBefore,
-            heightAfter: data.heightAfter,
-            commentsBefore: data.commentBefore,
-            commentsAfter: data.commentAfter,
-          },
+          beforePhotos: beforePhotos,
+          afterPhotos: afterPhotos,
+          botAgeBefore: data.botAgeBefore,
+          botAgeAfter: data.botAgeAfter,
+          realAgeBefore: data.realAgeBefore,
+          realAgeAfter: data.realAgeAfter,
+          weightBefore: data.weightBefore,
+          weightAfter: data.weightAfter,
+          heightBefore: data.heightBefore,
+          heightAfter: data.heightAfter,
+          commentBefore: data.commentBefore,
+          commentAfter: data.commentAfter,
         }),
       });
 
@@ -933,19 +835,15 @@ const PhotoDiaryPage: React.FC = () => {
       const result = await response.json();
       
       if (result.success && result.collage) {
-        // Скачиваем коллаж с уникальным именем (как в заголовке)
-        const username = user?.email?.split('@')[0] || user?.name || 'Пользователь';
-        const downloadDate = new Date().toISOString().slice(0, 10).replace(/-/g, '.');
-        const filename = `Фотодневник_${username}_${downloadDate}.jpg`;
-        
+        // Скачиваем коллаж
         const link = document.createElement('a');
         link.href = result.collage;
-        link.download = filename;
+        link.download = `rejuvena-collage-${Date.now()}.jpg`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         
-        console.log('✅ Collage downloaded:', filename);
+        console.log('✅ Collage downloaded');
       } else {
         throw new Error('Не удалось создать коллаж');
       }
@@ -1049,36 +947,25 @@ const PhotoDiaryPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Статус доступа пользователя */}
-          <UserAccessStatus 
-            user={user} 
-            onRequestAccess={() => {
-              // Открываем бота для предоставления полного доступа
-              window.open(`https://t.me/photodnevnik_bot?start=grant_access_${user?.id}`, '_blank');
-            }}
-          />
-
-          {/* Якорь на условия хранения */}
+          {/* Правила хранения фотографий */}
           <div className="mb-6 bg-blue-50 border-2 border-blue-300 rounded-lg p-4">
-            <button
-              onClick={() => {
-                const element = document.getElementById('storage-policy');
-                element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              }}
-              className="w-full flex items-center justify-between hover:bg-blue-100 transition-colors rounded p-2"
-            >
-              <div className="flex items-center">
-                <div className="flex-shrink-0 mr-3">
-                  <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <p className="font-bold text-base text-blue-800">Условия хранения фотографий</p>
+            <div className="flex items-start">
+              <div className="flex-shrink-0 mr-3">
+                <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
               </div>
-              <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+              <div className="flex-1 text-sm text-blue-800 space-y-2">
+                <p className="font-bold text-base">Хранение фотографий и автосохранение:</p>
+                <ul className="list-disc list-inside space-y-1 ml-2">
+                  <li><span className="font-semibold">В браузере:</span> сжатые копии оригиналов (50% качество) хранятся локально 24 часа для preview в окне корректировки обрезки</li>
+                  <li><span className="font-semibold">На сервере - оригиналы:</span> необрезанные фото (100% качество) хранятся 1 месяц для возможности ре-обрезки и использования в рекламе</li>
+                  <li><span className="font-semibold">На сервере - обрезанные:</span> финальные фото для коллажа</li>
+                  <li><span className="font-semibold">С оплаченным курсом:</span> на всё время курса + 1 месяц после окончания</li>
+                  <li><span className="font-semibold">Уведомления:</span> мы пришлём напоминания о удалении фото за 7, 3 и 1 день. Вы сможете продлить хранение, оформив курс</li>
+                </ul>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4 mb-4">
@@ -1116,6 +1003,9 @@ const PhotoDiaryPage: React.FC = () => {
                       <span className="text-gray-400 text-sm">Пример</span>
                     </div>
                   </div>
+                  <p className="text-sm font-medium text-blue-800 text-center whitespace-pre-line">
+                    {photoType.label}
+                  </p>
                 </div>
 
                 <div className="flex flex-col items-center">
@@ -1165,7 +1055,7 @@ const PhotoDiaryPage: React.FC = () => {
                     )}
                   </div>
                   {photoMetadata.before[photoType.id] && (
-                    <div className="text-xs text-gray-600 text-center w-full px-1">
+                    <div className="text-xs text-gray-600 text-center w-full px-1 space-y-0.5">
                       <div className="truncate">
                         {photoMetadata.before[photoType.id]?.exifData?.captureDate 
                           ? `📷 ${new Date(photoMetadata.before[photoType.id]!.exifData.captureDate).toLocaleDateString('ru-RU')}`
@@ -1180,7 +1070,7 @@ const PhotoDiaryPage: React.FC = () => {
                       </div>
                     </div>
                   )}
-                  <p className="text-sm font-medium text-blue-800 text-center whitespace-pre-line">
+                  <p className="text-sm font-medium text-blue-800 text-center whitespace-pre-line mt-1">
                     {photoType.label}
                   </p>
                 </div>
@@ -1232,7 +1122,7 @@ const PhotoDiaryPage: React.FC = () => {
                     )}
                   </div>
                   {photoMetadata.after[photoType.id] && (
-                    <div className="text-xs text-gray-600 text-center w-full px-1">
+                    <div className="text-xs text-gray-600 text-center w-full px-1 space-y-0.5">
                       <div className="truncate">
                         {photoMetadata.after[photoType.id]?.exifData?.captureDate 
                           ? `📷 ${new Date(photoMetadata.after[photoType.id]!.exifData.captureDate).toLocaleDateString('ru-RU')}`
@@ -1247,7 +1137,7 @@ const PhotoDiaryPage: React.FC = () => {
                       </div>
                     </div>
                   )}
-                  <p className="text-sm font-medium text-blue-800 text-center whitespace-pre-line">
+                  <p className="text-sm font-medium text-blue-800 text-center whitespace-pre-line mt-1">
                     {photoType.label}
                   </p>
                 </div>
@@ -1339,27 +1229,6 @@ const PhotoDiaryPage: React.FC = () => {
               Фотографии автоматически сохраняются
             </div>
           </div>
-
-          {/* Подробные условия хранения фотографий */}
-          <div id="storage-policy" className="mt-8 bg-blue-50 border-2 border-blue-300 rounded-lg p-4">
-            <div className="flex items-start">
-              <div className="flex-shrink-0 mr-3">
-                <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="flex-1 text-sm text-blue-800 space-y-2">
-                <p className="font-bold text-base">Хранение фотографий и автосохранение:</p>
-                <ul className="list-disc list-inside space-y-1 ml-2">
-                  <li><span className="font-semibold">В браузере:</span> финальные фото (40% качество) + координаты обрезки. Оригиналы в текущей сессии для ре-обрезки</li>
-                  <li><span className="font-semibold">На сервере - оригиналы:</span> необрезанные фото (100% качество) хранятся 1 месяц для возможности ре-обрезки и использования в рекламе</li>
-                  <li><span className="font-semibold">На сервере - обрезанные:</span> финальные фото для коллажа</li>
-                  <li><span className="font-semibold">С оплаченным курсом:</span> на всё время курса + 1 месяц после окончания</li>
-                  <li><span className="font-semibold">Уведомления:</span> мы пришлём напоминания о удалении фото за 7, 3 и 1 день. Вы сможете продлить хранение, оформив курс</li>
-                </ul>
-              </div>
-            </div>
-          </div>
         </main>
 
         {showRules && (
@@ -1419,7 +1288,7 @@ const PhotoDiaryPage: React.FC = () => {
                   <img
                     src={cropImage.dataUrl}
                     alt="Crop preview"
-                    className="border-2 border-gray-300 crop-modal-image"
+                    className="border-2 border-gray-300"
                     style={{ 
                       display: 'block',
                       maxWidth: '85vw',
@@ -1444,8 +1313,7 @@ const PhotoDiaryPage: React.FC = () => {
                       top: `${cropArea.y}px`,
                       width: `${cropArea.width}px`,
                       height: `${cropArea.height}px`,
-                      boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)',
-                      touchAction: 'none' // Отключаем стандартные жесты браузера
+                      boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)'
                     }}
                     onMouseDown={(e) => {
                       e.preventDefault();
@@ -1471,34 +1339,6 @@ const PhotoDiaryPage: React.FC = () => {
                       
                       document.addEventListener('mousemove', handleMove);
                       document.addEventListener('mouseup', handleUp);
-                    }}
-                    onTouchStart={(e) => {
-                      e.preventDefault();
-                      const imgElement = e.currentTarget.parentElement?.querySelector('img');
-                      if (!imgElement) return;
-                      
-                      const imgWidth = imgElement.width;
-                      const imgHeight = imgElement.height;
-                      const rect = imgElement.getBoundingClientRect();
-                      const touch = e.touches[0];
-                      const startX = touch.clientX - rect.left - cropArea.x;
-                      const startY = touch.clientY - rect.top - cropArea.y;
-                      
-                      const handleMove = (e: TouchEvent) => {
-                        e.preventDefault();
-                        const touch = e.touches[0];
-                        const newX = Math.max(0, Math.min(imgWidth - cropArea.width, touch.clientX - rect.left - startX));
-                        const newY = Math.max(0, Math.min(imgHeight - cropArea.height, touch.clientY - rect.top - startY));
-                        setCropArea(prev => ({ ...prev, x: newX, y: newY }));
-                      };
-                      
-                      const handleEnd = () => {
-                        document.removeEventListener('touchmove', handleMove);
-                        document.removeEventListener('touchend', handleEnd);
-                      };
-                      
-                      document.addEventListener('touchmove', handleMove, { passive: false });
-                      document.addEventListener('touchend', handleEnd);
                     }}
                   >
                     <div className="absolute inset-0 flex items-center justify-center text-white text-sm font-bold" style={{ textShadow: '0 0 4px black' }}>
