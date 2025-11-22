@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "157778744017",
+    "project_id": "beautify-man",
+    "storage_bucket": "beautify-man.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:157778744017:android:0f87b47e28fa379ddd2bf0",
+        "android_client_info": {
+          "package_name": "com.beautifyacademy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "157778744017-n4v8ehrdm46900sfs0no8bfbde1nn6sj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.beautifyacademy",
+            "certificate_hash": "9f793d3d72f821650efe7e526a55687fe4dfb95e"
+          }
+        },
+        {
+          "client_id": "157778744017-ud49u1rjupdn68ctg0tco7f2bgchc2tj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQ6Lp_0P4iovluJ8CoUNaC17fCCRZS22A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "157778744017-ud49u1rjupdn68ctg0tco7f2bgchc2tj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

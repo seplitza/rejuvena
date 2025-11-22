@@ -1,0 +1,43 @@
+{
+  "name": "rejuvena-web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "export": "next build && touch out/.nojekyll",
+    "deploy": "npm run export && gh-pages -d out",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^1.9.7",
+    "dayjs": "^1.11.10",
+    "face-api.js": "^0.22.2",
+    "i18next": "^23.7.9",
+    "next": "^14.0.4",
+    "next-redux-wrapper": "^8.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-i18next": "^13.5.0",
+    "react-redux": "^8.1.3",
+    "redux-persist": "^6.0.0",
+    "redux-saga": "^1.2.3"
+  },
+  "devDependencies": {
+    "@types/axios": "^0.9.36",
+    "@types/node": "^18.19.130",
+    "@types/react": "^18.2.46",
+    "@types/react-dom": "^18.2.18",
+    "@types/react-redux": "^7.1.34",
+    "autoprefixer": "^10.4.16",
+    "axios": "^1.13.2",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "^14.0.4",
+    "gh-pages": "^6.1.0",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.3.3"
+  }
+}
