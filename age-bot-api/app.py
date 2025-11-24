@@ -249,27 +249,30 @@ def create_collage():
         row_spacing = 40  # отступ между парами
         border = 40  # рамка по краям
         
+        # Определяем количество пар для коллажа (используем фактическое количество rows)
+        num_pairs = len(rows)
+        
         # Размер коллажа
         pair_width = photo_width * 2 + padding  # две фото + отступ между ними
         collage_width = pair_width + border * 2  # + рамки слева и справа
-        collage_height = (photo_height + row_spacing) * 6 + border * 2 - row_spacing  # 6 пар + рамки - последний отступ
+        collage_height = (photo_height + row_spacing) * num_pairs + border * 2 - row_spacing  # динамическое количество пар
         
         # Создаём белый фон
         collage = Image.new('RGB', (collage_width, collage_height), 'white')
         
-        # Размещаем 6 пар фото (До слева, После справа)
-        for i in range(6):
+        # Размещаем пары фото (До слева, После справа)
+        for i in range(num_pairs):
             y_position = border + i * (photo_height + row_spacing)
             
             # Фото "До" (левое)
-            if before_images[i]:
+            if i < len(before_images) and before_images[i]:
                 img_before = before_images[i].copy()
                 img_before = img_before.resize((photo_width, photo_height), Image.Resampling.LANCZOS)
                 x_before = border
                 collage.paste(img_before, (x_before, y_position))
             
             # Фото "После" (правое)
-            if after_images[i]:
+            if i < len(after_images) and after_images[i]:
                 img_after = after_images[i].copy()
                 img_after = img_after.resize((photo_width, photo_height), Image.Resampling.LANCZOS)
                 x_after = border + photo_width + padding
