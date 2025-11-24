@@ -238,10 +238,12 @@ def create_collage():
                 after_images.append(None)
                 print(f'  ⏭️ Row {idx}: No after photo')
         
-        # Извлекаем userInfo для заголовка и футера
+        # Извлекаем userInfo и metadata
         user_info = data.get('userInfo', {})
+        metadata = data.get('metadata', {})
         username = user_info.get('username', 'Пользователь')
         print(f'📄 UserInfo: {user_info}')
+        print(f'📊 Metadata: {list(metadata.keys())}')
         
         # Создаём вертикальный коллаж с заголовком и футером
         # Размеры одного фото в коллаже (КВАДРАТНЫЕ) - Увеличено для лучшего качества
@@ -249,10 +251,11 @@ def create_collage():
         
         # Отступы (пропорционально увеличены)
         padding = 30  # отступ между фото в паре
-        row_spacing = 60  # отступ между парами
+        row_spacing = 120  # отступ между парами (увеличено для метаданных)
         border = 60  # рамка по краям
         header_height = 120  # высота заголовка
-        footer_height = 450  # высота футера с анкетой (увеличено)
+        footer_height = 500  # высота футера с анкетой
+        metadata_height = 50  # высота для метаданных под фото
         
         # Определяем количество пар
         num_pairs = len(rows)
@@ -302,10 +305,12 @@ def create_collage():
             
             return img.crop((left, top, left + size, top + size))
         
-        # Размещаем пары фото (До слева, После справа)
+        # Размещаем пары фото (До слева, После справа) с метаданными
         photos_start_y = header_height + border
         for i in range(num_pairs):
             y_position = photos_start_y + i * (photo_size + row_spacing)
+            row = rows[i]
+            photo_type = row.get('photoType', 'front')
             
             # Фото "До" (левое)
             if i < len(before_images) and before_images[i]:
@@ -314,6 +319,15 @@ def create_collage():
                 img_before = img_before.resize((photo_size, photo_size), Image.Resampling.LANCZOS)
                 x_before = border
                 collage.paste(img_before, (x_before, y_position))
+                
+                # Метаданные под фото "До"
+                meta_before = metadata.get('before', {}).get(photo_type, {})
+                if meta_before.get('exifData', {}).get('DateTime'):
+                    date_str = meta_before['exifData']['DateTime'][:10].replace(':', '.')
+                    meta_text = f"↓ No EXIF data found (screenshot)"
+                    if date_str and date_str != '0000.00.00':
+                        meta_text = f"↓ Снято: {date_str}"
+                    draw.text((x_before + 10, y_position + photo_size + 10), meta_text, fill='#666666', font=font_small)
             
             # Фото "После" (правое)
             if i < len(after_images) and after_images[i]:
@@ -322,6 +336,15 @@ def create_collage():
                 img_after = img_after.resize((photo_size, photo_size), Image.Resampling.LANCZOS)
                 x_after = border + photo_size + padding
                 collage.paste(img_after, (x_after, y_position))
+                
+                # Метаданные под фото "После"
+                meta_after = metadata.get('after', {}).get(photo_type, {})
+                if meta_after.get('exifData', {}).get('DateTime'):
+                    date_str = meta_after['exifData']['DateTime'][:10].replace(':', '.')
+                    meta_text = f"↓ No EXIF data found (screenshot)"
+                    if date_str and date_str != '0000.00.00':
+                        meta_text = f"↓ Снято: {date_str}"
+                    draw.text((x_after + 10, y_position + photo_size + 10), meta_text, fill='#666666', font=font_small)
         
         # ФУТЕР С АНКЕТОЙ (только заполненные поля)
         footer_y = photos_start_y + photos_height + 60
@@ -392,10 +415,10 @@ def create_collage():
             footer_fields.append(f"Процедуры: {user_info['procedures']}")
         
         # Комментарии (До и После)
-        if user_info.get('commentBefore'):
-            footer_fields.append(f"Комментарий До: {user_info['commentBefore']}")
-        if user_info.get('commentAfter'):
-            footer_fields.append(f"Комментарий После: {user_info['commentAfter']}")
+        if user_info.get('commentsBefore'):
+            footer_fields.append(f"Комментарий До: {user_info['commentsBefore']}")
+        if user_info.get('commentsAfter'):
+            footer_fields.append(f"Комментарий После: {user_info['commentsAfter']}")
         
         print(f'📝 Footer fields: {footer_fields}')
         print(f'📏 Footer position: y={footer_y}, collage_height={collage_height}')
