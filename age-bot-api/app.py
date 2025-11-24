@@ -26,12 +26,12 @@ def load_insightface_model():
     global face_app, model_loaded
     try:
         print('Loading InsightFace model...')
-        # Используем buffalo_sc с явным включением атрибутов (возраст)
-        face_app = FaceAnalysis(name='buffalo_sc', providers=['CPUExecutionProvider'])
-        # allowed_modules=['detection', 'genderage'] для включения определения возраста
+        # Используем buffalo_l с genderage.onnx для определения возраста и пола
+        # Требует ~500MB RAM, используем swap если нужно
+        face_app = FaceAnalysis(name='buffalo_l', providers=['CPUExecutionProvider'])
         face_app.prepare(ctx_id=-1, det_size=(640, 640))
         model_loaded = True
-        print('✅ InsightFace model loaded successfully')
+        print('✅ InsightFace buffalo_l model loaded successfully (with age/gender estimation)')
         return True
     except Exception as e:
         print(f'❌ Failed to load InsightFace model: {e}')
