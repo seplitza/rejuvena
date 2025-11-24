@@ -9,9 +9,10 @@ import os
 import base64
 import io
 import numpy as np
+from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from insightface.app import FaceAnalysis
 
 app = Flask(__name__)
@@ -237,46 +238,98 @@ def create_collage():
                 after_images.append(None)
                 print(f'  ⏭️ Row {idx}: No after photo')
         
-        # Создаём вертикальный коллаж (как на примере)
-        # Формат: 12 рядов (6 пар "До | После")
+        # Извлекаем userInfo для заголовка и футера
+        user_info = data.get('userInfo', {})
+        username = user_info.get('username', 'Пользователь')
         
-        # Размеры одного фото в коллаже
-        photo_width = 480  # ширина одного фото
-        photo_height = 640  # высота одного фото
+        # Создаём вертикальный коллаж с заголовком и футером
+        # Размеры одного фото в коллаже (КВАДРАТНЫЕ)
+        photo_size = 480  # квадратные фото
         
         # Отступы
         padding = 20  # отступ между фото в паре
         row_spacing = 40  # отступ между парами
         border = 40  # рамка по краям
+        header_height = 80  # высота заголовка
+        footer_height = 200  # высота футера с анкетой
         
-        # Определяем количество пар для коллажа (используем фактическое количество rows)
+        # Определяем количество пар
         num_pairs = len(rows)
         
         # Размер коллажа
-        pair_width = photo_width * 2 + padding  # две фото + отступ между ними
-        collage_width = pair_width + border * 2  # + рамки слева и справа
-        collage_height = (photo_height + row_spacing) * num_pairs + border * 2 - row_spacing  # динамическое количество пар
+        pair_width = photo_size * 2 + padding
+        collage_width = pair_width + border * 2
+        photos_height = (photo_size + row_spacing) * num_pairs - row_spacing
+        collage_height = header_height + photos_height + footer_height + border * 2
         
         # Создаём белый фон
         collage = Image.new('RGB', (collage_width, collage_height), 'white')
+        draw = ImageDraw.Draw(collage)
+        
+        # Шрифты
+        try:
+            font_large = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 32)
+            font_normal = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 24)
+            font_small = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 20)
+        except:
+            font_large = ImageFont.load_default()
+            font_normal = ImageFont.load_default()
+            font_small = ImageFont.load_default()
+        
+        # ЗАГОЛОВОК: "Фотодневник | Имя | Дата"
+        current_date = datetime.now().strftime('%d.%m.%Y')
+        header_text = f"Фотодневник | {username} | {current_date}"
+        draw.text((border, 30), header_text, fill='black', font=font_large)
+        
+        # Функция для обрезки изображения в квадрат (crop center)
+        def crop_to_square(img):
+            width, height = img.size
+            size = min(width, height)
+            left = (width - size) // 2
+            top = (height - size) // 2
+            return img.crop((left, top, left + size, top + size))
         
         # Размещаем пары фото (До слева, После справа)
+        photos_start_y = header_height + border
         for i in range(num_pairs):
-            y_position = border + i * (photo_height + row_spacing)
+            y_position = photos_start_y + i * (photo_size + row_spacing)
             
             # Фото "До" (левое)
             if i < len(before_images) and before_images[i]:
                 img_before = before_images[i].copy()
-                img_before = img_before.resize((photo_width, photo_height), Image.Resampling.LANCZOS)
+                img_before = crop_to_square(img_before)  # Квадратное
+                img_before = img_before.resize((photo_size, photo_size), Image.Resampling.LANCZOS)
                 x_before = border
                 collage.paste(img_before, (x_before, y_position))
             
             # Фото "После" (правое)
             if i < len(after_images) and after_images[i]:
                 img_after = after_images[i].copy()
-                img_after = img_after.resize((photo_width, photo_height), Image.Resampling.LANCZOS)
-                x_after = border + photo_width + padding
+                img_after = crop_to_square(img_after)  # Квадратное
+                img_after = img_after.resize((photo_size, photo_size), Image.Resampling.LANCZOS)
+                x_after = border + photo_size + padding
                 collage.paste(img_after, (x_after, y_position))
+        
+        # ФУТЕР С АНКЕТОЙ (только заполненные поля)
+        footer_y = photos_start_y + photos_height + 40
+        draw.text((border, footer_y), "Анкета:", fill='black', font=font_normal)
+        
+        footer_fields = []
+        if user_info.get('realAgeBefore'):
+            footer_fields.append(f"Возраст До: {user_info['realAgeBefore']}")
+        if user_info.get('realAgeAfter'):
+            footer_fields.append(f"Возраст После: {user_info['realAgeAfter']}")
+        if user_info.get('gender'):
+            footer_fields.append(f"Пол: {user_info['gender']}")
+        if user_info.get('skinType'):
+            footer_fields.append(f"Тип кожи: {user_info['skinType']}")
+        if user_info.get('procedures'):
+            footer_fields.append(f"Процедуры: {user_info['procedures']}")
+        
+        line_y = footer_y + 40
+        for field in footer_fields:
+            draw.text((border, line_y), field, fill='black', font=font_small)
+            line_y += 30
         
         # Сохраняем в буфер как JPEG
         output = io.BytesIO()
