@@ -90,19 +90,47 @@ const PhotoDiaryPage: React.FC = () => {
     after: {},
   });
 
-  // Функция сжатия изображения для localStorage
-  const compressImageForStorage = (dataUrl: string | null, quality: number = 0.6): string | null => {
+  // Функция сжатия изображения для localStorage с умным выбором качества
+  // Файлы >2MB сжимаются до 60%, файлы ≤2MB хранятся без изменений
+  const compressImageForStorage = (dataUrl: string | null, forceQuality?: number): string | null => {
     if (!dataUrl) return null;
     
     try {
-      const img = new Image();
-      img.src = dataUrl;
+      // Если указано принудительное качество, используем его
+      if (forceQuality !== undefined) {
+        const img = new Image();
+        img.src = dataUrl;
+        if (!img.complete) return dataUrl;
+        
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return dataUrl;
+        
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        
+        return canvas.toDataURL('image/jpeg', forceQuality);
+      }
       
-      // Ждём загрузки изображения
-      if (!img.complete) {
-        // Если изображение ещё не загружено, возвращаем как есть
+      // Определяем размер файла (base64)
+      const base64Length = dataUrl.length - (dataUrl.indexOf(',') + 1);
+      const sizeInBytes = (base64Length * 3) / 4;
+      const sizeInMB = sizeInBytes / (1024 * 1024);
+      
+      console.log(`📏 Image size: ${sizeInMB.toFixed(2)} MB`);
+      
+      // Если файл ≤2MB, возвращаем без сжатия
+      if (sizeInMB <= 2) {
+        console.log('✅ File ≤2MB, storing without compression');
         return dataUrl;
       }
+      
+      // Если >2MB, сжимаем до 60%
+      console.log('🗜️ File >2MB, compressing to 60%');
+      const img = new Image();
+      img.src = dataUrl;
+      if (!img.complete) return dataUrl;
       
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
@@ -112,11 +140,10 @@ const PhotoDiaryPage: React.FC = () => {
       canvas.height = img.height;
       ctx.drawImage(img, 0, 0);
       
-      // Сжимаем с указанным качеством
-      return canvas.toDataURL('image/jpeg', quality);
+      return canvas.toDataURL('image/jpeg', 0.6);
     } catch (error) {
       console.error('Failed to compress image:', error);
-      return dataUrl; // Возвращаем оригинал если не удалось сжать
+      return dataUrl;
     }
   };
 
@@ -287,24 +314,25 @@ const PhotoDiaryPage: React.FC = () => {
         
         localStorage.setItem(storageKey, JSON.stringify(compressedData));
         
-        // Сохраняем оригиналы отдельно (сжатые с качеством 75% для экономии места) для корректировки в течение 24 часов
+        // Сохраняем оригиналы отдельно для корректировки в течение 24 часов
+        // >2MB сжимаются до 60%, ≤2MB хранятся без изменений
         const originalsData = {
           originalPhotos: {
             before: {
-              front: compressImageForStorage(originalPhotos.before.front, 0.75),
-              left34: compressImageForStorage(originalPhotos.before.left34, 0.75),
-              leftProfile: compressImageForStorage(originalPhotos.before.leftProfile, 0.75),
-              right34: compressImageForStorage(originalPhotos.before.right34, 0.75),
-              rightProfile: compressImageForStorage(originalPhotos.before.rightProfile, 0.75),
-              closeup: compressImageForStorage(originalPhotos.before.closeup, 0.75),
+              front: compressImageForStorage(originalPhotos.before.front),
+              left34: compressImageForStorage(originalPhotos.before.left34),
+              leftProfile: compressImageForStorage(originalPhotos.before.leftProfile),
+              right34: compressImageForStorage(originalPhotos.before.right34),
+              rightProfile: compressImageForStorage(originalPhotos.before.rightProfile),
+              closeup: compressImageForStorage(originalPhotos.before.closeup),
             },
             after: {
-              front: compressImageForStorage(originalPhotos.after.front, 0.75),
-              left34: compressImageForStorage(originalPhotos.after.left34, 0.75),
-              leftProfile: compressImageForStorage(originalPhotos.after.leftProfile, 0.75),
-              right34: compressImageForStorage(originalPhotos.after.right34, 0.75),
-              rightProfile: compressImageForStorage(originalPhotos.after.rightProfile, 0.75),
-              closeup: compressImageForStorage(originalPhotos.after.closeup, 0.75),
+              front: compressImageForStorage(originalPhotos.after.front),
+              left34: compressImageForStorage(originalPhotos.after.left34),
+              leftProfile: compressImageForStorage(originalPhotos.after.leftProfile),
+              right34: compressImageForStorage(originalPhotos.after.right34),
+              rightProfile: compressImageForStorage(originalPhotos.after.rightProfile),
+              closeup: compressImageForStorage(originalPhotos.after.closeup),
             },
           },
           timestamp: Date.now()
