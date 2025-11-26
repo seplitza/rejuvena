@@ -322,12 +322,18 @@ def create_collage():
                 
                 # Метаданные под фото "До"
                 meta_before = metadata.get('before', {}).get(photo_type, {})
-                if meta_before.get('exifData', {}).get('DateTime'):
-                    date_str = meta_before['exifData']['DateTime'][:10].replace(':', '.')
+                exif_before = meta_before.get('exifData', {})
+                date_time = exif_before.get('DateTime') or exif_before.get('captureDate')
+                if date_time:
+                    # DateTime format: "YYYY:MM:DD HH:MM:SS" or ISO
+                    if ':' in date_time[:10]:
+                        date_str = date_time[:10].replace(':', '.')
+                    else:
+                        date_str = date_time[:10].replace('-', '.')
+                    meta_text = f"↓ Снято: {date_str}"
+                else:
                     meta_text = f"↓ No EXIF data found (screenshot)"
-                    if date_str and date_str != '0000.00.00':
-                        meta_text = f"↓ Снято: {date_str}"
-                    draw.text((x_before + 10, y_position + photo_size + 10), meta_text, fill='#666666', font=font_small)
+                draw.text((x_before + 10, y_position + photo_size + 10), meta_text, fill='#666666', font=font_small)
             
             # Фото "После" (правое)
             if i < len(after_images) and after_images[i]:
@@ -339,12 +345,18 @@ def create_collage():
                 
                 # Метаданные под фото "После"
                 meta_after = metadata.get('after', {}).get(photo_type, {})
-                if meta_after.get('exifData', {}).get('DateTime'):
-                    date_str = meta_after['exifData']['DateTime'][:10].replace(':', '.')
+                exif_after = meta_after.get('exifData', {})
+                date_time = exif_after.get('DateTime') or exif_after.get('captureDate')
+                if date_time:
+                    # DateTime format: "YYYY:MM:DD HH:MM:SS" or ISO
+                    if ':' in date_time[:10]:
+                        date_str = date_time[:10].replace(':', '.')
+                    else:
+                        date_str = date_time[:10].replace('-', '.')
+                    meta_text = f"↓ Снято: {date_str}"
+                else:
                     meta_text = f"↓ No EXIF data found (screenshot)"
-                    if date_str and date_str != '0000.00.00':
-                        meta_text = f"↓ Снято: {date_str}"
-                    draw.text((x_after + 10, y_position + photo_size + 10), meta_text, fill='#666666', font=font_small)
+                draw.text((x_after + 10, y_position + photo_size + 10), meta_text, fill='#666666', font=font_small)
         
         # ФУТЕР С АНКЕТОЙ (только заполненные поля)
         footer_y = photos_start_y + photos_height + 60

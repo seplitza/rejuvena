@@ -215,6 +215,7 @@ const PhotoDiaryPage: React.FC = () => {
           const captureDate = new Date(`${datePart}T${timePart}`).toISOString();
           
           exifData = {
+            DateTime: dateTimeOriginal,
             captureDate,
             camera: exifTags?.Make ? `${exifTags.Make} ${exifTags.Model || ''}`.trim() : null,
             orientation: exifTags?.Orientation
@@ -794,8 +795,8 @@ const PhotoDiaryPage: React.FC = () => {
         // Конвертируем в base64 с качеством 95% (высокое качество для сервера)
         const croppedHighQuality = cropCanvas.toDataURL('image/jpeg', 0.95);
         
-        // Создаём уменьшенную версию для отображения (максимум 400x400px под размер окошка)
-        const maxDisplaySize = 400;
+        // Создаём уменьшенную версию для отображения (максимум 800x800px для коллажа)
+        const maxDisplaySize = 800;
         const scale = Math.min(1, maxDisplaySize / Math.max(cropArea.width, cropArea.height));
         const displayWidth = Math.round(cropArea.width * scale);
         const displayHeight = Math.round(cropArea.height * scale);
@@ -931,9 +932,11 @@ const PhotoDiaryPage: React.FC = () => {
       
       if (result.success && result.collage) {
         // Скачиваем коллаж
+        const username = user?.email?.split('@')[0] || user?.name || 'user';
+        const dateStr = new Date().toLocaleDateString('ru-RU').replace(/\./g, '-');
         const link = document.createElement('a');
         link.href = result.collage;
-        link.download = `rejuvena-collage-${Date.now()}.jpg`;
+        link.download = `Фотодневник_${username}_${dateStr}.jpg`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
