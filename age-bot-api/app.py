@@ -324,6 +324,8 @@ def create_collage():
                 meta_before = metadata.get('before', {}).get(photo_type, {})
                 exif_before = meta_before.get('exifData', {})
                 date_time = exif_before.get('DateTime') or exif_before.get('captureDate')
+                upload_date = meta_before.get('uploadDate')
+                
                 if date_time:
                     # DateTime format: "YYYY:MM:DD HH:MM:SS" or ISO
                     if ':' in date_time[:10]:
@@ -331,6 +333,10 @@ def create_collage():
                     else:
                         date_str = date_time[:10].replace('-', '.')
                     meta_text = f"↓ Снято: {date_str}"
+                elif upload_date:
+                    # Use upload date as fallback (ISO format)
+                    upload_str = upload_date[:10].replace('-', '.')
+                    meta_text = f"↓ Загружено: {upload_str}"
                 else:
                     meta_text = f"↓ No EXIF data found (screenshot)"
                 draw.text((x_before + 10, y_position + photo_size + 10), meta_text, fill='#666666', font=font_small)
@@ -347,6 +353,8 @@ def create_collage():
                 meta_after = metadata.get('after', {}).get(photo_type, {})
                 exif_after = meta_after.get('exifData', {})
                 date_time = exif_after.get('DateTime') or exif_after.get('captureDate')
+                upload_date = meta_after.get('uploadDate')
+                
                 if date_time:
                     # DateTime format: "YYYY:MM:DD HH:MM:SS" or ISO
                     if ':' in date_time[:10]:
@@ -354,6 +362,10 @@ def create_collage():
                     else:
                         date_str = date_time[:10].replace('-', '.')
                     meta_text = f"↓ Снято: {date_str}"
+                elif upload_date:
+                    # Use upload date as fallback (ISO format)
+                    upload_str = upload_date[:10].replace('-', '.')
+                    meta_text = f"↓ Загружено: {upload_str}"
                 else:
                     meta_text = f"↓ No EXIF data found (screenshot)"
                 draw.text((x_after + 10, y_position + photo_size + 10), meta_text, fill='#666666', font=font_small)
