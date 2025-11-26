@@ -45,6 +45,7 @@ const PhotoDiaryPage: React.FC = () => {
   const [processing, setProcessing] = useState(false);
   const [cropError, setCropError] = useState<string | null>(null);
   const isDataLoadedRef = useRef(false); // Синхронный флаг что данные загружены
+  const [showRegistrationPrompt, setShowRegistrationPrompt] = useState(false);
   
   // State для ручной обрезки
   const [showCropModal, setShowCropModal] = useState(false);
@@ -357,12 +358,20 @@ const PhotoDiaryPage: React.FC = () => {
     }
   }, [data, originalPhotos, photoMetadata, isAuthenticated, user]);
 
-  // Проверка авторизации (только redirect)
+  // Проверка авторизации (отложенный промпт на 3-м фото)
   useEffect(() => {
     if (!isAuthenticated) {
-      router.push('/auth/login');
+      // Не редиректим сразу - даём пользователю попробовать сервис
+      const userId = 'guest';
+      const uploadCountKey = `rejuvena_upload_count_${userId}`;
+      const currentCount = parseInt(localStorage.getItem(uploadCountKey) || '0', 10);
+      
+      // Показываем промпт регистрации только после 3-го фото
+      if (currentCount >= 3) {
+        setShowRegistrationPrompt(true);
+      }
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated]);
 
   // Загрузка данных из localStorage (только один раз при монтировании)
   useEffect(() => {
@@ -476,8 +485,8 @@ const PhotoDiaryPage: React.FC = () => {
           const ctx = canvas.getContext('2d')!;
 
           // Расчет кропа с учетом отступов
-          // Для closeup (6й кадр) - без отступов (0%), для остальных - 20% сверху
-          const topPadding = photoType === 'closeup' ? 0 : 0.20; // 20% сверху для стандартных кадров
+          // Для closeup (6й кадр) - без отступов (0%), для остальных - 10% сверху (UX improvement from 5ced541)
+          const topPadding = photoType === 'closeup' ? 0 : 0.10; // 10% сверху для стандартных кадров
           const bottomPadding = photoType === 'closeup' ? 0 : 0.15; // 15% снизу для стандартных кадров
           
           // Высота области от верха лица до низа с отступами
@@ -621,6 +630,13 @@ const PhotoDiaryPage: React.FC = () => {
     setProcessing(true);
 
     try {
+      // Увеличиваем счётчик загрузок (для отложенного промпта регистрации)
+      const userId = user?.id || 'guest';
+      const uploadCountKey = `rejuvena_upload_count_${userId}`;
+      const currentCount = parseInt(localStorage.getItem(uploadCountKey) || '0', 10);
+      localStorage.setItem(uploadCountKey, String(currentCount + 1));
+      console.log(`📊 Upload count: ${currentCount + 1}`);
+      
       // Читаем файл
       const reader = new FileReader();
       reader.onload = async (e) => {
@@ -935,22 +951,63 @@ const PhotoDiaryPage: React.FC = () => {
     }
   };
 
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Загрузка...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <>
       <Head>
         <title>Фотодневник - Rejuvena</title>
       </Head>
+      
+      {/* Промпт регистрации на 3-м фото */}
+      {showRegistrationPrompt && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-3">
+              🎉 Отличное начало!
+            </h3>
+            <p className="text-gray-700 mb-4">
+              Вы загрузили уже 3 фото. Чтобы продолжить и получить доступ ко всем функциям:
+            </p>
+            <ul className="text-sm text-gray-600 mb-4 space-y-2">
+              <li>✅ Генерация персональной ссылки с вашим username</li>
+              <li>✅ Уведомления об удалении фото (за 7, 3 и 1 день)</li>
+              <li>✅ Сохранение прогресса в облаке</li>
+              <li>✅ Доступ к истории фотодневника</li>
+            </ul>
+            <p className="text-sm text-gray-600 mb-4">
+              После регистрации вы сможете настроить уведомления Telegram.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowRegistrationPrompt(false);
+                  // Redirect to generate-link with prefill (UX improvement from 5ced541)
+                  const userId = user?.id || 'guest';
+                  const username = (user as any)?.username || '';
+                  router.push(`/generate-link?prefill=true&tg_user_id=${userId}&tg_username=${username}`);
+                }}
+                className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Настроить доступ
+              </button>
+              <button
+                onClick={() => {
+                  setShowRegistrationPrompt(false);
+                  router.push('/auth/login');
+                }}
+                className="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Войти
+              </button>
+            </div>
+            <button
+              onClick={() => setShowRegistrationPrompt(false)}
+              className="mt-3 w-full text-sm text-gray-500 hover:text-gray-700"
+            >
+              Продолжить без регистрации
+            </button>
+          </div>
+        </div>
+      )}
       
       <div className="min-h-screen bg-white">
         <header className="bg-white border-b">
@@ -1417,7 +1474,8 @@ const PhotoDiaryPage: React.FC = () => {
                       top: `${cropArea.y}px`,
                       width: `${cropArea.width}px`,
                       height: `${cropArea.height}px`,
-                      boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)'
+                      boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)',
+                      touchAction: 'none'
                     }}
                     onMouseDown={(e) => {
                       e.preventDefault();
@@ -1443,6 +1501,34 @@ const PhotoDiaryPage: React.FC = () => {
                       
                       document.addEventListener('mousemove', handleMove);
                       document.addEventListener('mouseup', handleUp);
+                    }}
+                    onTouchStart={(e) => {
+                      e.preventDefault();
+                      const imgElement = e.currentTarget.parentElement?.querySelector('img');
+                      if (!imgElement) return;
+                      
+                      const imgWidth = imgElement.width;
+                      const imgHeight = imgElement.height;
+                      const rect = imgElement.getBoundingClientRect();
+                      const touch = e.touches[0];
+                      const startX = touch.clientX - rect.left - cropArea.x;
+                      const startY = touch.clientY - rect.top - cropArea.y;
+                      
+                      const handleTouchMove = (e: TouchEvent) => {
+                        e.preventDefault();
+                        const touch = e.touches[0];
+                        const newX = Math.max(0, Math.min(imgWidth - cropArea.width, touch.clientX - rect.left - startX));
+                        const newY = Math.max(0, Math.min(imgHeight - cropArea.height, touch.clientY - rect.top - startY));
+                        setCropArea(prev => ({ ...prev, x: newX, y: newY }));
+                      };
+                      
+                      const handleTouchEnd = () => {
+                        document.removeEventListener('touchmove', handleTouchMove);
+                        document.removeEventListener('touchend', handleTouchEnd);
+                      };
+                      
+                      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+                      document.addEventListener('touchend', handleTouchEnd);
                     }}
                   >
                     <div className="absolute inset-0 flex items-center justify-center text-white text-sm font-bold" style={{ textShadow: '0 0 4px black' }}>
