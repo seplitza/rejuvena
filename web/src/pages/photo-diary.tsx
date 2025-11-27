@@ -1247,7 +1247,7 @@ const PhotoDiaryPage: React.FC = () => {
                           </label>
                           <button
                             onClick={() => openCropModal('before', photoType.id)}
-                            className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:underline"
+                            className="text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:underline"
                             disabled={processing}
                           >
                             Корректировать
@@ -1273,7 +1273,7 @@ const PhotoDiaryPage: React.FC = () => {
                     )}
                   </div>
                   {photoMetadata.before[photoType.id] && (
-                    <div className="text-xs text-gray-600 text-center w-full px-1 space-y-0.5">
+                    <div className="text-[11px] sm:text-xs text-gray-600 text-center w-full px-1 space-y-0.5">
                       <div className="truncate">
                         {photoMetadata.before[photoType.id]?.exifData?.captureDate 
                           ? `Снято: ${new Date(photoMetadata.before[photoType.id]!.exifData.captureDate).toLocaleDateString('ru-RU')}`
@@ -1314,7 +1314,7 @@ const PhotoDiaryPage: React.FC = () => {
                           </label>
                           <button
                             onClick={() => openCropModal('after', photoType.id)}
-                            className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:underline"
+                            className="text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:underline"
                             disabled={processing}
                           >
                             Корректировать
@@ -1340,7 +1340,7 @@ const PhotoDiaryPage: React.FC = () => {
                     )}
                   </div>
                   {photoMetadata.after[photoType.id] && (
-                    <div className="text-xs text-gray-600 text-center w-full px-1 space-y-0.5">
+                    <div className="text-[11px] sm:text-xs text-gray-600 text-center w-full px-1 space-y-0.5">
                       <div className="truncate">
                         {photoMetadata.after[photoType.id]?.exifData?.captureDate 
                           ? `Снято: ${new Date(photoMetadata.after[photoType.id]!.exifData.captureDate).toLocaleDateString('ru-RU')}`
