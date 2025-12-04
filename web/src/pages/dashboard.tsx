@@ -1,9 +1,12 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useAppSelector } from '../store/hooks';
+import { useAppSelector, useAppDispatch } from '../store/hooks';
+import { logout } from '../store/modules/auth/slice';
+import { AuthTokenManager } from '../api';
 
 const DashboardPage: React.FC = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
@@ -34,10 +37,14 @@ const DashboardPage: React.FC = () => {
           </h1>
           <button
             onClick={() => {
-              localStorage.removeItem('authToken');
+              // Clear auth state in Redux
+              dispatch(logout());
+              // Clear token from localStorage
+              AuthTokenManager.remove();
+              // Redirect to login page
               router.push('/auth/login');
             }}
-            className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+            className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
           >
             Выйти
           </button>
