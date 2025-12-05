@@ -60,3 +60,9 @@ export const get_notification_count = '/notification/getnotificationcount';
 // Feedback
 export const send_feedback = '/feedback/sendfeedback';
 export const send_bug_report = '/feedback/sendbugreport';
+
+// Marathon / Courses
+export const get_marathons_guest_user = '/marathon/GetMarathonsGuestUser';
+export const get_demo_course_list = '/marathon/GetDemoCourseList';
+export const get_course_plan = '/marathon/getcourseplan';
+export const create_order = '/Order/CreateOrder';
