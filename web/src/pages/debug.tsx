@@ -28,6 +28,40 @@ export default function Debug() {
     }
   };
 
+  const testOrdersAPI = async () => {
+    setTesting(true);
+    setTestResult(null);
+    
+    try {
+      const token = localStorage.getItem('auth_token');
+      console.log('Testing Orders API with token:', token ? 'Present' : 'Missing');
+      console.log('Full API URL:', `${process.env.NEXT_PUBLIC_API_URL}${endpoints.get_order_list}`);
+      
+      const timeZoneOffSet = new Date().getTimezoneOffset();
+      const response = await request.get(endpoints.get_order_list, { 
+        params: { timeZoneOffSet } 
+      });
+      
+      setTestResult({ 
+        success: true, 
+        endpoint: 'get_order_list',
+        data: response,
+        token: token ? 'Present' : 'Missing'
+      });
+      console.log('✅ Orders API Test Success:', response);
+    } catch (error: any) {
+      setTestResult({ 
+        success: false, 
+        endpoint: 'get_order_list',
+        error: error,
+        token: localStorage.getItem('auth_token') ? 'Present' : 'Missing'
+      });
+      console.error('❌ Orders API Test Failed:', error);
+    } finally {
+      setTesting(false);
+    }
+  };
+
   return (
     <>
       <Head>
@@ -49,20 +83,31 @@ export default function Debug() {
 
           <div className="bg-white rounded-lg shadow p-6 mb-6">
             <h2 className="text-xl font-semibold mb-4">API Connection Test</h2>
-            <button
-              onClick={testAPI}
-              disabled={testing}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
-            >
-              {testing ? 'Testing...' : 'Test API Connection'}
-            </button>
+            <div className="flex gap-4 mb-4">
+              <button
+                onClick={testAPI}
+                disabled={testing}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+              >
+                {testing ? 'Testing...' : 'Test General API'}
+              </button>
+              <button
+                onClick={testOrdersAPI}
+                disabled={testing}
+                className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400"
+              >
+                {testing ? 'Testing...' : 'Test Orders API'}
+              </button>
+            </div>
             
             {testResult && (
               <div className={`mt-4 p-4 rounded ${testResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
                 <h3 className="font-semibold mb-2">
                   {testResult.success ? '✅ Success' : '❌ Failed'}
+                  {testResult.endpoint && ` - ${testResult.endpoint}`}
+                  {testResult.token && ` (Token: ${testResult.token})`}
                 </h3>
-                <pre className="text-xs overflow-auto">
+                <pre className="text-xs overflow-auto max-h-96">
                   {JSON.stringify(testResult.success ? testResult.data : testResult.error, null, 2)}
                 </pre>
               </div>
