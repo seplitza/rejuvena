@@ -1,4 +1,5 @@
 import React from 'react';
+import { translations, type LanguageCode } from '../../utils/i18n';
 
 interface CourseCardProps {
   course: {
@@ -15,11 +16,13 @@ interface CourseCardProps {
     isFree?: boolean;
     productType?: string;
   };
+  language: LanguageCode;
   onJoin: () => void;
   onDetails: () => void;
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ course, onJoin, onDetails }) => {
+const CourseCard: React.FC<CourseCardProps> = ({ course, language, onJoin, onDetails }) => {
+  const t = translations[language];
   return (
     <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-gray-100">
       {/* Header с изображением */}
@@ -62,14 +65,14 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, onJoin, onDetails }) =>
         {/* Cost */}
         {!course.isFree && course.priceFrom > 0 && (
           <p className="text-sm text-gray-700 font-medium mb-2">
-            Подписки от <span className="font-bold text-[#1e3a8a]">{course.priceFrom} {course.currency}</span>
+            {t.subscriptionsFrom} <span className="font-bold text-[#1e3a8a]">{course.priceFrom} {course.currency}</span>
           </p>
         )}
 
         {/* Call to Action for Free Courses */}
         {course.isFree && (
           <p className="text-base font-bold text-red-600 mb-4 uppercase">
-            Попробуй. Старт не требует оплаты
+            {t.freeCourseCall}
           </p>
         )}
 
@@ -79,13 +82,13 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, onJoin, onDetails }) =>
             onClick={onJoin}
             className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-sm uppercase"
           >
-            Присоединиться
+            {t.join}
           </button>
           <button
             onClick={onDetails}
             className="flex-1 bg-white border-2 border-[#1e3a8a] text-[#1e3a8a] font-bold py-3 px-4 rounded-full hover:bg-blue-50 transition-all duration-300 text-sm uppercase"
           >
-            Подробнее
+            {t.learnMore}
           </button>
         </div>
       </div>

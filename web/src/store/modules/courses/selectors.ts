@@ -52,6 +52,22 @@ export const selectAllCourses = createSelector(
   (available, demo) => [...available, ...demo]
 );
 
+// Language selectors
+export const selectSelectedLanguage = createSelector(
+  [selectCoursesState],
+  (courses) => courses.selectedLanguage
+);
+
+export const selectAvailableCoursesByLanguage = createSelector(
+  [selectAvailableCourses, selectSelectedLanguage],
+  (courses, language) => courses.filter(course => course.languageCulture === language)
+);
+
+export const selectDemoCoursesByLanguage = createSelector(
+  [selectDemoCourses, selectSelectedLanguage],
+  (courses, language) => courses.filter(course => course.languageCulture === language)
+);
+
 export const selectLoadingCourses = createSelector(
   [selectCoursesState],
   (courses) => courses.loadingCourses

@@ -110,6 +110,9 @@ interface CoursesState {
   demoCourses: Order[];
   loadingCourses: boolean;
   coursesError: string | null;
+  
+  // Language filter
+  selectedLanguage: 'ru' | 'en' | 'es';
 
   // Selected course details
   selectedCourse: CourseDetail | null;
@@ -132,6 +135,7 @@ const initialState: CoursesState = {
   demoCourses: [],
   loadingCourses: false,
   coursesError: null,
+  selectedLanguage: 'ru',
 
   selectedCourse: null,
   coursePlans: [],
@@ -178,6 +182,9 @@ const coursesSlice = createSlice({
     setCoursesError(state, action: PayloadAction<string | null>) {
       state.coursesError = action.payload;
       state.loadingCourses = false;
+    },
+    setSelectedLanguage(state, action: PayloadAction<'ru' | 'en' | 'es'>) {
+      state.selectedLanguage = action.payload;
     },
 
     // Course Details
@@ -232,6 +239,7 @@ export const {
   setDemoCourses,
   setLoadingCourses,
   setCoursesError,
+  setSelectedLanguage,
   setSelectedCourse,
   setCoursePlans,
   setLoadingDetails,

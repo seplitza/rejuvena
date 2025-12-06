@@ -1,4 +1,5 @@
 import React from 'react';
+import { translations, type LanguageCode } from '../../utils/i18n';
 
 interface MyCourseCardProps {
   course: {
@@ -16,12 +17,15 @@ interface MyCourseCardProps {
     isDemo?: boolean;
     cost?: number;
     productType?: string;
+    currency?: string;
   };
+  language: LanguageCode;
   onStart: () => void;
   onLearnMore: () => void;
 }
 
-const MyCourseCard: React.FC<MyCourseCardProps> = ({ course, onStart, onLearnMore }) => {
+const MyCourseCard: React.FC<MyCourseCardProps> = ({ course, language, onStart, onLearnMore }) => {
+  const t = translations[language];
   return (
     <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-gray-100">
       {/* Header с иконкой */}
@@ -62,7 +66,7 @@ const MyCourseCard: React.FC<MyCourseCardProps> = ({ course, onStart, onLearnMor
         {/* Cost */}
         {!course.isFree && course.cost && (
           <p className="text-sm text-gray-700 font-medium mb-4">
-            Подписки от <span className="font-bold text-[#1e3a8a]">{course.cost} ₽</span>
+            {t.subscriptionsFrom} <span className="font-bold text-[#1e3a8a]">{course.cost} {course.currency || '₽'}</span>
           </p>
         )}
 
@@ -70,7 +74,7 @@ const MyCourseCard: React.FC<MyCourseCardProps> = ({ course, onStart, onLearnMor
         <div className="mb-4">
           <div className="flex justify-between items-center mb-2">
             <span className="text-xs text-gray-600 font-medium">
-              Прогресс: {course.completedDays} из {course.totalDays} дней
+              {t.progress}: {course.completedDays} {t.of} {course.totalDays} {t.days}
             </span>
             <span className="text-xs font-bold text-[#1e3a8a]">
               {course.progress}%
@@ -90,13 +94,13 @@ const MyCourseCard: React.FC<MyCourseCardProps> = ({ course, onStart, onLearnMor
             onClick={onStart}
             className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 px-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-sm uppercase"
           >
-            ПРИСТУПИТЬ
+            {t.start}
           </button>
           <button
             onClick={onLearnMore}
             className="flex-1 bg-white border-2 border-[#1e3a8a] text-[#1e3a8a] font-bold py-3 px-4 rounded-full hover:bg-blue-50 transition-all duration-300 text-sm uppercase"
           >
-            ПОДРОБНЕЕ
+            {t.learnMore}
           </button>
         </div>
       </div>

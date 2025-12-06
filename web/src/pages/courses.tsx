@@ -9,18 +9,21 @@ import {
   fetchMarathon,
   createOrder,
   purchaseCourse as purchaseCourseAction,
+  setSelectedLanguage,
 } from '../store/modules/courses/slice';
 import {
   selectCoursesWithProgress,
-  selectAvailableCourses,
-  selectDemoCourses,
+  selectAvailableCoursesByLanguage,
+  selectDemoCoursesByLanguage,
   selectLoadingOrders,
   selectLoadingCourses,
   selectSelectedCourse,
+  selectSelectedLanguage,
 } from '../store/modules/courses/selectors';
 import MyCourseCard from '../components/courses/MyCourseCard';
 import CourseCard from '../components/courses/CourseCard';
 import CourseDetailModal from '../components/courses/CourseDetailModal';
+import { translations, getCurrency, getDurationDescription, type LanguageCode } from '../utils/i18n';
 
 const CoursesPage: React.FC = () => {
   const router = useRouter();
@@ -30,11 +33,16 @@ const CoursesPage: React.FC = () => {
 
   // Redux selectors
   const myCoursesWithProgress = useAppSelector(selectCoursesWithProgress);
-  const availableCourses = useAppSelector(selectAvailableCourses);
-  const demoCourses = useAppSelector(selectDemoCourses);
+  const availableCourses = useAppSelector(selectAvailableCoursesByLanguage);
+  const demoCourses = useAppSelector(selectDemoCoursesByLanguage);
   const loadingOrders = useAppSelector(selectLoadingOrders);
   const loadingCourses = useAppSelector(selectLoadingCourses);
   const courseDetails = useAppSelector(selectSelectedCourse);
+  const selectedLanguage = useAppSelector(selectSelectedLanguage);
+  
+  // Get translations
+  const t = translations[selectedLanguage];
+  const currency = getCurrency(selectedLanguage);
 
   // Fetch data on mount
   useEffect(() => {
@@ -112,12 +120,47 @@ const CoursesPage: React.FC = () => {
           <h1 className="text-3xl font-bold text-[#1e3a8a]">
             Rejuvena
           </h1>
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
-          >
-            Назад
-          </button>
+          <div className="flex items-center gap-4">
+            {/* Language Switcher */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => dispatch(setSelectedLanguage('ru'))}
+                className={`px-3 py-1 rounded-md font-medium transition-colors ${
+                  selectedLanguage === 'ru'
+                    ? 'bg-[#1e3a8a] text-white'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                RU
+              </button>
+              <button
+                onClick={() => dispatch(setSelectedLanguage('en'))}
+                className={`px-3 py-1 rounded-md font-medium transition-colors ${
+                  selectedLanguage === 'en'
+                    ? 'bg-[#1e3a8a] text-white'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                EN
+              </button>
+              <button
+                onClick={() => dispatch(setSelectedLanguage('es'))}
+                className={`px-3 py-1 rounded-md font-medium transition-colors ${
+                  selectedLanguage === 'es'
+                    ? 'bg-[#1e3a8a] text-white'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                ES
+              </button>
+            </div>
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+            >
+              ← {selectedLanguage === 'ru' ? 'Назад к панели' : selectedLanguage === 'en' ? 'Back to Dashboard' : 'Volver al Panel'}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -125,28 +168,27 @@ const CoursesPage: React.FC = () => {
         {/* Мои курсы - секция активных курсов */}
         <section className="mb-12">
           <h2 className="text-3xl font-bold text-center text-[#1e3a8a] mb-8 uppercase tracking-wider">
-            МОИ КУРСЫ
+            {t.myCourses}
           </h2>
           
           {loadingOrders ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Загрузка ваших курсов...</p>
+              <p className="mt-4 text-gray-600">{t.loadingMyCourses}</p>
             </div>
           ) : myCoursesWithProgress.length === 0 ? (
             <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
               <svg className="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">У вас пока нет активных курсов</h3>
-              <p className="text-gray-600">Выберите курс из доступных ниже</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">{t.noCourses}</h3>
+              <p className="text-gray-600">{t.selectCourse}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {myCoursesWithProgress.map((order) => {
                 const isFree = order.cost === 0 || order.isFree;
-                const dayText = order.days === 1 ? 'день' : order.days >= 2 && order.days <= 4 ? 'дня' : 'дней';
-                const fallbackDescription = `${order.days || 0} ${dayText} обучения + курсы практики`;
+                const fallbackDescription = getDurationDescription(order.days || 0, selectedLanguage);
                 
                 return (
                   <MyCourseCard
@@ -165,7 +207,9 @@ const CoursesPage: React.FC = () => {
                       isDemo: order.subscriptionType === 'Trial',
                       cost: order.cost,
                       productType: order.productType || order.courseType,
+                      currency: currency,
                     }}
+                    language={selectedLanguage}
                     onStart={() => handleStartCourse(order.marathonId)}
                     onLearnMore={() => handleCourseDetails(order)}
                   />
@@ -178,24 +222,23 @@ const CoursesPage: React.FC = () => {
         {/* Доступные курсы */}
         <section>
           <h2 className="text-3xl font-bold text-center text-[#1e3a8a] mb-8 uppercase tracking-wider">
-            ДОСТУПНЫЕ КУРСЫ
+            {t.availableCourses}
           </h2>
           
           {loadingCourses ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Загрузка доступных курсов...</p>
+              <p className="mt-4 text-gray-600">{t.loadingAvailableCourses}</p>
             </div>
           ) : allAvailableCourses.length === 0 ? (
             <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-              <p className="text-gray-600">Нет доступных курсов</p>
+              <p className="text-gray-600">{t.noAvailableCourses}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {allAvailableCourses.map((course) => {
                 const isFree = course.cost === 0 || course.isFree;
-                const dayText = course.days === 1 ? 'день' : course.days >= 2 && course.days <= 4 ? 'дня' : 'дней';
-                const durationDescription = `${course.days || 0} ${dayText} обучения + курсы практики`;
+                const durationDescription = getDurationDescription(course.days || 0, selectedLanguage);
                 
                 return (
                   <CourseCard
@@ -206,7 +249,7 @@ const CoursesPage: React.FC = () => {
                       subtitle: course.subTitle,
                       description: durationDescription,
                       priceFrom: course.cost || 0,
-                      currency: '₽',
+                      currency: currency,
                       imageUrl: course.imagePath || '/images/courses/default.jpg',
                       duration: course.days || 0,
                       level: 'beginner',
@@ -214,6 +257,7 @@ const CoursesPage: React.FC = () => {
                       isFree: isFree,
                       productType: course.productType || course.courseType,
                     }}
+                    language={selectedLanguage}
                     onJoin={() => handleJoinCourse(course.id)}
                     onDetails={() => handleCourseDetails(course)}
                   />
