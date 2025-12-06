@@ -23,6 +23,7 @@ import {
 import MyCourseCard from '../components/courses/MyCourseCard';
 import CourseCard from '../components/courses/CourseCard';
 import CourseDetailModal from '../components/courses/CourseDetailModal';
+import LanguageSelector from '../components/common/LanguageSelector';
 import { translations, getCurrency, getDurationDescription, type LanguageCode } from '../utils/i18n';
 
 const CoursesPage: React.FC = () => {
@@ -73,8 +74,14 @@ const CoursesPage: React.FC = () => {
     setIsOwnedCourse(isOwned);
     setIsModalOpen(true);
     // Fetch detailed info from API
-    if (course.id || course.marathonId || course.wpMarathonId) {
-      dispatch(fetchCourseDetails(course.wpMarathonId || course.marathonId || course.id));
+    // For owned courses: use wpMarathonId (language-specific) first, then marathonId
+    // For available courses: use id directly
+    const courseId = isOwned 
+      ? (course.wpMarathonId || course.marathonId || course.id)
+      : (course.id || course.wpMarathonId || course.marathonId);
+    
+    if (courseId) {
+      dispatch(fetchCourseDetails(courseId));
     }
   };
 
@@ -124,38 +131,7 @@ const CoursesPage: React.FC = () => {
           </h1>
           <div className="flex items-center gap-4">
             {/* Language Switcher */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => dispatch(setSelectedLanguage('ru'))}
-                className={`px-3 py-1 rounded-md font-medium transition-colors ${
-                  selectedLanguage === 'ru'
-                    ? 'bg-[#1e3a8a] text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                RU
-              </button>
-              <button
-                onClick={() => dispatch(setSelectedLanguage('en'))}
-                className={`px-3 py-1 rounded-md font-medium transition-colors ${
-                  selectedLanguage === 'en'
-                    ? 'bg-[#1e3a8a] text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                EN
-              </button>
-              <button
-                onClick={() => dispatch(setSelectedLanguage('es'))}
-                className={`px-3 py-1 rounded-md font-medium transition-colors ${
-                  selectedLanguage === 'es'
-                    ? 'bg-[#1e3a8a] text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                ES
-              </button>
-            </div>
+            <LanguageSelector />
             <button
               onClick={() => router.push('/dashboard')}
               className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"

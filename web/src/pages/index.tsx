@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
+import LanguageSelector from '../components/common/LanguageSelector';
 
 export default function Home() {
   const router = useRouter();
@@ -13,6 +14,11 @@ export default function Home() {
       </Head>
       
       <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
+        {/* Language Selector in top right */}
+        <div className="absolute top-4 right-4 z-10">
+          <LanguageSelector />
+        </div>
+        
         {/* Hero Section */}
         <div className="container mx-auto px-4 py-16">
           <div className="text-center">

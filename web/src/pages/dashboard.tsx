@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { logout } from '../store/modules/auth/slice';
 import { AuthTokenManager } from '../api';
+import LanguageSelector from '../components/common/LanguageSelector';
 
 const DashboardPage: React.FC = () => {
   const router = useRouter();
@@ -35,19 +36,22 @@ const DashboardPage: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900">
             Личный кабинет
           </h1>
-          <button
-            onClick={() => {
-              // Clear auth state in Redux
-              dispatch(logout());
-              // Clear token from localStorage
-              AuthTokenManager.remove();
-              // Redirect to login page
-              router.push('/auth/login');
-            }}
-            className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
-          >
-            Выйти
-          </button>
+          <div className="flex items-center gap-4">
+            <LanguageSelector />
+            <button
+              onClick={() => {
+                // Clear auth state in Redux
+                dispatch(logout());
+                // Clear token from localStorage
+                AuthTokenManager.remove();
+                // Redirect to login page
+                router.push('/auth/login');
+              }}
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+            >
+              Выйти
+            </button>
+          </div>
         </div>
       </header>
 

@@ -54,7 +54,7 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
             {/* Header with Image */}
             <div className="relative h-64 bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
               <div className={`w-40 h-40 bg-white flex items-center justify-center shadow-2xl overflow-hidden ${
-                course.productType?.toLowerCase().includes('marathon') ? 'rounded-full' : 'rounded-[40px]'
+                course.productType?.toLowerCase().includes('marathon') ? 'rounded-full' : 'rounded-[30px]'
               }`}>
                 {course.imageUrl || course.imagePath ? (
                   <img 
