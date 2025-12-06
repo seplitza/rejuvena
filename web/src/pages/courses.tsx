@@ -192,25 +192,33 @@ const CoursesPage: React.FC = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {allAvailableCourses.map((course) => (
-                <CourseCard
-                  key={course.id}
-                  course={{
-                    id: course.id,
-                    title: course.title,
-                    subtitle: course.isDemo ? 'Demo Course' : course.category || 'Course',
-                    description: course.description,
-                    priceFrom: 0, // Will be fetched from course plans
-                    currency: '₽',
-                    imageUrl: course.imageUrl || '/images/courses/default.jpg',
-                    duration: course.duration,
-                    level: course.level || 'beginner',
-                    tags: course.tags || [],
-                  }}
-                  onJoin={() => handleJoinCourse(course.id)}
-                  onDetails={() => handleCourseDetails(course)}
-                />
-              ))}
+              {allAvailableCourses.map((course) => {
+                const isFree = course.cost === 0 || course.isFree;
+                const dayText = course.days === 1 ? 'день' : course.days >= 2 && course.days <= 4 ? 'дня' : 'дней';
+                const durationDescription = `${course.days || 0} ${dayText} обучения + курсы практики`;
+                
+                return (
+                  <CourseCard
+                    key={course.id}
+                    course={{
+                      id: course.id,
+                      title: course.title,
+                      subtitle: course.subTitle,
+                      description: durationDescription,
+                      priceFrom: course.cost || 0,
+                      currency: '₽',
+                      imageUrl: course.imagePath || '/images/courses/default.jpg',
+                      duration: course.days || 0,
+                      level: 'beginner',
+                      tags: [],
+                      isFree: isFree,
+                      productType: course.productType || course.courseType,
+                    }}
+                    onJoin={() => handleJoinCourse(course.id)}
+                    onDetails={() => handleCourseDetails(course)}
+                  />
+                );
+              })}
             </div>
           )}
         </section>

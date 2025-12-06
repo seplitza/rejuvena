@@ -105,9 +105,9 @@ interface CoursesState {
   loadingOrders: boolean;
   ordersError: string | null;
 
-  // Available courses
-  availableCourses: Course[];
-  demoCourses: Course[];
+  // Available courses (same structure as Order from API)
+  availableCourses: Order[];
+  demoCourses: Order[];
   loadingCourses: boolean;
   coursesError: string | null;
 
@@ -162,12 +162,12 @@ const coursesSlice = createSlice({
     },
 
     // Available Courses
-    setAvailableCourses(state, action: PayloadAction<Course[]>) {
+    setAvailableCourses(state, action: PayloadAction<Order[]>) {
       state.availableCourses = action.payload;
       state.loadingCourses = false;
       state.coursesError = null;
     },
-    setDemoCourses(state, action: PayloadAction<Course[]>) {
+    setDemoCourses(state, action: PayloadAction<Order[]>) {
       state.demoCourses = action.payload;
       state.loadingCourses = false;
       state.coursesError = null;

@@ -52,6 +52,13 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, onJoin, onDetails }) =>
           {course.title}
         </h3>
 
+        {/* Duration Description */}
+        {course.description && (
+          <p className="text-sm text-gray-600 mb-2">
+            {course.description}
+          </p>
+        )}
+
         {/* Cost */}
         {!course.isFree && course.priceFrom > 0 && (
           <p className="text-sm text-gray-700 font-medium mb-2">
