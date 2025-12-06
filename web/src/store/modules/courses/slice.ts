@@ -146,8 +146,6 @@ const coursesSlice = createSlice({
   reducers: {
     // Orders
     setMyOrders(state, action: PayloadAction<Order[]>) {
-      console.log('🔍 REDUCER setMyOrders called with:', action.payload);
-      console.log('🔍 REDUCER setMyOrders length:', action.payload?.length);
       state.myOrders = action.payload;
       state.loadingOrders = false;
       state.ordersError = null;

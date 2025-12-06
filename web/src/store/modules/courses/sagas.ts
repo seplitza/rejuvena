@@ -51,16 +51,11 @@ function* fetchMyOrdersSaga(): Generator<any, void, any> {
       { params: { timeZoneOffSet } }
     );
 
-    console.log('🔍 SAGA fetchMyOrdersSaga response:', response);
-    console.log('🔍 SAGA response.currentCourses:', response.currentCourses);
-    console.log('🔍 SAGA response.currentCourses length:', response.currentCourses?.length);
-
     // API returns { currentCourses, availableCourses, archives }
     const orders = response.currentCourses || [];
-    console.log('🔍 SAGA setting myOrders:', orders);
     yield put(setMyOrders(orders));
   } catch (error: any) {
-    console.error('❌ SAGA Failed to fetch orders:', error);
+    console.error('Failed to fetch orders:', error);
     yield put(setOrdersError(error.message || 'Failed to load orders'));
   }
 }
