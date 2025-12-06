@@ -79,8 +79,11 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
   const cleanDescription = useMemo(() => {
     let html = course.courseDescription || course.description || 'Описание курса';
     
-    // Remove "Powered by Froala Editor"
+    // Remove "Powered by Froala Editor" in all variations
     html = html.replace(/Powered by Froala Editor/gi, '');
+    html = html.replace(/<p[^>]*>\s*Powered by Froala Editor\s*<\/p>/gi, '');
+    html = html.replace(/<div[^>]*>\s*Powered by Froala Editor\s*<\/div>/gi, '');
+    html = html.replace(/<span[^>]*>\s*Powered by Froala Editor\s*<\/span>/gi, '');
     
     // Fix HTML entities
     html = html
@@ -96,18 +99,39 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
     return html;
   }, [course.courseDescription, course.description]);
 
-  // Generate bullet points from course description
-  const bulletPoints = useMemo(() => {
-    const description = course.courseDescription || course.description || '';
-    const courseDuration = course.duration || course.days || 0;
-    const extracted = extractBulletPoints(description, courseDuration);
+  // Generate access info based on pricing tiers
+  const getAccessInfo = (monthsPeriod: number) => {
+    const trainingDays = 14;
+    const practiceDays = 16;
+    const totalDays = trainingDays + practiceDays; // 30 days
+    const cycles = monthsPeriod;
     
-    // Always add community support as the last point
-    const points = [...extracted];
-    points.push('Поддержка сообщества https://t.me/seplitza_support');
-    
-    return points;
-  }, [course.courseDescription, course.description, course.duration, course.days]);
+    return {
+      trainingDays: trainingDays * cycles,
+      practiceDays: practiceDays * cycles,
+      totalDays: totalDays * cycles,
+      photoStorageDays: (monthsPeriod * 30) + 30, // tariff period + 1 month
+    };
+  };
+
+  // Pricing tiers with access information
+  const pricingTiers = useMemo(() => {
+    const tiers = [
+      { period: 1, label: 'месяц' },
+      { period: 3, label: '3 месяца' },
+      { period: 12, label: 'год' },
+    ];
+
+    return tiers.map(tier => {
+      const access = getAccessInfo(tier.period);
+      return {
+        ...tier,
+        access,
+        description: `${access.trainingDays} дней обучения + ${access.practiceDays} дней практики с архивом всего материала`,
+        photoStorage: `Хранение фотографий в фотодневнике ${access.photoStorageDays} дней (${tier.label} + 1 месяц)`,
+      };
+    });
+  }, []);
 
   if (!isOpen) return null;
 
@@ -218,19 +242,42 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                       dangerouslySetInnerHTML={{ __html: cleanDescription }}
                     />
                     <div className="bg-blue-50 rounded-lg p-6 mt-6">
-                      <h3 className="text-lg font-semibold text-[#1e3a8a] mb-3">
-                        Что вы получите:
+                      <h3 className="text-lg font-semibold text-[#1e3a8a] mb-4">
+                        Что вы получите после оплаты:
                       </h3>
-                      <ul className="space-y-2 text-gray-700">
-                        {bulletPoints.map((point, index) => (
-                          <li key={index} className="flex items-start">
-                            <svg className="h-6 w-6 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span>{point}</span>
-                          </li>
+                      
+                      <div className="space-y-6">
+                        {pricingTiers.map((tier, index) => (
+                          <div key={index} className="bg-white rounded-lg p-4 shadow-sm">
+                            <h4 className="font-bold text-purple-700 mb-3">
+                              Тариф «{tier.label}»:
+                            </h4>
+                            <ul className="space-y-2 text-gray-700 text-sm">
+                              <li className="flex items-start">
+                                <svg className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span>Доступ к курсу: <strong>{tier.access.trainingDays} дней обучения</strong> и <strong>{tier.access.practiceDays} дней практики</strong> с архивом всего материала обучения</span>
+                              </li>
+                              <li className="flex items-start">
+                                <svg className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span>Хранение фотографий в фотодневнике: <strong>{tier.access.photoStorageDays} дней</strong> ({tier.label} + 1 месяц)</span>
+                              </li>
+                            </ul>
+                          </div>
                         ))}
-                      </ul>
+                        
+                        <div className="mt-4 pt-4 border-t border-blue-200">
+                          <p className="flex items-start text-sm text-gray-700">
+                            <svg className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                            </svg>
+                            <span>Поддержка сообщества: <a href="https://t.me/seplitza_support" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">https://t.me/seplitza_support</a></span>
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
