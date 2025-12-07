@@ -43,6 +43,13 @@ export const translations = {
     daysStorage: 'дней',
     plusOneMonth: '+ 1 месяц',
     communitySupport: 'Поддержка сообщества:',
+    description: 'Описание',
+    program: 'Программа',
+    reviews: 'Отзывы',
+    pay: 'ОПЛАТИТЬ',
+    startCourse: 'ПРИСТУПИТЬ',
+    close: 'Закрыть',
+    cost: 'Стоимость',
   },
   en: {
     // Header
@@ -82,6 +89,13 @@ export const translations = {
     daysStorage: 'days',
     plusOneMonth: '+ 1 month',
     communitySupport: 'Community support:',
+    description: 'Description',
+    program: 'Program',
+    reviews: 'Reviews',
+    pay: 'PAY',
+    startCourse: 'START',
+    close: 'Close',
+    cost: 'Cost',
   },
   es: {
     // Header
@@ -121,6 +135,13 @@ export const translations = {
     daysStorage: 'días',
     plusOneMonth: '+ 1 mes',
     communitySupport: 'Soporte de la comunidad:',
+    description: 'Descripción',
+    program: 'Programa',
+    reviews: 'Reseñas',
+    pay: 'PAGAR',
+    startCourse: 'COMENZAR',
+    close: 'Cerrar',
+    cost: 'Costo',
   },
 };
 

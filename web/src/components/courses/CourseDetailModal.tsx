@@ -83,16 +83,28 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
   const cleanDescription = useMemo(() => {
     let html = course.courseDescription || course.description || 'Описание курса';
     
-    // AGGRESSIVELY Remove "Powered by Froala Editor" - all possible variations
+    // SUPER AGGRESSIVE Remove "Powered by Froala Editor" - FIRST PASS: Remove from everywhere
+    // 1. Remove plain text occurrences (case insensitive, with any whitespace)
     html = html.replace(/Powered\s*by\s*Froala\s*Editor/gi, '');
+    
+    // 2. Remove when wrapped in ANY HTML tag
+    html = html.replace(/<([^>]+)>\s*Powered\s*by\s*Froala\s*Editor\s*<\/\1>/gi, '');
+    
+    // 3. Remove from beginning of string (with or without tags)
+    html = html.replace(/^\s*Powered\s*by\s*Froala\s*Editor\s*/i, '');
+    html = html.replace(/^\s*<[^>]+>\s*Powered\s*by\s*Froala\s*Editor\s*<\/[^>]+>\s*/i, '');
+    
+    // 4. Remove from end of string (with or without tags)  
+    html = html.replace(/\s*Powered\s*by\s*Froala\s*Editor\s*$/i, '');
+    html = html.replace(/\s*<[^>]+>\s*Powered\s*by\s*Froala\s*Editor\s*<\/[^>]+>\s*$/i, '');
+    
+    // 5. Remove specific common patterns
     html = html.replace(/<p[^>]*>\s*Powered\s*by\s*Froala\s*Editor\s*<\/p>/gi, '');
     html = html.replace(/<div[^>]*>\s*Powered\s*by\s*Froala\s*Editor\s*<\/div>/gi, '');
-    html = html.replace(/<span[^>]*>\s*Powered\s*by\s*Froala\s*Editor\s*<\/span>/gi, '');
-    html = html.replace(/<strong[^>]*>\s*Powered\s*by\s*Froala\s*Editor\s*<\/strong>/gi, '');
-    html = html.replace(/<em[^>]*>\s*Powered\s*by\s*Froala\s*Editor\s*<\/em>/gi, '');
-    html = html.replace(/<a[^>]*>\s*Powered\s*by\s*Froala\s*Editor\s*<\/a>/gi, '');
-    // Remove any remaining traces in attributes or content
-    html = html.replace(/Powered[^<]*Froala[^<]*Editor/gi, '');
+    
+    // 6. Nuclear option: remove any line containing the phrase
+    const lines = html.split('\n');
+    html = lines.filter((line: string) => !/Powered\s*by\s*Froala\s*Editor/i.test(line)).join('\n');
     
     // Fix HTML entities
     html = html
@@ -108,6 +120,7 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
     // Clean up excessive whitespace
     html = html.replace(/\s{2,}/g, ' ');
     html = html.replace(/<p>\s*<\/p>/g, '');
+    html = html.trim();
     
     return html;
   }, [course.courseDescription, course.description]);
@@ -224,7 +237,7 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                   >
-                    Описание
+                    {t.description}
                   </button>
                   <button
                     onClick={() => setActiveTab('program')}
@@ -234,7 +247,7 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                   >
-                    Программа
+                    {t.program}
                   </button>
                   <button
                     onClick={() => setActiveTab('reviews')}
@@ -244,7 +257,7 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                   >
-                    Отзывы
+                    {t.reviews}
                   </button>
                 </nav>
               </div>
@@ -346,9 +359,9 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                 <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6 mb-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-600 mb-1">Стоимость</p>
+                      <p className="text-sm text-gray-600 mb-1">{t.cost}</p>
                       <p className="text-3xl font-bold text-[#1e3a8a]">
-                        от {course.priceFrom?.toLocaleString('ru-RU')} {course.currency}
+                        {language === 'ru' ? 'от' : language === 'en' ? 'from' : 'desde'} {course.priceFrom?.toLocaleString(language === 'ru' ? 'ru-RU' : language === 'en' ? 'en-US' : 'es-ES')} {course.currency}
                       </p>
                     </div>
                   </div>
@@ -361,13 +374,13 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                   onClick={onJoin}
                   className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-4 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
                 >
-                  {isOwnedCourse ? 'ПРИСТУПИТЬ' : 'ОПЛАТИТЬ'}
+                  {isOwnedCourse ? t.startCourse : t.pay}
                 </button>
                 <button
                   onClick={onClose}
                   className="px-6 py-4 bg-gray-100 text-gray-700 font-medium rounded-full hover:bg-gray-200 transition-colors"
                 >
-                  Закрыть
+                  {t.close}
                 </button>
               </div>
             </div>
