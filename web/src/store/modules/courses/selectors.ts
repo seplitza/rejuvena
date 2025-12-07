@@ -15,6 +15,9 @@ export const selectMyOrders = createSelector(
   (courses) => courses.myOrders
 );
 
+// Alias for compatibility
+export const selectUserOrders = selectMyOrders;
+
 export const selectActiveOrders = createSelector(
   [selectMyOrders],
   (orders) => {
