@@ -68,14 +68,23 @@ export default function MarathonDayPage() {
   if (isCoursePurchased && !hasValidAccess && !loading) {
     const handleActivateCourse = async () => {
       try {
-        // Import createOrder action
+        // Import createOrder and fetchMyOrders actions
         const { createOrder } = await import('@/store/modules/courses/slice');
+        const { fetchMyOrders } = await import('@/store/modules/courses/slice');
         
         // Create order for this course
         await dispatch(createOrder(typeof courseId === 'string' ? courseId : ''));
         
-        // Refresh the page to retry loading with new orderId
-        router.reload();
+        // Reload orders to get new orderId
+        await dispatch(fetchMyOrders());
+        
+        // Re-fetch day data with new orderId
+        if (courseId && dayId && typeof courseId === 'string' && typeof dayId === 'string') {
+          dispatch(getDayExercise({
+            marathonId: courseId,
+            dayId: dayId,
+          }));
+        }
       } catch (error) {
         console.error('Failed to activate course:', error);
         alert('Не удалось активировать курс. Попробуйте позже.');
