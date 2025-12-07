@@ -31,6 +31,18 @@ export const translations = {
     days2_4: 'дня',
     days5plus: 'дней',
     trainingPractice: 'обучения + курсы практики',
+    
+    // Course detail modal
+    whatYouGet: 'Что вы получите после оплаты:',
+    tariff: 'Тариф',
+    accessToCourse: 'Доступ к курсу:',
+    daysOfTraining: 'дней обучения',
+    daysOfPractice: 'дней практики',
+    withArchive: 'с архивом всего материала обучения',
+    photoStorage: 'Хранение фотографий в фотодневнике:',
+    daysStorage: 'дней',
+    plusOneMonth: '+ 1 месяц',
+    communitySupport: 'Поддержка сообщества:',
   },
   en: {
     // Header
@@ -58,6 +70,18 @@ export const translations = {
     days2_4: 'days',
     days5plus: 'days',
     trainingPractice: 'of training + practice courses',
+    
+    // Course detail modal
+    whatYouGet: 'What you get after payment:',
+    tariff: 'Plan',
+    accessToCourse: 'Course access:',
+    daysOfTraining: 'days of training',
+    daysOfPractice: 'days of practice',
+    withArchive: 'with archive of all training materials',
+    photoStorage: 'Photo diary storage:',
+    daysStorage: 'days',
+    plusOneMonth: '+ 1 month',
+    communitySupport: 'Community support:',
   },
   es: {
     // Header
@@ -84,7 +108,19 @@ export const translations = {
     day: 'día',
     days2_4: 'días',
     days5plus: 'días',
-    trainingPractice: 'de entrenamiento + cursos de práctica',
+    trainingPractice: 'de formación + cursos de práctica',
+    
+    // Course detail modal
+    whatYouGet: 'Lo que obtendrás después del pago:',
+    tariff: 'Plan',
+    accessToCourse: 'Acceso al curso:',
+    daysOfTraining: 'días de formación',
+    daysOfPractice: 'días de práctica',
+    withArchive: 'con archivo de todos los materiales de formación',
+    photoStorage: 'Almacenamiento de fotos en el diario:',
+    daysStorage: 'días',
+    plusOneMonth: '+ 1 mes',
+    communitySupport: 'Soporte de la comunidad:',
   },
 };
 

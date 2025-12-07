@@ -265,6 +265,7 @@ const CoursesPage: React.FC = () => {
             setIsModalOpen(false);
           }}
           isOwnedCourse={isOwnedCourse}
+          language={selectedLanguage}
         />
       )}
     </div>

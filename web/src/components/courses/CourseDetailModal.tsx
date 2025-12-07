@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { translations, type LanguageCode } from '../../utils/i18n';
 
 interface CourseDetailModalProps {
   course: any;
@@ -6,6 +7,7 @@ interface CourseDetailModalProps {
   onClose: () => void;
   onJoin: () => void;
   isOwnedCourse?: boolean; // Flag to determine if user owns this course
+  language?: LanguageCode; // Current language for translations
 }
 
 // Function to clean and extract bullet points from HTML description
@@ -72,18 +74,25 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
   onClose,
   onJoin,
   isOwnedCourse = false,
+  language = 'ru',
 }) => {
   const [activeTab, setActiveTab] = useState<'description' | 'program' | 'reviews'>('description');
+  const t = translations[language];
 
   // Clean description HTML from unwanted content
   const cleanDescription = useMemo(() => {
     let html = course.courseDescription || course.description || 'Описание курса';
     
-    // Remove "Powered by Froala Editor" in all variations
-    html = html.replace(/Powered by Froala Editor/gi, '');
-    html = html.replace(/<p[^>]*>\s*Powered by Froala Editor\s*<\/p>/gi, '');
-    html = html.replace(/<div[^>]*>\s*Powered by Froala Editor\s*<\/div>/gi, '');
-    html = html.replace(/<span[^>]*>\s*Powered by Froala Editor\s*<\/span>/gi, '');
+    // AGGRESSIVELY Remove "Powered by Froala Editor" - all possible variations
+    html = html.replace(/Powered\s*by\s*Froala\s*Editor/gi, '');
+    html = html.replace(/<p[^>]*>\s*Powered\s*by\s*Froala\s*Editor\s*<\/p>/gi, '');
+    html = html.replace(/<div[^>]*>\s*Powered\s*by\s*Froala\s*Editor\s*<\/div>/gi, '');
+    html = html.replace(/<span[^>]*>\s*Powered\s*by\s*Froala\s*Editor\s*<\/span>/gi, '');
+    html = html.replace(/<strong[^>]*>\s*Powered\s*by\s*Froala\s*Editor\s*<\/strong>/gi, '');
+    html = html.replace(/<em[^>]*>\s*Powered\s*by\s*Froala\s*Editor\s*<\/em>/gi, '');
+    html = html.replace(/<a[^>]*>\s*Powered\s*by\s*Froala\s*Editor\s*<\/a>/gi, '');
+    // Remove any remaining traces in attributes or content
+    html = html.replace(/Powered[^<]*Froala[^<]*Editor/gi, '');
     
     // Fix HTML entities
     html = html
@@ -96,42 +105,49 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
     // Remove duplicate emojis (2 or more of the same emoji in a row)
     html = html.replace(/([\u{1F300}-\u{1F9FF}])\1+/gu, '$1');
     
+    // Clean up excessive whitespace
+    html = html.replace(/\s{2,}/g, ' ');
+    html = html.replace(/<p>\s*<\/p>/g, '');
+    
     return html;
   }, [course.courseDescription, course.description]);
 
   // Generate access info based on pricing tiers
   const getAccessInfo = (monthsPeriod: number) => {
-    const trainingDays = 14;
-    const practiceDays = 16;
-    const totalDays = trainingDays + practiceDays; // 30 days
-    const cycles = monthsPeriod;
+    // Training days is FIXED from course (e.g., 14 days)
+    const trainingDays = course.duration || course.days || 14;
+    // Total days in the period (30 days per month)
+    const totalDaysInPeriod = monthsPeriod * 30;
+    // Practice days = remaining days after training
+    const practiceDays = totalDaysInPeriod - trainingDays;
     
     return {
-      trainingDays: trainingDays * cycles,
-      practiceDays: practiceDays * cycles,
-      totalDays: totalDays * cycles,
-      photoStorageDays: (monthsPeriod * 30) + 30, // tariff period + 1 month
+      trainingDays: trainingDays,
+      practiceDays: practiceDays,
+      totalDays: totalDaysInPeriod,
+      photoStorageDays: totalDaysInPeriod + 30, // tariff period + 1 month
     };
   };
 
-  // Pricing tiers with access information
+  // Pricing tiers with access information and translations
   const pricingTiers = useMemo(() => {
     const tiers = [
-      { period: 1, label: 'месяц' },
-      { period: 3, label: '3 месяца' },
-      { period: 12, label: 'год' },
+      { period: 1, label: { ru: 'месяц', en: 'month', es: 'mes' } },
+      { period: 3, label: { ru: '3 месяца', en: '3 months', es: '3 meses' } },
+      { period: 12, label: { ru: 'год', en: 'year', es: 'año' } },
     ];
 
     return tiers.map(tier => {
       const access = getAccessInfo(tier.period);
+      const periodLabel = tier.label[language];
+      
       return {
         ...tier,
         access,
-        description: `${access.trainingDays} дней обучения + ${access.practiceDays} дней практики с архивом всего материала`,
-        photoStorage: `Хранение фотографий в фотодневнике ${access.photoStorageDays} дней (${tier.label} + 1 месяц)`,
+        periodLabel,
       };
     });
-  }, []);
+  }, [course.duration, course.days, language]);
 
   if (!isOpen) return null;
 
@@ -243,27 +259,27 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                     />
                     <div className="bg-blue-50 rounded-lg p-6 mt-6">
                       <h3 className="text-lg font-semibold text-[#1e3a8a] mb-4">
-                        Что вы получите после оплаты:
+                        {t.whatYouGet}
                       </h3>
                       
                       <div className="space-y-6">
                         {pricingTiers.map((tier, index) => (
                           <div key={index} className="bg-white rounded-lg p-4 shadow-sm">
                             <h4 className="font-bold text-purple-700 mb-3">
-                              Тариф «{tier.label}»:
+                              {t.tariff} «{tier.periodLabel}»:
                             </h4>
                             <ul className="space-y-2 text-gray-700 text-sm">
                               <li className="flex items-start">
                                 <svg className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                 </svg>
-                                <span>Доступ к курсу: <strong>{tier.access.trainingDays} дней обучения</strong> и <strong>{tier.access.practiceDays} дней практики</strong> с архивом всего материала обучения</span>
+                                <span>{t.accessToCourse} <strong>{tier.access.trainingDays} {t.daysOfTraining}</strong> {language === 'en' ? 'and' : language === 'es' ? 'y' : 'и'} <strong>{tier.access.practiceDays} {t.daysOfPractice}</strong> {t.withArchive}</span>
                               </li>
                               <li className="flex items-start">
                                 <svg className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                 </svg>
-                                <span>Хранение фотографий в фотодневнике: <strong>{tier.access.photoStorageDays} дней</strong> ({tier.label} + 1 месяц)</span>
+                                <span>{t.photoStorage} <strong>{tier.access.photoStorageDays} {t.daysStorage}</strong> ({tier.periodLabel} {t.plusOneMonth})</span>
                               </li>
                             </ul>
                           </div>
@@ -274,7 +290,7 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                             <svg className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
                             </svg>
-                            <span>Поддержка сообщества: <a href="https://t.me/seplitza_support" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">https://t.me/seplitza_support</a></span>
+                            <span>{t.communitySupport} <a href="https://t.me/seplitza_support" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">https://t.me/seplitza_support</a></span>
                           </p>
                         </div>
                       </div>
