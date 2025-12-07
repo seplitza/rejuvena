@@ -350,6 +350,28 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                       <h3 className="text-lg font-semibold text-[#1e3a8a] mb-4">
                         {t.trainingProgram}
                       </h3>
+                      
+                      {/* Show activation notice for owned courses without valid orderId */}
+                      {isOwnedCourse && !courseHasValidOrder && (
+                        <div className="mb-4 p-4 bg-amber-50 border-2 border-amber-200 rounded-lg">
+                          <div className="flex items-start gap-3">
+                            <div className="text-2xl">⚠️</div>
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-amber-900 mb-1">
+                                {language === 'ru' ? 'Требуется активация' : language === 'en' ? 'Activation Required' : 'Activación Requerida'}
+                              </h4>
+                              <p className="text-sm text-amber-800">
+                                {language === 'ru' 
+                                  ? 'Курс доступен в вашем аккаунте, но для просмотра содержимого нажмите "Активировать" ниже.'
+                                  : language === 'en'
+                                  ? 'Course is available in your account, but to view content click "Activate" below.'
+                                  : 'El curso está disponible en tu cuenta, pero para ver el contenido haz clic en "Activar" a continuación.'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
                       <div className="space-y-3">
                         {loadingMarathon ? (
                           // Loading state
@@ -530,7 +552,11 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                   onClick={onJoin}
                   className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-4 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
                 >
-                  {isOwnedCourse ? t.startCourse : t.pay}
+                  {isOwnedCourse 
+                    ? (courseHasValidOrder 
+                        ? t.startCourse 
+                        : (language === 'ru' ? '🚀 Активировать курс' : language === 'en' ? '🚀 Activate Course' : '🚀 Activar Curso'))
+                    : t.pay}
                 </button>
                 <button
                   onClick={onClose}

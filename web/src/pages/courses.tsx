@@ -256,13 +256,37 @@ const CoursesPage: React.FC = () => {
           }}
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          onJoin={() => {
+          onJoin={async () => {
             if (isOwnedCourse) {
-              handleStartCourse(selectedCourse.wpMarathonId || selectedCourse.marathonId || selectedCourse.id);
+              const marathonId = selectedCourse.wpMarathonId || selectedCourse.marathonId || selectedCourse.id;
+              
+              // Check if course has valid orderId
+              const order = myCoursesWithProgress.find(c => 
+                c.marathonId === marathonId || c.wpMarathonId === marathonId || c.id === marathonId
+              );
+              
+              if (order && order.orderId === '00000000-0000-0000-0000-000000000000') {
+                // Course needs activation - create order first
+                try {
+                  await dispatch(createOrder(marathonId));
+                  // Reload orders to get new orderId
+                  await dispatch(fetchMyOrders());
+                  // Then navigate to first day
+                  setIsModalOpen(false);
+                  handleStartCourse(marathonId);
+                } catch (error) {
+                  console.error('Failed to activate course:', error);
+                  alert('Не удалось активировать курс. Попробуйте позже.');
+                }
+              } else {
+                // Course has valid orderId - go directly to first day
+                handleStartCourse(marathonId);
+                setIsModalOpen(false);
+              }
             } else {
               handleJoinCourse(selectedCourse.id);
+              setIsModalOpen(false);
             }
-            setIsModalOpen(false);
           }}
           isOwnedCourse={isOwnedCourse}
           language={selectedLanguage}

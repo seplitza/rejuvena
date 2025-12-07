@@ -66,6 +66,22 @@ export default function MarathonDayPage() {
 
   // Check if course is purchased but has no valid access (empty orderId)
   if (isCoursePurchased && !hasValidAccess && !loading) {
+    const handleActivateCourse = async () => {
+      try {
+        // Import createOrder action
+        const { createOrder } = await import('@/store/modules/courses/slice');
+        
+        // Create order for this course
+        await dispatch(createOrder(typeof courseId === 'string' ? courseId : ''));
+        
+        // Refresh the page to retry loading with new orderId
+        router.reload();
+      } catch (error) {
+        console.error('Failed to activate course:', error);
+        alert('Не удалось активировать курс. Попробуйте позже.');
+      }
+    };
+    
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50">
         <div className="text-center max-w-md mx-auto px-4">
@@ -74,21 +90,29 @@ export default function MarathonDayPage() {
             Требуется активация
           </h2>
           <p className="text-gray-600 mb-6">
-            Курс находится в вашем списке, но требует активации. Нажмите "Начать курс" на карточке курса для активации доступа к содержимому.
+            Этот курс доступен в вашем аккаунте, но для просмотра содержимого необходимо создать активный заказ. Нажмите кнопку ниже для автоматической активации.
           </p>
-          <div className="flex gap-3 justify-center">
+          <div className="flex flex-col gap-3 items-center">
             <button
-              onClick={() => router.push('/courses')}
-              className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              onClick={handleActivateCourse}
+              className="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-colors font-semibold shadow-lg"
             >
-              К курсам
+              🚀 Активировать курс
             </button>
-            <button
-              onClick={() => router.back()}
-              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-            >
-              Назад
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => router.push('/courses')}
+                className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                К курсам
+              </button>
+              <button
+                onClick={() => router.back()}
+                className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Назад
+              </button>
+            </div>
           </div>
         </div>
       </div>
