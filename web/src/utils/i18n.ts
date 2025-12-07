@@ -50,6 +50,15 @@ export const translations = {
     startCourse: 'ПРИСТУПИТЬ',
     close: 'Закрыть',
     cost: 'Стоимость',
+    
+    // Program tab
+    trainingProgram: 'Программа курса обучения',
+    dayLabel: 'День',
+    practiceSection: 'Практика',
+    practiceIntro: 'За обучением следует практика, и она решает, каким будет результат.',
+    practiceBasicCourse: 'Каждый день вам будет предложен новый чек-лист со всеми {count} упражнениями из базового курса.',
+    practiceAdvancedCourse: 'Каждый день вам будет предложен новый чек-лист со всеми упражнениями из базового курса с дополнениями и замещениями на более продвинутые техники.',
+    practiceDays: 'дней практики',
   },
   en: {
     // Header
@@ -96,6 +105,15 @@ export const translations = {
     startCourse: 'START',
     close: 'Close',
     cost: 'Cost',
+    
+    // Program tab
+    trainingProgram: 'Training Course Program',
+    dayLabel: 'Day',
+    practiceSection: 'Practice',
+    practiceIntro: 'Practice follows training, and it determines what the result will be.',
+    practiceBasicCourse: 'Every day you will be offered a new checklist with all {count} exercises from the basic course.',
+    practiceAdvancedCourse: 'Every day you will be offered a new checklist with all exercises from the basic course with additions and replacements for more advanced techniques.',
+    practiceDays: 'days of practice',
   },
   es: {
     // Header
@@ -142,6 +160,15 @@ export const translations = {
     startCourse: 'COMENZAR',
     close: 'Cerrar',
     cost: 'Costo',
+    
+    // Program tab
+    trainingProgram: 'Programa del Curso de Formación',
+    dayLabel: 'Día',
+    practiceSection: 'Práctica',
+    practiceIntro: 'La práctica sigue a la formación y determina cuál será el resultado.',
+    practiceBasicCourse: 'Cada día se le ofrecerá una nueva lista de verificación con todos los {count} ejercicios del curso básico.',
+    practiceAdvancedCourse: 'Cada día se le ofrecerá una nueva lista de verificación con todos los ejercicios del curso básico con adiciones y reemplazos por técnicas más avanzadas.',
+    practiceDays: 'días de práctica',
   },
 };
 

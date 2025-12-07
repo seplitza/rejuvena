@@ -313,28 +313,72 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
 
                 {activeTab === 'program' && (
                   <div>
-                    <h3 className="text-lg font-semibold text-[#1e3a8a] mb-4">
-                      Программа курса
-                    </h3>
-                    <div className="space-y-3">
-                      {[...Array(course.duration || 7)].map((_, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                        >
-                          <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                            {index + 1}
-                          </div>
-                          <div>
-                            <h4 className="font-medium text-gray-900">
-                              День {index + 1}
-                            </h4>
-                            <p className="text-sm text-gray-600">
-                              Упражнения и теория
+                    {/* Training Days Section */}
+                    <div className="mb-8">
+                      <h3 className="text-lg font-semibold text-[#1e3a8a] mb-4">
+                        {t.trainingProgram}
+                      </h3>
+                      <div className="space-y-3">
+                        {[...Array(course.duration || course.days || 7)].map((_, index) => {
+                          // Extract key exercises from description (text in bold tags)
+                          const dayDescription = course.courseDescription || course.description || '';
+                          const boldTextMatch = dayDescription.match(/<strong>(.*?)<\/strong>/gi);
+                          const exerciseBrief = boldTextMatch && boldTextMatch[index] 
+                            ? boldTextMatch[index].replace(/<\/?strong>/gi, '').substring(0, 80) + '...'
+                            : `${t.dayLabel} ${index + 1}`;
+
+                          return (
+                            <div
+                              key={index}
+                              className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                            >
+                              <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
+                                {index + 1}
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="font-medium text-gray-900">
+                                  {t.dayLabel} {index + 1}
+                                </h4>
+                                <p className="text-sm text-gray-600">
+                                  {exerciseBrief}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Practice Section */}
+                    <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6 border-2 border-purple-200">
+                      <div className="flex items-start mb-4">
+                        <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center mr-3">
+                          <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-lg font-bold text-purple-700 mb-2">
+                            {t.practiceSection}
+                          </h3>
+                          <p className="text-gray-700 mb-3">
+                            {t.practiceIntro}
+                          </p>
+                          <div className="bg-white rounded-lg p-4 mb-3">
+                            <p className="text-sm text-gray-700">
+                              {course.productType?.toLowerCase().includes('advanced') || course.courseType?.toLowerCase().includes('advanced')
+                                ? t.practiceAdvancedCourse
+                                : t.practiceBasicCourse.replace('{count}', (course.exerciseCount || 33).toString())}
                             </p>
                           </div>
+                          <div className="flex items-center text-purple-700 font-semibold">
+                            <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span>{pricingTiers[0]?.access.practiceDays || 16} {t.practiceDays}</span>
+                          </div>
                         </div>
-                      ))}
+                      </div>
                     </div>
                   </div>
                 )}
