@@ -178,24 +178,38 @@ function* fetchMarathonSaga(action: PayloadAction<{ marathonId: string; timeZone
 }
 
 /**
- * Create order for a course
+ * Create order for a course and auto-activate if free
  */
 function* createOrderSaga(action: PayloadAction<string>): Generator<any, any, any> {
   try {
     const marathonId = action.payload;
     
-    const response = yield call(
+    const orderNumber = yield call(
       request.get,
       endpoints.create_order,
       { params: { marathonId } }
     );
 
-    console.log('Order created:', response);
-    // TODO: Navigate to payment or activate free course
-    return response;
+    console.log('✅ Order created with number:', orderNumber);
+    
+    // Auto-activate free courses
+    const timeZoneOffset = getTimeZoneOffset();
+    yield call(
+      request.get,
+      endpoints.purchase_marathon_by_coupon,
+      { params: { orderNumber: orderNumber.toString(), couponCode: null, timeZoneOffset } }
+    );
+    
+    console.log('✅ Course activated successfully');
+    
+    // Refresh orders list
+    yield put(fetchMyOrders());
+    
+    return orderNumber;
   } catch (error: any) {
-    console.error('Failed to create order:', error);
+    console.error('❌ Failed to create/activate order:', error);
     yield put(setOrdersError(error.message || 'Failed to create order'));
+    throw error;
   }
 }
 

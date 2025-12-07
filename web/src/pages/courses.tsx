@@ -8,6 +8,7 @@ import {
   fetchCourseDetails,
   fetchMarathon,
   setSelectedLanguage,
+  createOrder,
 } from '../store/modules/courses/slice';
 import {
   selectCoursesWithProgress,
@@ -90,9 +91,32 @@ const CoursesPage: React.FC = () => {
   };
 
   const handleJoinCourse = (courseId: string) => {
-    // Demo courses are already activated in backend, just navigate
+    // Find course in my courses (they already have wpMarathonId)
+    const course = myCoursesWithProgress.find(c => 
+      c.id === courseId || c.wpMarathonId === courseId || c.marathonId === courseId
+    );
+    
+    if (!course) {
+      // Not in my courses, just navigate
+      setIsModalOpen(false);
+      handleStartCourse(courseId);
+      return;
+    }
+
+    // Check if course needs activation (orderNumber is null - not yet purchased properly)
+    if (course.orderNumber === null && course.wpMarathonId) {
+      console.log('🚀 Course needs activation, creating and activating order for:', course.title);
+      
+      // Create order and auto-activate (saga handles this)
+      dispatch(createOrder(course.wpMarathonId));
+      
+      // Show message to user
+      alert('Активируем курс... Пожалуйста, подождите немного и попробуйте снова.');
+      return;
+    }
+    
     setIsModalOpen(false);
-    handleStartCourse(courseId);
+    handleStartCourse(course.wpMarathonId || courseId);
   };
 
   // Combine demo and available courses for display
