@@ -99,7 +99,7 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
 
   // Handle day click - navigate to day page
   const handleDayClick = (dayId: string) => {
-    if (isOwnedCourse && marathonId) {
+    if (marathonId) {
       onClose(); // Close modal before navigation
       router.push(`/courses/${marathonId}/day/${dayId}`);
     }
