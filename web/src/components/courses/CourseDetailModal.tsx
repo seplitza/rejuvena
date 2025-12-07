@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { translations, type LanguageCode } from '../../utils/i18n';
+import { translations, getRussianPluralForm, type LanguageCode } from '../../utils/i18n';
 
 interface CourseDetailModalProps {
   course: any;
@@ -320,12 +320,14 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                       </h3>
                       <div className="space-y-3">
                         {[...Array(course.duration || course.days || 7)].map((_, index) => {
-                          // Extract key exercises from description (text in bold tags)
-                          const dayDescription = course.courseDescription || course.description || '';
-                          const boldTextMatch = dayDescription.match(/<strong>(.*?)<\/strong>/gi);
-                          const exerciseBrief = boldTextMatch && boldTextMatch[index] 
-                            ? boldTextMatch[index].replace(/<\/?strong>/gi, '').substring(0, 80) + '...'
-                            : `${t.dayLabel} ${index + 1}`;
+                          // TODO: В будущем можно добавить загрузку описаний дней через API /usermarathon/getdayexercise
+                          // Пока показываем базовую информацию
+                          const dayNumber = index + 1;
+                          const exerciseBrief = language === 'ru' 
+                            ? 'Упражнения и теория'
+                            : language === 'en'
+                            ? 'Exercises and theory'
+                            : 'Ejercicios y teoría';
 
                           return (
                             <div
@@ -333,11 +335,11 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                               className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                             >
                               <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                                {index + 1}
+                                {dayNumber}
                               </div>
                               <div className="flex-1">
                                 <h4 className="font-medium text-gray-900">
-                                  {t.dayLabel} {index + 1}
+                                  {t.dayLabel} {dayNumber}
                                 </h4>
                                 <p className="text-sm text-gray-600">
                                   {exerciseBrief}
@@ -375,7 +377,16 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                             <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <span>{pricingTiers[0]?.access.practiceDays || 16} {t.practiceDays}</span>
+                            <span>
+                              {(() => {
+                                const days = pricingTiers[0]?.access.practiceDays || 16;
+                                if (language === 'ru') {
+                                  const form = getRussianPluralForm(days, 'день', 'дня', 'дней');
+                                  return `${days} ${form} практики`;
+                                }
+                                return `${days} ${t.practiceDays}`;
+                              })()}
+                            </span>
                           </div>
                         </div>
                       </div>

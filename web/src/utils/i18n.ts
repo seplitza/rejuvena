@@ -4,6 +4,23 @@
 
 export type LanguageCode = 'ru' | 'en' | 'es';
 
+/**
+ * Get correct word form for Russian numerals
+ * @param number - the number to get word form for
+ * @param one - form for 1 (день, дня, дней) -> "день"
+ * @param few - form for 2-4 (день, дня, дней) -> "дня"
+ * @param many - form for 5+ (день, дня, дней) -> "дней"
+ */
+export const getRussianPluralForm = (number: number, one: string, few: string, many: string): string => {
+  const n = Math.abs(number) % 100;
+  const n1 = n % 10;
+  
+  if (n > 10 && n < 20) return many;
+  if (n1 > 1 && n1 < 5) return few;
+  if (n1 === 1) return one;
+  return many;
+};
+
 export const translations = {
   ru: {
     // Header
