@@ -3,7 +3,7 @@
  * Displays detailed view of a single marathon day with exercises
  */
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
@@ -13,6 +13,7 @@ import {
   selectMarathonDay,
 } from '@/store/modules/day/selectors';
 import { getDayExercise, clearDayData } from '@/store/modules/day/slice';
+import { selectCourseHasValidAccess, selectIsCoursePurchased } from '@/store/modules/courses/selectors';
 import DayHeader from '@/components/day/DayHeader';
 import DayDescription from '@/components/day/DayDescription';
 import DayPlan from '@/components/day/DayPlan';
@@ -26,6 +27,16 @@ export default function MarathonDayPage() {
   const loading = useAppSelector(selectDayLoading);
   const error = useAppSelector(selectDayError);
   const marathonDay = useAppSelector(selectMarathonDay);
+  
+  // Check if user has valid access to this course
+  const hasValidAccess = useAppSelector(useMemo(
+    () => selectCourseHasValidAccess(typeof courseId === 'string' ? courseId : ''),
+    [courseId]
+  ));
+  const isCoursePurchased = useAppSelector(useMemo(
+    () => selectIsCoursePurchased(typeof courseId === 'string' ? courseId : ''),
+    [courseId]
+  ));
 
   // Fetch day data
   useEffect(() => {
@@ -53,6 +64,37 @@ export default function MarathonDayPage() {
     );
   }
 
+  // Check if course is purchased but has no valid access (empty orderId)
+  if (isCoursePurchased && !hasValidAccess && !loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            Требуется активация
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Курс находится в вашем списке, но требует активации. Нажмите "Начать курс" на карточке курса для активации доступа к содержимому.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => router.push('/courses')}
+              className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              К курсам
+            </button>
+            <button
+              onClick={() => router.back()}
+              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+            >
+              Назад
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   if (error) {
     // Check if error is "Order not found" - means user doesn't own this course
     const isOrderNotFound = error.includes('Order not found') || error.includes('400');

@@ -18,6 +18,13 @@ export const selectMyOrders = createSelector(
 // Alias for compatibility
 export const selectUserOrders = selectMyOrders;
 
+// Helper to check if orderId is valid (not empty GUID)
+export const isValidOrderId = (orderId: string | undefined): boolean => {
+  if (!orderId) return false;
+  const emptyGuid = '00000000-0000-0000-0000-000000000000';
+  return orderId !== emptyGuid && orderId.length > 0;
+};
+
 export const selectActiveOrders = createSelector(
   [selectMyOrders],
   (orders) => {
@@ -145,5 +152,23 @@ export const selectCoursesWithProgress = createSelector(
 export const selectIsCoursePurchased = (courseId: string) =>
   createSelector(
     [selectMyOrders],
-    (orders) => orders.some(order => order.marathonId === courseId && order.status === 'Active')
+    (orders) => orders.some(order => 
+      (order.marathonId === courseId || order.wpMarathonId === courseId || order.id === courseId) &&
+      (order.status === 'Active' || order.orderStatus === 'Approved')
+    )
+  );
+
+// Check if course has valid access (valid orderId means API will work)
+export const selectCourseHasValidAccess = (courseId: string) =>
+  createSelector(
+    [selectMyOrders],
+    (orders) => {
+      const order = orders.find(o => 
+        o.marathonId === courseId || 
+        o.wpMarathonId === courseId || 
+        o.id === courseId
+      );
+      
+      return order && isValidOrderId(order.orderId);
+    }
   );

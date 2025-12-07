@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { translations, getRussianPluralForm, type LanguageCode } from '../../utils/i18n';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { fetchMarathon } from '../../store/modules/courses/slice';
+import { selectCourseHasValidAccess, isValidOrderId } from '../../store/modules/courses/selectors';
 
 interface CourseDetailModalProps {
   course: any;
@@ -88,15 +89,19 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
   const marathonId = course.wpMarathonId || course.marathonId || course.id;
   const marathon = useAppSelector(state => state.courses.marathons[marathonId]);
   const loadingMarathon = useAppSelector(state => state.courses.loadingMarathon);
+  
+  // Check if course has valid access (orderId is not empty)
+  const hasValidAccess = useMemo(() => selectCourseHasValidAccess(marathonId), [marathonId]);
+  const courseHasValidOrder = useAppSelector(hasValidAccess);
 
-  // Fetch marathon data when modal opens - ONLY for owned courses
+  // Fetch marathon data when modal opens - ONLY for owned courses WITH VALID ORDER ID
   // API requires active order, will return 400 "Order not found!" otherwise
   useEffect(() => {
-    if (isOpen && isOwnedCourse && marathonId && !marathon) {
+    if (isOpen && isOwnedCourse && courseHasValidOrder && marathonId && !marathon) {
       const timeZoneOffset = new Date().getTimezoneOffset();
       dispatch(fetchMarathon({ marathonId, timeZoneOffset }));
     }
-  }, [isOpen, isOwnedCourse, marathonId, marathon, dispatch]);
+  }, [isOpen, isOwnedCourse, courseHasValidOrder, marathonId, marathon, dispatch]);
 
   // Handle day click - navigate to day page
   const handleDayClick = (dayId: string) => {
@@ -393,6 +398,21 @@ const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                               </svg>
                             </button>
                           ))
+                        ) : isOwnedCourse && !courseHasValidOrder ? (
+                          // Course is owned but needs activation (empty orderId)
+                          <div className="flex flex-col items-center justify-center py-8 px-4 bg-yellow-50 rounded-lg border-2 border-yellow-200">
+                            <div className="text-4xl mb-3">⚠️</div>
+                            <h4 className="font-semibold text-gray-800 mb-2">
+                              {language === 'ru' ? 'Требуется активация' : language === 'en' ? 'Activation Required' : 'Activación Requerida'}
+                            </h4>
+                            <p className="text-sm text-gray-600 text-center mb-4">
+                              {language === 'ru' 
+                                ? 'Нажмите "Начать курс" чтобы активировать доступ к содержимому'
+                                : language === 'en'
+                                ? 'Click "Start Course" to activate access to content'
+                                : 'Haz clic en "Iniciar Curso" para activar el acceso al contenido'}
+                            </p>
+                          </div>
                         ) : (
                           // Fallback: Show generic days if no marathon data (still clickable)
                           [...Array(course.duration || course.days || 7)].map((_, index) => {
