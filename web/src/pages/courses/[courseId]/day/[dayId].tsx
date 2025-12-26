@@ -3,7 +3,7 @@
  * Displays detailed view of a single marathon day with exercises
  */
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
@@ -21,15 +21,13 @@ export default function MarathonDayPage() {
   const router = useRouter();
   const { courseId, dayId } = router.query;
   const dispatch = useAppDispatch();
-  const [retryCount, setRetryCount] = useState(0);
-  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const currentDay = useAppSelector(selectCurrentDay);
   const loading = useAppSelector(selectDayLoading);
   const error = useAppSelector(selectDayError);
   const marathonDay = useAppSelector(selectMarathonDay);
 
-  // Fetch day data - with retry logic for activation race conditions
+  // Fetch day data
   useEffect(() => {
     if (courseId && dayId && typeof courseId === 'string' && typeof dayId === 'string') {
       dispatch(getDayExercise({
@@ -41,71 +39,23 @@ export default function MarathonDayPage() {
     // Cleanup on unmount
     return () => {
       dispatch(clearDayData());
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current);
-      }
     };
-  }, [courseId, dayId, dispatch, retryCount]);
-
-  // Auto-retry if "Order not found" (course activation in progress)
-  useEffect(() => {
-    const isOrderNotFound = error && (error.includes('Order not found') || error.includes('400'));
-    
-    if (isOrderNotFound && retryCount < 5) {
-      console.log(`⏳ Order not found, retrying in ${1 + retryCount}s... (attempt ${retryCount + 1}/5)`);
-      
-      retryTimeoutRef.current = setTimeout(() => {
-        setRetryCount(prev => prev + 1);
-      }, (1 + retryCount) * 1000); // Increasing delay: 1s, 2s, 3s, 4s, 5s
-    }
-
-    return () => {
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current);
-      }
-    };
-  }, [error, retryCount]);
+  }, [courseId, dayId, dispatch]);
 
   if (loading) {
-    // Show if we're waiting for activation
-    const isWaitingForActivation = retryCount > 0;
-    
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">
-            {isWaitingForActivation ? 'Активируем курс...' : 'Загрузка дня...'}
-          </p>
-          {isWaitingForActivation && (
-            <p className="text-sm text-gray-500 mt-2">
-              Попытка {retryCount} из 5
-            </p>
-          )}
+          <p className="text-gray-600">Загрузка дня...</p>
         </div>
       </div>
     );
   }
   
   if (error) {
-    // Check if error is "Order not found" - might still be activating
+    // Check if error is "Order not found" - means user doesn't own this course
     const isOrderNotFound = error.includes('Order not found') || error.includes('400');
-    const isStillRetrying = isOrderNotFound && retryCount < 5;
-    
-    // If still retrying, show loading instead of error
-    if (isStillRetrying) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Активируем курс...</p>
-            <p className="text-sm text-gray-500 mt-2">
-              Попытка {retryCount + 1} из 5
-            </p>
-          </div>
-        </div>
-      );
-    }
     
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50">

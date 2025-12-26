@@ -204,21 +204,18 @@ function* createOrderSaga(action: PayloadAction<string>): Generator<any, any, an
     const isFree = !course || course.cost === 0 || course.isFree;
     console.log(`💳 Activating course (cost=${course?.cost || 0}, isFree=${isFree}) with purchasemarathon...`);
     
-    // For free courses, don't include couponCode parameter at all
-    const params: any = { 
-      orderNumber: orderNumber.toString(), 
-      timeZoneOffset 
-    };
-    
-    // Only add couponCode for paid courses
-    if (!isFree) {
-      params.couponCode = '';
-    }
-    
+    // IMPORTANT: Mobile app passes couponCode: null for free courses
+    // This is correct behavior - API expects this parameter
     yield call(
       request.get,
       endpoints.purchase_marathon_by_coupon,
-      { params }
+      { 
+        params: {
+          orderNumber: orderNumber.toString(),
+          couponCode: null, // null for free courses, same as mobile app
+          timeZoneOffset
+        }
+      }
     );
     console.log('✅ Course activated successfully');
     
