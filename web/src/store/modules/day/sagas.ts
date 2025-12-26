@@ -40,7 +40,7 @@ function* getDayExerciseSaga(
     // CRITICAL: Must call StartMarathon before GetDayExercise
     // This initializes the marathon for the user
     console.log('🚀 Starting marathon before loading exercises...');
-    yield call(
+    const marathonData = yield call(
       request.get,
       endpoints.get_start_marathon,
       {
@@ -50,7 +50,23 @@ function* getDayExerciseSaga(
         },
       }
     );
-    console.log('✅ Marathon started, now loading exercises...');
+    console.log('✅ Marathon started, marathon data:', marathonData);
+    
+    // Extract day number from dayId (e.g., "day-1" -> 1)
+    const dayNumber = parseInt(dayId.replace('day-', ''), 10);
+    console.log(`📅 Looking for day #${dayNumber} in marathon days...`);
+    
+    // Find the actual day ID (GUID) from marathon days
+    const marathonDays = marathonData?.marathonDays || [];
+    const dayData = marathonDays.find((d: any) => d.day === dayNumber);
+    
+    if (!dayData) {
+      throw new Error(`Day ${dayNumber} not found in marathon`);
+    }
+    
+    const actualDayId = dayData.id;
+    console.log(`✅ Found day ${dayNumber} with ID: ${actualDayId}`);
+    console.log('🔄 Now loading exercises...');
     
     const response: DayExerciseResponse = yield call(
       request.get,
@@ -58,7 +74,7 @@ function* getDayExerciseSaga(
       {
         params: {
           marathonId,
-          dayId,
+          dayId: actualDayId,  // Use GUID, not slug
           timeZoneOffset,
         },
       }
