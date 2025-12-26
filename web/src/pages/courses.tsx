@@ -52,21 +52,8 @@ const CoursesPage: React.FC = () => {
     dispatch(fetchDemoCourses());
   }, [dispatch]);
 
-  // Fetch marathon progress for each active order
-  useEffect(() => {
-    if (myCoursesWithProgress.length > 0) {
-      myCoursesWithProgress.forEach((course) => {
-        if (!course.marathon) {
-          dispatch(
-            fetchMarathon({
-              marathonId: course.marathonId,
-              timeZoneOffset: new Date().getTimezoneOffset(),
-            })
-          );
-        }
-      });
-    }
-  }, [myCoursesWithProgress.length, dispatch]);
+  // Don't auto-fetch marathons - they need activation first if orderNumber is null
+  // Fetch will happen when user clicks on course
 
   const handleCourseDetails = (course: any, isOwned: boolean = false) => {
     setSelectedCourse(course);
@@ -86,6 +73,22 @@ const CoursesPage: React.FC = () => {
   };
 
   const handleStartCourse = (marathonId: string) => {
+    // Check if this course needs activation first
+    const course = myCoursesWithProgress.find(c => 
+      c.marathonId === marathonId || c.wpMarathonId === marathonId
+    );
+    
+    if (course && course.orderNumber === null && course.wpMarathonId) {
+      console.log('🚀 Course needs activation before starting:', course.title);
+      
+      // Create order and auto-activate (saga handles this)
+      dispatch(createOrder(course.wpMarathonId));
+      
+      // Show message to user
+      alert('Активируем курс... Пожалуйста, подождите 3-5 секунд и попробуйте снова.');
+      return;
+    }
+    
     // Navigate to first day of the marathon
     router.push(`/courses/${marathonId}/day/day-1`);
   };
@@ -110,8 +113,8 @@ const CoursesPage: React.FC = () => {
       // Create order and auto-activate (saga handles this)
       dispatch(createOrder(course.wpMarathonId));
       
-      // Show message to user
-      alert('Активируем курс... Пожалуйста, подождите немного и попробуйте снова.');
+      // Show message to user  
+      alert('Активируем курс... Пожалуйста, подождите 3-5 секунд и попробуйте снова.');
       return;
     }
     
