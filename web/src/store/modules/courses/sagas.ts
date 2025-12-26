@@ -198,20 +198,16 @@ function* createOrderSaga(action: PayloadAction<string>): Generator<any, any, an
 
     console.log('✅ Order created with number:', orderNumber);
     
-    // Only call purchasemarathon for paid courses (cost > 0)
-    // Demo courses with cost === 0 are auto-activated on order creation
+    // CRITICAL: Always call purchasemarathon to create order in database
+    // Both paid and free courses need this step
     const timeZoneOffset = getTimeZoneOffset();
-    if (course && course.cost > 0) {
-      console.log('💰 Paid course detected, activating with purchasemarathon...');
-      yield call(
-        request.get,
-        endpoints.purchase_marathon_by_coupon,
-        { params: { orderNumber: orderNumber.toString(), timeZoneOffset } }
-      );
-      console.log('✅ Course activated successfully');
-    } else {
-      console.log('🎁 Free demo course (cost=0), skipping purchasemarathon - auto-activated');
-    }
+    console.log(`💳 Activating course (cost=${course?.cost || 0}) with purchasemarathon...`);
+    yield call(
+      request.get,
+      endpoints.purchase_marathon_by_coupon,
+      { params: { orderNumber: orderNumber.toString(), timeZoneOffset } }
+    );
+    console.log('✅ Course activated successfully');
     
     // IMPORTANT: Update orderNumber in Redux immediately (don't wait for backend refresh)
     yield put(updateOrderNumber({ wpMarathonId: marathonId, orderNumber }));
