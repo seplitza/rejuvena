@@ -205,25 +205,28 @@ function* createOrderSaga(action: PayloadAction<string>): Generator<any, any, an
     // CRITICAL: Always call purchasemarathon to create order in database
     // Both paid and free courses need this step
     const timeZoneOffset = getTimeZoneOffset();
-    const isTrulyFree = !course || course.cost === 0;
     const hasRealCoupon = course?.coupon && course.coupon.length > 0;
+    const isMarkedFree = course?.isFree === true; // API checks this flag, not cost
     
-    console.log(`💳 Activating course (cost=${course?.cost || 0}, isFree=${course?.isFree}, coupon=${course?.coupon || 'none'})...`);
+    console.log(`💳 Activating course (cost=${course?.cost || 0}, isFree=${isMarkedFree}, coupon=${course?.coupon || 'none'})...`);
     
-    // Build params: only add couponCode if truly free (cost=0) or has real coupon
+    // Build params based on API expectations:
+    // - If isFree=true: API expects couponCode parameter (empty string for free access)
+    // - If has real coupon: send the coupon code
+    // - Otherwise: don't send couponCode (paid course requiring payment)
     const params: any = {
       orderNumber: orderNumber.toString(),
       timeZoneOffset
     };
     
-    if (isTrulyFree) {
-      // Truly free course (cost=0) - send empty couponCode
+    if (isMarkedFree) {
+      // Course marked as free - API expects empty couponCode
       params.couponCode = '';
     } else if (hasRealCoupon) {
-      // Paid course with coupon - send the coupon
+      // Paid course with coupon discount
       params.couponCode = course.coupon;
     }
-    // Otherwise: paid course without coupon - don't send couponCode at all
+    // Otherwise: paid course without coupon - don't send couponCode
     
     yield call(
       request.get,
