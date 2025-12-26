@@ -17,6 +17,7 @@ import {
   purchaseCourse as purchaseCourseAction,
   acceptCourseRules as acceptCourseRulesAction,
   setMyOrders,
+  updateOrderNumber,
   setLoadingOrders,
   setOrdersError,
   setAvailableCourses,
@@ -202,7 +203,10 @@ function* createOrderSaga(action: PayloadAction<string>): Generator<any, any, an
     
     console.log('✅ Course activated successfully');
     
-    // Refresh orders list
+    // IMPORTANT: Update orderNumber in Redux immediately (don't wait for backend refresh)
+    yield put(updateOrderNumber({ wpMarathonId: marathonId, orderNumber }));
+    
+    // Also refresh orders list from backend
     yield put(fetchMyOrders());
     
     return orderNumber;

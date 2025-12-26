@@ -170,6 +170,13 @@ const coursesSlice = createSlice({
       state.loadingOrders = false;
       state.ordersError = null;
     },
+    updateOrderNumber(state, action: PayloadAction<{ wpMarathonId: string; orderNumber: number }>) {
+      const order = state.myOrders.find(o => o.wpMarathonId === action.payload.wpMarathonId);
+      if (order) {
+        order.orderNumber = action.payload.orderNumber;
+        console.log(`📝 Updated orderNumber for ${order.title}: ${action.payload.orderNumber}`);
+      }
+    },
     setLoadingOrders(state, action: PayloadAction<boolean>) {
       state.loadingOrders = action.payload;
     },
@@ -246,6 +253,7 @@ export const coursesReducer = coursesSlice.reducer;
 // Sync Actions
 export const {
   setMyOrders,
+  updateOrderNumber,
   setLoadingOrders,
   setOrdersError,
   setAvailableCourses,
