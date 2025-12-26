@@ -179,11 +179,16 @@ function* fetchMarathonSaga(action: PayloadAction<{ marathonId: string; timeZone
 }
 
 /**
- * Create order for a course and auto-activate if free
+ * Create order for a course and auto-activate if needed
  */
 function* createOrderSaga(action: PayloadAction<string>): Generator<any, any, any> {
   try {
     const marathonId = action.payload;
+    
+    // Get course details to check if it needs purchase activation
+    const state = yield select();
+    const allOrders = [...state.courses.myOrders, ...state.courses.availableCourses, ...state.courses.demoCourses];
+    const course = allOrders.find((c: any) => c.wpMarathonId === marathonId);
     
     const orderNumber = yield call(
       request.get,
@@ -193,15 +198,20 @@ function* createOrderSaga(action: PayloadAction<string>): Generator<any, any, an
 
     console.log('✅ Order created with number:', orderNumber);
     
-    // Auto-activate free courses (omit couponCode parameter entirely for free courses)
-    const timeZoneOffset = getTimeZoneOffset();
-    yield call(
-      request.get,
-      endpoints.purchase_marathon_by_coupon,
-      { params: { orderNumber: orderNumber.toString(), timeZoneOffset } }
-    );
-    
-    console.log('✅ Course activated successfully');
+    // Only call purchasemarathon for paid courses (cost > 0)
+    // Demo courses with cost === 0 are auto-activated on order creation
+    if (course && course.cost > 0) {
+      console.log('💰 Paid course detected, activating with purchasemarathon...');
+      const timeZoneOffset = getTimeZoneOffset();
+      yield call(
+        request.get,
+        endpoints.purchase_marathon_by_coupon,
+        { params: { orderNumber: orderNumber.toString(), timeZoneOffset } }
+      );
+      console.log('✅ Course activated successfully');
+    } else {
+      console.log('🎁 Free demo course (cost=0), skipping purchasemarathon - auto-activated');
+    }
     
     // IMPORTANT: Update orderNumber in Redux immediately (don't wait for backend refresh)
     yield put(updateOrderNumber({ wpMarathonId: marathonId, orderNumber }));
