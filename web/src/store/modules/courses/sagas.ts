@@ -205,7 +205,11 @@ function* createOrderSaga(action: PayloadAction<string>): Generator<any, any, an
     yield call(
       request.get,
       endpoints.purchase_marathon_by_coupon,
-      { params: { orderNumber: orderNumber.toString(), timeZoneOffset } }
+      { params: { 
+        orderNumber: orderNumber.toString(), 
+        couponCode: null,  // Required parameter, null for courses without coupon
+        timeZoneOffset 
+      }}
     );
     console.log('✅ Course activated successfully');
     
