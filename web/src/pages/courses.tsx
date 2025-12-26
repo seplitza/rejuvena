@@ -18,6 +18,7 @@ import {
   selectLoadingCourses,
   selectSelectedCourse,
   selectSelectedLanguage,
+  selectActivatingOrderId,
 } from '../store/modules/courses/selectors';
 import MyCourseCard from '../components/courses/MyCourseCard';
 import CourseCard from '../components/courses/CourseCard';
@@ -31,6 +32,7 @@ const CoursesPage: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOwnedCourse, setIsOwnedCourse] = useState(false);
+  const [pendingNavigationTo, setPendingNavigationTo] = useState<string | null>(null);
 
   // Redux selectors
   const myCoursesWithProgress = useAppSelector(selectCoursesWithProgress);
@@ -40,6 +42,7 @@ const CoursesPage: React.FC = () => {
   const loadingCourses = useAppSelector(selectLoadingCourses);
   const courseDetails = useAppSelector(selectSelectedCourse);
   const selectedLanguage = useAppSelector(selectSelectedLanguage);
+  const activatingOrderId = useAppSelector(selectActivatingOrderId);
   
   // Get translations
   const t = translations[selectedLanguage];
@@ -51,6 +54,16 @@ const CoursesPage: React.FC = () => {
     dispatch(fetchAvailableCourses());
     dispatch(fetchDemoCourses());
   }, [dispatch]);
+
+  // Watch for activation completion and navigate
+  useEffect(() => {
+    // If activation just finished (activatingOrderId was set, now null) and we have pending navigation
+    if (!activatingOrderId && pendingNavigationTo) {
+      console.log('✅ Activation complete, navigating to:', pendingNavigationTo);
+      router.push(pendingNavigationTo);
+      setPendingNavigationTo(null);
+    }
+  }, [activatingOrderId, pendingNavigationTo, router]);
 
   // Don't auto-fetch marathons - they need activation first if orderNumber is null
   // Fetch will happen when user clicks on course
@@ -81,15 +94,16 @@ const CoursesPage: React.FC = () => {
     if (course && course.orderNumber === null && course.wpMarathonId) {
       console.log('🚀 Course needs activation before starting:', course.title);
       
-      // Create order and auto-activate (saga handles this in background)
-      dispatch(createOrder(course.wpMarathonId));
+      // Set pending navigation destination
+      setPendingNavigationTo(`/courses/${marathonId}/day/day-1`);
       
-      // Navigate immediately - activation happens in background
-      router.push(`/courses/${marathonId}/day/day-1`);
+      // Create order and auto-activate in background
+      // When saga completes, useEffect will trigger navigation
+      dispatch(createOrder(course.wpMarathonId));
       return;
     }
     
-    // Navigate to first day of the marathon
+    // Already activated - navigate immediately
     router.push(`/courses/${marathonId}/day/day-1`);
   };
 
@@ -103,12 +117,15 @@ const CoursesPage: React.FC = () => {
     if (myCourse && myCourse.isFree && myCourse.orderNumber === null && myCourse.wpMarathonId) {
       console.log('🚀 Free course needs activation:', myCourse.title);
       
-      // Create order and auto-activate (saga handles this in background)
+      // Set pending navigation destination
+      setPendingNavigationTo(`/courses/${myCourse.wpMarathonId || courseId}/day/day-1`);
+      
+      // Create order and auto-activate in background
+      // When saga completes, useEffect will trigger navigation
       dispatch(createOrder(myCourse.wpMarathonId));
       
-      // Close modal and navigate immediately
+      // Close modal immediately
       setIsModalOpen(false);
-      router.push(`/courses/${myCourse.wpMarathonId || courseId}/day/day-1`);
       return;
     }
     

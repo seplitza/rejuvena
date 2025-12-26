@@ -259,6 +259,7 @@ export const coursesReducer = coursesSlice.reducer;
 export const {
   setMyOrders,
   updateOrderNumber,
+  setActivatingOrderId,
   setLoadingOrders,
   setOrdersError,
   setAvailableCourses,

@@ -46,6 +46,11 @@ export const selectOrdersError = createSelector(
   (courses) => courses.ordersError
 );
 
+export const selectActivatingOrderId = createSelector(
+  [selectCoursesState],
+  (courses) => courses.activatingOrderId
+);
+
 // Available Courses selectors
 export const selectAvailableCourses = createSelector(
   [selectCoursesState],

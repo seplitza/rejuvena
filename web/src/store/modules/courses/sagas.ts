@@ -18,6 +18,7 @@ import {
   acceptCourseRules as acceptCourseRulesAction,
   setMyOrders,
   updateOrderNumber,
+  setActivatingOrderId,
   setLoadingOrders,
   setOrdersError,
   setAvailableCourses,
@@ -185,6 +186,9 @@ function* createOrderSaga(action: PayloadAction<string>): Generator<any, any, an
   try {
     const marathonId = action.payload;
     
+    // Set activating flag to track progress
+    yield put(setActivatingOrderId(marathonId));
+    
     // Get course details to check if it needs purchase activation
     const state = yield select();
     const allOrders = [...state.courses.myOrders, ...state.courses.availableCourses, ...state.courses.demoCourses];
@@ -225,11 +229,18 @@ function* createOrderSaga(action: PayloadAction<string>): Generator<any, any, an
     // Also refresh orders list from backend
     yield put(fetchMyOrders());
     
+    // Clear activating flag - activation complete!
+    yield put(setActivatingOrderId(null));
+    
     return orderNumber;
   } catch (error: any) {
     console.error('❌ Failed to create/activate order:', error);
     console.error('Error details:', error.response?.data || error.message);
     yield put(setOrdersError(error.message || 'Failed to create order'));
+    
+    // Clear activating flag on error
+    yield put(setActivatingOrderId(null));
+    
     throw error;
   }
 }
