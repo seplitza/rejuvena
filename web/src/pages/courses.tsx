@@ -84,8 +84,13 @@ const CoursesPage: React.FC = () => {
       // Create order and auto-activate (saga handles this)
       dispatch(createOrder(course.wpMarathonId));
       
-      // Show message to user
-      alert('Активируем курс... Пожалуйста, подождите 3-5 секунд и попробуйте снова.');
+      // Show message and auto-navigate after activation completes
+      alert('Активируем курс... Сейчас откроется страница курса.');
+      
+      // Auto-navigate after 2 seconds (enough time for saga to complete)
+      setTimeout(() => {
+        router.push(`/courses/${marathonId}/day/day-1`);
+      }, 2000);
       return;
     }
     
@@ -113,8 +118,14 @@ const CoursesPage: React.FC = () => {
       // Create order and auto-activate (saga handles this)
       dispatch(createOrder(course.wpMarathonId));
       
-      // Show message to user  
-      alert('Активируем курс... Пожалуйста, подождите 3-5 секунд и попробуйте снова.');
+      // Close modal and show message
+      setIsModalOpen(false);
+      alert('Активируем курс... Сейчас откроется страница курса.');
+      
+      // Auto-navigate after 2 seconds
+      setTimeout(() => {
+        router.push(`/courses/${course.wpMarathonId || courseId}/day/day-1`);
+      }, 2000);
       return;
     }
     
