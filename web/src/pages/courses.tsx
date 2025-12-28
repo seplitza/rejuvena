@@ -91,7 +91,11 @@ const CoursesPage: React.FC = () => {
       c.marathonId === marathonId || c.wpMarathonId === marathonId
     );
     
-    if (course && course.orderNumber === null && course.wpMarathonId) {
+    // CRITICAL: Only activate if orderStatus is NOT "Approved"
+    // Course with orderStatus="Approved" are already activated in backend
+    const needsActivation = course && course.orderNumber === null && course.orderStatus !== 'Approved';
+    
+    if (needsActivation && course.wpMarathonId) {
       console.log('🚀 Course needs activation before starting:', course.title);
       
       // Set pending navigation destination - saga will resolve current day
@@ -100,6 +104,18 @@ const CoursesPage: React.FC = () => {
       // Create order and auto-activate in background
       // When saga completes, useEffect will trigger navigation
       dispatch(createOrder(course.wpMarathonId));
+      return;
+    }
+    
+    console.log('✅ Course already activated (orderStatus:', course?.orderStatus, '), navigating directly');
+    
+    // Check if user accepted course rules
+    // If not - redirect to start page first
+    const hasAcceptedRules = course?.isAcceptCourseTerm === true;
+    
+    if (!hasAcceptedRules) {
+      console.log('📋 Rules not accepted, redirecting to /start');
+      router.push(`/courses/${marathonId}/start`);
       return;
     }
     

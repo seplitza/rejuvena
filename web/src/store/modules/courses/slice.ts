@@ -37,6 +37,7 @@ export interface Order {
   orderStatus: string;
   isPurchased: boolean;
   isFree: boolean;
+  isAcceptCourseTerm?: boolean; // Whether user accepted course rules
   productType: string; // 'Marathon' or 'Course' - Marathon has circular image and mass start, Course has square image and individual start
   courseType?: string;
   validFrom: string | null;
