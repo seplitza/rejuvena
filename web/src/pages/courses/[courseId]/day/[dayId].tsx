@@ -16,6 +16,7 @@ import { getDayExercise, clearDayData } from '@/store/modules/day/slice';
 import DayHeader from '@/components/day/DayHeader';
 import DayDescription from '@/components/day/DayDescription';
 import DayPlan from '@/components/day/DayPlan';
+import DaysList from '@/components/day/DaysList';
 
 export default function MarathonDayPage() {
   const router = useRouter();
@@ -106,6 +107,14 @@ export default function MarathonDayPage() {
 
         {/* Day Plan with Exercises */}
         <DayPlan />
+
+        {/* Days List - показываем все пройденные дни со звездами */}
+        {courseId && typeof courseId === 'string' && marathonDay?.id && (
+          <DaysList 
+            marathonId={courseId} 
+            currentDayId={marathonDay.id}
+          />
+        )}
       </div>
     </div>
   );
