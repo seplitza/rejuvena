@@ -83,21 +83,26 @@ export default function CourseStartPage() {
   const marathonDays = marathonData?.marathonDays || [];
   const lastPublishedDay = marathonDays[marathonDays.length - 1];
 
-  // Load marathon data if not already loaded
+  // CRITICAL: Check if marathonData belongs to current course
+  // If not, treat as if no data loaded yet
+  const isCorrectMarathonData = marathonData && (marathonData as any).marathonId === marathonId;
+  const validMarathonData = isCorrectMarathonData ? marathonData : null;
+  
+  // Load marathon data if not loaded OR data from different course
   useEffect(() => {
-    if (marathonId && !marathonData) {
+    if (marathonId && !isCorrectMarathonData) {
       console.log('📚 Loading marathon data for order ID:', marathonId);
       dispatch(getDayExercise({
         marathonId: marathonId,
         dayId: 'current',
       }));
     }
-  }, [marathonId, marathonData, dispatch]);
+  }, [marathonId, isCorrectMarathonData, dispatch]);
 
   // Sync checkbox with marathon data from API (contains isAcceptCourseTerm)
   useEffect(() => {
-    if (marathonData) {
-      const rulesAcceptedFromAPI = (marathonData as any).isAcceptCourseTerm === true;
+    if (validMarathonData) {
+      const rulesAcceptedFromAPI = (validMarathonData as any).isAcceptCourseTerm === true;
       console.log('📋 Marathon data loaded, isAcceptCourseTerm:', rulesAcceptedFromAPI);
       setIsAccepted(rulesAcceptedFromAPI);
       
@@ -106,7 +111,7 @@ export default function CourseStartPage() {
         dispatch(updateCourseRulesAccepted({ courseId: marathonId, status: rulesAcceptedFromAPI }));
       }
     }
-  }, [marathonData, marathonId, currentCourse, dispatch]);
+  }, [validMarathonData, marathonId, currentCourse, dispatch]);
 
   const handleAcceptRules = async () => {
     if (!marathonId || isSubmitting) return;
