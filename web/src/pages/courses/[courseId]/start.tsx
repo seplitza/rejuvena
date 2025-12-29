@@ -10,9 +10,7 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { selectMarathonData } from '@/store/modules/day/selectors';
 import { selectUserOrders } from '@/store/modules/courses/selectors';
 import { getDayExercise } from '@/store/modules/day/slice';
-import { updateCourseRulesAccepted } from '@/store/modules/courses/slice';
-import { request } from '@/api/request';
-import * as endpoints from '@/api/endpoints';
+import { acceptCourseRules } from '@/store/modules/courses/slice';
 import DaysList from '@/components/day/DaysList';
 import Image from 'next/image';
 
@@ -111,20 +109,16 @@ export default function CourseStartPage() {
     try {
       setIsSubmitting(true);
 
-      await request.get(endpoints.accept_marathon_terms, {
-        params: {
-          courseId: marathonId,
-          status: true,
-        },
-      });
-
-      console.log('✅ Rules accepted for marathon:', marathonId);
-      
-      // Update Redux store to persist rules acceptance
-      dispatch(updateCourseRulesAccepted({ 
+      // Dispatch Redux action to save acceptance to backend and update store
+      dispatch(acceptCourseRules({ 
         courseId: marathonId, 
-        accepted: true 
+        status: true 
       }));
+
+      console.log('✅ Rules acceptance dispatched for marathon:', marathonId);
+      
+      // Wait a bit for the Redux action to complete
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       // Navigate to current day (last published) - use original courseId from URL
       const currentDayNumber = lastPublishedDay?.day || 1;

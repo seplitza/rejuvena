@@ -183,11 +183,11 @@ const coursesSlice = createSlice({
         console.log(`📝 Updated orderNumber for ${order.title}: ${action.payload.orderNumber}`);
       }
     },
-    updateCourseRulesAccepted(state, action: PayloadAction<{ courseId: string; accepted: boolean }>) {
+    updateCourseRulesAccepted(state, action: PayloadAction<{ courseId: string; status: boolean }>) {
       const order = state.myOrders.find(o => o.id === action.payload.courseId || o.wpMarathonId === action.payload.courseId);
       if (order) {
-        order.isAcceptCourseTerm = action.payload.accepted;
-        console.log(`✅ Updated rules acceptance for ${order.title}: ${action.payload.accepted}`);
+        order.isAcceptCourseTerm = action.payload.status;
+        console.log(`✅ Updated rules acceptance for ${order.title}: ${action.payload.status}`);
       }
     },
     setLoadingOrders(state, action: PayloadAction<boolean>) {

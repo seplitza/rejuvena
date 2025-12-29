@@ -32,6 +32,7 @@ import {
   setMarathon,
   setLoadingMarathon,
   setMarathonError,
+  updateCourseRulesAccepted,
 } from './slice';
 
 // Helper to get timezone offset
@@ -296,11 +297,16 @@ function* acceptCourseRulesSaga(action: PayloadAction<{ courseId: string; status
       { params: { status, courseId } }
     );
 
-    console.log('Course rules accepted:', response);
+    console.log('✅ Course rules accepted via API:', response);
+    
+    // Update Redux store with acceptance status
+    yield put(updateCourseRulesAccepted({ courseId, status }));
+    
     return response;
   } catch (error: any) {
-    console.error('Failed to accept course rules:', error);
+    console.error('❌ Failed to accept course rules:', error);
     yield put(setMarathonError(error.message || 'Failed to accept terms'));
+    throw error;
   }
 }
 
