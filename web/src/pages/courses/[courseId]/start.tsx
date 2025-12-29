@@ -97,9 +97,16 @@ export default function CourseStartPage() {
   // If rules already accepted, redirect to current day
   useEffect(() => {
     if (marathonData && currentCourse?.isAcceptCourseTerm && courseId) {
+      const currentDayId = lastPublishedDay?.id;
       const currentDayNumber = lastPublishedDay?.day || 1;
-      console.log('✅ Rules already accepted, navigating to current day:', currentDayNumber);
-      router.push(`/courses/${courseId}/day/day-${currentDayNumber}`);
+      
+      if (currentDayId) {
+        console.log('✅ Rules already accepted, navigating to day', currentDayNumber, 'with ID:', currentDayId);
+        router.push(`/courses/${courseId}/day/${currentDayId}`);
+      } else {
+        console.log('✅ Rules already accepted, navigating to "current"');
+        router.push(`/courses/${courseId}/day/current`);
+      }
     }
   }, [marathonData, currentCourse, courseId, lastPublishedDay, router]);
 
@@ -120,10 +127,17 @@ export default function CourseStartPage() {
       // Wait a bit for the Redux action to complete
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Navigate to current day (last published) - use original courseId from URL
+      // Navigate to current day (last published) - use dayId (UUID) not day number
+      const currentDayId = lastPublishedDay?.id;
       const currentDayNumber = lastPublishedDay?.day || 1;
-      console.log('📍 Navigating to current day:', currentDayNumber);
-      router.push(`/courses/${courseId}/day/day-${currentDayNumber}`);
+      
+      if (currentDayId) {
+        console.log('📍 Navigating to day', currentDayNumber, 'with ID:', currentDayId);
+        router.push(`/courses/${courseId}/day/${currentDayId}`);
+      } else {
+        console.log('⚠️ No day ID found, navigating to "current"');
+        router.push(`/courses/${courseId}/day/current`);
+      }
     } catch (error) {
       console.error('❌ Failed to accept rules:', error);
       alert('Не удалось принять правила. Попробуйте еще раз.');
