@@ -92,6 +92,8 @@ const CoursesPage: React.FC = () => {
       c.id === courseId || c.wpMarathonId === courseId
     );
     
+    console.log('🎯 handleStartCourse called with courseId:', courseId, 'course:', course);
+    
     // CRITICAL: Only activate if orderStatus is NOT "Approved"
     // Course with orderStatus="Approved" are already activated in backend
     const needsActivation = course && course.orderNumber === null && course.orderStatus !== 'Approved';
@@ -114,8 +116,15 @@ const CoursesPage: React.FC = () => {
     // If not - redirect to start page first
     const hasAcceptedRules = course?.isAcceptCourseTerm === true;
     
+    console.log('📋 Checking rules acceptance:', {
+      hasAcceptedRules,
+      isAcceptCourseTerm: course?.isAcceptCourseTerm,
+      courseId,
+      courseWpMarathonId: course?.wpMarathonId
+    });
+    
     if (!hasAcceptedRules) {
-      console.log('📋 Rules not accepted, redirecting to /start');
+      console.log('📋 Rules not accepted, redirecting to /start with courseId:', courseId);
       router.push(`/courses/${courseId}/start`);
       return;
     }
