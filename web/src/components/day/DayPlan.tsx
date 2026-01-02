@@ -51,6 +51,7 @@ export default function DayPlan() {
   };
 
   const handleExerciseCheck = (exercise: Exercise, uniqueId: string) => {
+    console.log('🎯 handleExerciseCheck called for:', exercise.exerciseName);
     if (exercise.blockExercise || changingStatusRequests[uniqueId]) return;
     
     const currentStatus = updatedExercisesStatus[uniqueId] !== undefined 
@@ -65,6 +66,7 @@ export default function DayPlan() {
     }));
     
     // Open modal immediately after checking
+    console.log('✅ Setting selectedExercise:', exercise);
     setSelectedExercise(exercise);
   };
 
@@ -174,13 +176,18 @@ export default function DayPlan() {
       </div>
 
       {/* Exercise Detail Modal with Suspense for lazy loading */}
-      <Suspense fallback={null}>
-        <ExerciseDetailModal
-          exercise={selectedExercise || ({} as Exercise)}
-          isOpen={!!selectedExercise}
-          onClose={() => setSelectedExercise(null)}
-        />
-      </Suspense>
+      {(() => {
+        console.log('🔍 Modal render check - selectedExercise:', selectedExercise);
+        return (
+          <Suspense fallback={null}>
+            <ExerciseDetailModal
+              exercise={selectedExercise || ({} as Exercise)}
+              isOpen={!!selectedExercise}
+              onClose={() => setSelectedExercise(null)}
+            />
+          </Suspense>
+        );
+      })()}
     </>
   );
 }
