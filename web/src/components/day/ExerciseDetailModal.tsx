@@ -3,7 +3,7 @@
  * Shows full exercise details with video and description
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import type { Exercise } from '@/store/modules/day/slice';
 import Image from 'next/image';
 
@@ -25,6 +25,15 @@ function getVideoEmbedUrl(url: string): { embedUrl: string; type: 'iframe' | 'vi
     return { embedUrl: url, type: 'video' };
   }
 
+  // Already embed URL - return as is
+  if (url.includes('player.vimeo.com/video/') || 
+      url.includes('youtube.com/embed/') || 
+      url.includes('rutube.ru/play/embed/') ||
+      url.includes('vk.com/video_ext.php') ||
+      url.includes('dzen.ru/embed/')) {
+    return { embedUrl: url, type: 'iframe' };
+  }
+
   // YouTube
   if (url.includes('youtube.com') || url.includes('youtu.be')) {
     const videoId = url.includes('youtu.be')
@@ -33,8 +42,8 @@ function getVideoEmbedUrl(url: string): { embedUrl: string; type: 'iframe' | 'vi
     return { embedUrl: `https://www.youtube.com/embed/${videoId}`, type: 'iframe' };
   }
 
-  // Vimeo
-  if (url.includes('vimeo.com')) {
+  // Vimeo (only process if NOT already embed)
+  if (url.includes('vimeo.com') && !url.includes('player.vimeo.com')) {
     const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
     return { embedUrl: `https://player.vimeo.com/video/${videoId}`, type: 'iframe' };
   }
@@ -76,6 +85,8 @@ function getVideoEmbedUrl(url: string): { embedUrl: string; type: 'iframe' | 'vi
 }
 
 export default function ExerciseDetailModal({ exercise, isOpen, onClose }: ExerciseDetailModalProps) {
+  const [commentsExpanded, setCommentsExpanded] = useState(false);
+
   // Close on ESC key
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -254,17 +265,36 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose }: Exerc
           )}
         </div>
 
-        {/* Comments Section */}
-        <div className="border-t border-gray-200 bg-gray-50 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        {/* Comments Section - Collapsible */}
+        <div className="border-t border-gray-200 bg-gray-50">
+          <button
+            onClick={() => setCommentsExpanded(!commentsExpanded)}
+            className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-100 transition-colors"
+          >
+            <div className="flex items-center space-x-2">
+              <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              <span className="text-lg font-semibold text-gray-900">Комментарии</span>
+              <span className="text-sm text-gray-500">(скоро)</span>
+            </div>
+            <svg 
+              className={`w-5 h-5 text-gray-500 transition-transform ${commentsExpanded ? 'rotate-180' : ''}`} 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
-            <span>Комментарии</span>
-          </h3>
-          <div className="text-sm text-gray-500 text-center py-4">
-            Раздел комментариев будет доступен в следующей версии
-          </div>
+          </button>
+          
+          {commentsExpanded && (
+            <div className="px-6 pb-6 pt-2">
+              <div className="text-sm text-gray-500 text-center py-8 bg-white rounded-lg border border-gray-200">
+                📝 Раздел комментариев будет доступен в следующей версии
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
