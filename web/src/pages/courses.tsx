@@ -35,6 +35,8 @@ const CoursesPage: React.FC = () => {
   const [isOwnedCourse, setIsOwnedCourse] = useState(false);
   const [pendingNavigationTo, setPendingNavigationTo] = useState<string | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [loadingCourseId, setLoadingCourseId] = useState<string | null>(null);
+  const [loadingCourseName, setLoadingCourseName] = useState<string>('');
 
   // Redux selectors
   const myCoursesWithProgress = useAppSelector(selectCoursesWithProgress);
@@ -103,6 +105,10 @@ const CoursesPage: React.FC = () => {
         c.id === courseId || c.wpMarathonId === courseId
       );
       
+      // Show loading indicator with course name
+      setLoadingCourseId(courseId);
+      setLoadingCourseName(course?.title || 'Курс');
+      
       console.log('🎯 handleStartCourse called with courseId:', courseId, 'course:', course);
       
       // CRITICAL: Only activate if orderStatus is NOT "Approved"
@@ -163,7 +169,11 @@ const CoursesPage: React.FC = () => {
       }
     } catch (error) {
       console.error('❌ Failed to check marathon status:', error);
-      // On error, redirect to start page
+      // On error, redi{
+        setIsNavigating(false);
+        setLoadingCourseId(null);
+        setLoadingCourseName('');
+      }
       router.push(`/courses/${courseId}/start`);
     } finally {
       // Reset navigation flag after a delay to allow router to complete
@@ -287,6 +297,7 @@ const CoursesPage: React.FC = () => {
                     language={selectedLanguage}
                     onStart={() => handleStartCourse(order.id)}
                     onLearnMore={() => handleCourseDetails(order, true)}
+                    isLoading={loadingCourseId === order.id}
                   />
                 );
               })}
@@ -359,6 +370,28 @@ const CoursesPage: React.FC = () => {
           isOwnedCourse={isOwnedCourse}
           language={selectedLanguage}
         />
+      )}
+
+      {/* Модальное окно загрузки курса */}
+      {loadingCourseId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm mx-4 text-center">
+            {/* Spinner */}
+            <div className="mb-4 flex justify-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-200 border-t-purple-600"></div>
+            </div>
+            {/* Message */}
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              Загрузка курса
+            </h3>
+            <p className="text-gray-600">
+              {loadingCourseName}
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              Подготовка материалов...
+            </p>
+          </div>
+        </div>
       )}
     </div>
   );
