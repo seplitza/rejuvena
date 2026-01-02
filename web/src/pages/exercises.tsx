@@ -1,237 +1,26 @@
 /**
- * Demo Exercises Page - Комплекс на шею
- * Demonstrates exercise functionality with free and locked exercises
+ * Demo Exercises Page - Комплекс на шею (real data from API)
+ * Loads exercises from marathon API
  */
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
+import { request } from '@/api/request';
+import * as endpoints from '@/api/endpoints';
 import ExerciseItem from '@/components/day/ExerciseItem';
 import ExerciseDetailModal from '@/components/day/ExerciseDetailModal';
 
-// Demo exercises data - use any to bypass type checking for demo
-const demoExercises: any[] = [
-  {
-    id: 'demo-1',
-    marathonExerciseId: 'demo-1',
-    exerciseName: 'На заднюю поверхность шеи',
-    marathonExerciseName: 'На заднюю поверхность шеи',
-    description: 'Упражнение для укрепления задней поверхности шеи. Помогает улучшить осанку и снять напряжение.',
-    duration: 300,
-    type: 'Practice' as const,
-    status: 'NotStarted' as const,
-    order: 1,
-    commentsCount: 0,
-    isDone: false,
-    isNew: false,
-    blockExercise: false,
-    exerciseContents: [
-      {
-        id: 'content-1-1',
-        type: 'video',
-        contentPath: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        hint: 'Основное движение',
-        orderBy: 1,
-      },
-    ],
-  },
-  {
-    id: 'demo-2',
-    marathonExerciseId: 'demo-2',
-    exerciseName: 'На мышцы трапеции',
-    marathonExerciseName: 'На мышцы трапеции',
-    description: 'Упражнение для расслабления и укрепления трапециевидных мышц.',
-    duration: 300,
-    type: 'Practice' as const,
-    status: 'NotStarted' as const,
-    order: 2,
-    commentsCount: 0,
-    isDone: false,
-    isNew: false,
-    blockExercise: false,
-    exerciseContents: [
-      {
-        id: 'content-2-1',
-        type: 'video',
-        contentPath: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        hint: 'Основное движение',
-        orderBy: 1,
-      },
-    ],
-  },
-  {
-    id: 'demo-3',
-    marathonExerciseId: 'demo-3',
-    exerciseName: 'На переднюю поверхность шеи',
-    marathonExerciseName: 'На переднюю поверхность шеи',
-    description: 'Упражнение для передней части шеи и подъязычных мышц.',
-    duration: 300,
-    type: 'Practice' as const,
-    status: 'NotStarted' as const,
-    order: 3,
-    commentsCount: 0,
-    isDone: false,
-    isNew: false,
-    blockExercise: false,
-    exerciseContents: [
-      {
-        id: 'content-3-1',
-        type: 'video',
-        contentPath: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        hint: 'Основное движение',
-        orderBy: 1,
-      },
-    ],
-  },
-  {
-    id: 'demo-4',
-    marathonExerciseId: 'demo-4',
-    exerciseName: 'Повороты головы',
-    marathonExerciseName: 'Повороты головы',
-    description: 'Упражнение на улучшение подвижности шейного отдела позвоночника.',
-    duration: 300,
-    type: 'Practice' as const,
-    status: 'NotStarted' as const,
-    order: 4,
-    commentsCount: 0,
-    isDone: false,
-    isNew: false,
-    blockExercise: false,
-    exerciseContents: [
-      {
-        id: 'content-4-1',
-        type: 'video',
-        contentPath: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        hint: 'Основное движение',
-        orderBy: 1,
-      },
-    ],
-  },
-  {
-    id: 'demo-5',
-    marathonExerciseId: 'demo-5',
-    exerciseName: 'Наклоны головы',
-    marathonExerciseName: 'Наклоны головы',
-    description: 'Боковые наклоны для растяжки боковых мышц шеи.',
-    duration: 300,
-    type: 'Practice' as const,
-    status: 'NotStarted' as const,
-    order: 5,
-    commentsCount: 0,
-    isDone: false,
-    isNew: false,
-    blockExercise: false,
-    exerciseContents: [
-      {
-        id: 'content-5-1',
-        type: 'video',
-        contentPath: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        hint: 'Основное движение',
-        orderBy: 1,
-      },
-    ],
-  },
-  // Locked exercises
-  {
-    id: 'demo-6',
-    marathonExerciseId: 'demo-6',
-    exerciseName: 'Раскрытие плечевых 1',
-    marathonExerciseName: 'Раскрытие плечевых 1',
-    description: 'Упражнение для раскрытия грудной клетки и плечевого пояса. Улучшает осанку.',
-    duration: 300,
-    type: 'Practice' as const,
-    status: 'NotStarted' as const,
-    order: 6,
-    commentsCount: 0,
-    isDone: false,
-    isNew: false,
-    blockExercise: true,
-    exerciseContents: [
-      {
-        id: 'content-6-1',
-        type: 'video',
-        contentPath: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        hint: 'Основное движение',
-        orderBy: 1,
-      },
-    ],
-  },
-  {
-    id: 'demo-7',
-    marathonExerciseId: 'demo-7',
-    exerciseName: 'Раскрытие плечевых 2',
-    marathonExerciseName: 'Раскрытие плечевых 2',
-    description: 'Продолжение раскрытия плечевого пояса с углублением растяжки.',
-    duration: 300,
-    type: 'Practice' as const,
-    status: 'NotStarted' as const,
-    order: 7,
-    commentsCount: 0,
-    isDone: false,
-    isNew: false,
-    blockExercise: true,
-    exerciseContents: [
-      {
-        id: 'content-7-1',
-        type: 'video',
-        contentPath: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        hint: 'Основное движение',
-        orderBy: 1,
-      },
-    ],
-  },
-  {
-    id: 'demo-8',
-    marathonExerciseId: 'demo-8',
-    exerciseName: 'Стоечка',
-    marathonExerciseName: 'Стоечка',
-    description: 'Поза для укрепления мышц спины и улучшения баланса.',
-    duration: 300,
-    type: 'Practice' as const,
-    status: 'NotStarted' as const,
-    order: 8,
-    commentsCount: 0,
-    isDone: false,
-    isNew: false,
-    blockExercise: true,
-    exerciseContents: [
-      {
-        id: 'content-8-1',
-        type: 'video',
-        contentPath: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        hint: 'Основное движение',
-        orderBy: 1,
-      },
-    ],
-  },
-  {
-    id: 'demo-9',
-    marathonExerciseId: 'demo-9',
-    exerciseName: 'На валике',
-    marathonExerciseName: 'На валике',
-    description: 'Расслабляющее упражнение на массажном валике для спины и шеи.',
-    duration: 600,
-    type: 'Practice' as const,
-    status: 'NotStarted' as const,
-    order: 9,
-    commentsCount: 0,
-    isDone: false,
-    isNew: false,
-    blockExercise: true,
-    exerciseContents: [
-      {
-        id: 'content-9-1',
-        type: 'video',
-        contentPath: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-        hint: 'Основное движение',
-        orderBy: 1,
-      },
-    ],
-  },
-];
+// Marathon ID for demo - "Селп курс: база" from mobile app
+const DEMO_MARATHON_ID = '3842e63f-b125-447d-94a1-b1c93be38b4e';
+// Day with "На осанку" category - Day 10 typically has posture exercises
+const DEMO_DAY_ID = '10de5eeb-8612-4e33-b6c0-df656fce9e0f';
 
 export default function ExercisesPage() {
   const router = useRouter();
+  const [exercises, setExercises] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [expandedExercises, setExpandedExercises] = useState<Record<string, boolean>>({});
   const [completedExercises, setCompletedExercises] = useState<Record<string, boolean>>({});
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
@@ -241,6 +30,63 @@ export default function ExercisesPage() {
   // Mount modal after hydration
   useEffect(() => {
     setModalMounted(true);
+  }, []);
+
+  // Load exercises from API
+  useEffect(() => {
+    const loadExercises = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // 1. Start marathon to initialize
+        const marathonData = await request.get(endpoints.get_start_marathon, {
+          params: {
+            marathonId: DEMO_MARATHON_ID,
+            timeZoneOffset: new Date().getTimezoneOffset(),
+          },
+        });
+
+        // 2. Get day exercises
+        const dayData: any = await request.get(endpoints.get_day_exercises, {
+          params: {
+            dayId: DEMO_DAY_ID,
+            timeZoneOffset: new Date().getTimezoneOffset(),
+          },
+        });
+
+        console.log('Day data:', dayData);
+
+        // Find "На осанку" category
+        const categoryName = 'На осанку';
+        const postureCategory = dayData.marathonDay?.dayCategories?.find(
+          (cat: any) => cat.categoryName === categoryName || cat.categoryName.includes('осанку')
+        );
+
+        if (postureCategory && postureCategory.exercises) {
+          // Get all exercises and mark last 4 as locked
+          const allExercises = postureCategory.exercises;
+          const exercisesCount = allExercises.length;
+          
+          const processedExercises = allExercises.map((ex: any, index: number) => ({
+            ...ex,
+            // Lock last 4 exercises (or last 4 if less than 9 total)
+            blockExercise: index >= Math.max(0, exercisesCount - 4),
+          }));
+
+          setExercises(processedExercises);
+        } else {
+          setError('Категория "На осанку" не найдена');
+        }
+      } catch (err: any) {
+        console.error('Failed to load exercises:', err);
+        setError(err.message || 'Не удалось загрузить упражнения');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadExercises();
   }, []);
 
   const handleExerciseToggle = (exerciseId: string) => {
@@ -278,6 +124,35 @@ export default function ExercisesPage() {
     setSelectedExercise(exercise);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Загрузка упражнений...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="text-6xl mb-4">😞</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Ошибка загрузки</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            Вернуться
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
       {/* Header */}
@@ -294,7 +169,7 @@ export default function ExercisesPage() {
               </svg>
             </button>
             
-            <h1 className="text-xl font-bold flex-1 text-center">Демо: Комплекс на шею</h1>
+            <h1 className="text-xl font-bold flex-1 text-center">Комплекс на шею</h1>
             
             <div className="w-10"></div>
           </div>
@@ -303,26 +178,6 @@ export default function ExercisesPage() {
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-6">
-        {/* Info Card */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-          <div className="flex items-start space-x-4">
-            <div className="flex-shrink-0 bg-purple-100 rounded-full p-3">
-              <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <h2 className="text-lg font-bold text-gray-900 mb-2">Демонстрационный комплекс</h2>
-              <p className="text-gray-600 text-sm">
-                Упражнения для улучшения осанки и укрепления шейного отдела. 
-                Первые 5 упражнений доступны бесплатно. Для доступа к полному комплексу 
-                требуется оплата <strong>100 рублей</strong>, которая также продлит ваш 
-                доступ к фотодневнику на <strong>1 месяц</strong>.
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* Exercises List */}
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           {/* Header */}
@@ -330,26 +185,26 @@ export default function ExercisesPage() {
             <h2 className="text-xl font-bold">План упражнений</h2>
           </div>
 
-          {/* Category: Осанка */}
+          {/* Category: На осанку */}
           <div className="bg-white">
             {/* Category Header */}
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex items-center space-x-3">
                 <div className="text-3xl">🧘</div>
-                <h3 className="text-lg font-semibold text-gray-900">Осанка</h3>
+                <h3 className="text-lg font-semibold text-gray-900">На осанку</h3>
               </div>
             </div>
 
             {/* Exercises */}
             <div className="px-0 sm:px-6 pb-4 space-y-2">
-              {demoExercises.map((exercise, index) => {
-                const uniqueId = `demo-${exercise.id}`;
+              {exercises.map((exercise, index) => {
+                const uniqueId = `exercise-${exercise.id || index}`;
                 const isExpanded = expandedExercises[uniqueId] || false;
                 const isDone = completedExercises[uniqueId] || false;
                 
                 return (
                   <ExerciseItem
-                    key={exercise.id}
+                    key={exercise.id || index}
                     exercise={exercise}
                     uniqueId={uniqueId}
                     isActive={isExpanded}
@@ -373,10 +228,10 @@ export default function ExercisesPage() {
           isOpen={!!selectedExercise}
           onClose={() => setSelectedExercise(null)}
           onCheckboxChange={() => {
-            const uniqueId = `demo-${selectedExercise.id}`;
+            const uniqueId = `exercise-${selectedExercise.id}`;
             handleExerciseCheck(selectedExercise, uniqueId);
           }}
-          isDone={completedExercises[`demo-${selectedExercise.id}`] || false}
+          isDone={completedExercises[`exercise-${selectedExercise.id}`] || false}
         />
       )}
 
