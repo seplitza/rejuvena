@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Redirecting...</title>
+  <script>
+    // GitHub Pages SPA redirect hack
+    // Redirects 404 pages to index.html with path info preserved in URL hash
+    // This allows client-side routing to work on GitHub Pages
+    
+    const path = window.location.pathname;
+    const basePath = '/rejuvena';
+    
+    // Extract the path after basePath
+    let route = path;
+    if (path.startsWith(basePath)) {
+      route = path.slice(basePath.length);
+    }
+    
+    // Redirect to index with route in hash
+    if (route && route !== '/') {
+      const redirectUrl = basePath + '/#' + route + window.location.search;
+      window.location.replace(redirectUrl);
+    } else {
+      window.location.replace(basePath + '/');
+    }
+  </script>
+</head>
+<body>
+  <p>Redirecting...</p>
+</body>
+</html>
