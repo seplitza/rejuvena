@@ -116,9 +116,20 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose }: Exerc
   const type = exercise.type || '';
   const duration = exercise.duration || 0;
 
-  console.log('📋 Modal data:', { exerciseName, description: description?.substring(0, 100), videoUrl, imageUrl });
+  console.log('📋 Modal data:', { 
+    exerciseName, 
+    description: description?.substring(0, 100), 
+    videoUrl, 
+    imageUrl,
+    rawExerciseData: {
+      exerciseDescription: exerciseData.exerciseDescription?.substring(0, 50),
+      exerciseVideoUrl: exerciseData.exerciseVideoUrl,
+      exerciseImageUrl: exerciseData.exerciseImageUrl
+    }
+  });
 
   const { embedUrl, type: videoType } = getVideoEmbedUrl(videoUrl);
+  console.log('🎬 Video processing:', { videoUrl, embedUrl, videoType });
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
