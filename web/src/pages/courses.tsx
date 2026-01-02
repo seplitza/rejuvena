@@ -85,7 +85,7 @@ const CoursesPage: React.FC = () => {
     }
   };
 
-  const handleStartCourse = (courseId: string) => {
+  const handleStartCourse = async (courseId: string) => {
     // Check if this course needs activation first
     // courseId is order.id from the backend
     const course = myCoursesWithProgress.find(c => 
