@@ -80,8 +80,8 @@ function VideoPlayer({ video }: { video: VideoEmbed }) {
     case 'vimeo':
     case 'vk':
       return (
-        <div className="flex justify-center mb-4">
-          <div className="w-full max-w-[400px] aspect-square relative overflow-hidden rounded-none md:rounded-lg">
+        <div className="w-full mb-4">
+          <div className="w-full aspect-video relative overflow-hidden rounded-none md:rounded-lg">
             <iframe
               src={video.url}
               className="w-full h-full"
@@ -148,11 +148,11 @@ function VideoPlayer({ video }: { video: VideoEmbed }) {
     
     case 'mp4':
       return (
-        <div className="flex justify-center mb-4">
+        <div className="w-full mb-4">
           <video
             src={video.url}
             controls
-            className="w-full max-w-[400px] aspect-square object-contain rounded-none md:rounded-lg"
+            className="w-full aspect-video object-contain rounded-none md:rounded-lg"
           />
         </div>
       );
