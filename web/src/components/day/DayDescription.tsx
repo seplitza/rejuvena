@@ -88,15 +88,16 @@ function VideoPlayer({ video }: { video: VideoEmbed }) {
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
+              style={{ pointerEvents: 'auto' }}
             />
-            {/* Overlay to block clicks on top portion but allow controls */}
+            {/* Strong overlay to block ALL clicks except on bottom 50px control bar */}
             <div 
-              className="absolute top-0 left-0 right-0"
+              className="absolute inset-0 pointer-events-auto"
               style={{ 
-                height: 'calc(100% - 60px)',
-                pointerEvents: 'none',
-                zIndex: 1
+                paddingBottom: '50px',
+                zIndex: 10
               }}
+              onClick={(e) => e.stopPropagation()}
             />
             <style jsx>{`
               iframe {

@@ -183,7 +183,16 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
   const exerciseData = exercise as any;
   const exerciseName = exercise.exerciseName || '';
   const marathonExerciseName = exercise.marathonExerciseName || '';
-  const description = exerciseData.exerciseDescription || exercise.description || '';
+  let description = exerciseData.exerciseDescription || exercise.description || '';
+  
+  // Normalize emoji in description - fix multiple character emoji display bug
+  if (description) {
+    description = description.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}](?:\u{FE0F}|\u{200D}[\u{1F3FB}-\u{1F3FF}]?)?/gu, (match: string) => {
+      // Remove variation selectors and zero-width joiners that cause duplication
+      return match.replace(/[\uFE0F\u200D]/g, '');
+    });
+  }
+  
   const type = exercise.type || '';
   const duration = exercise.duration || 0;
 
@@ -267,21 +276,21 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
           {/* Video/Image Carousel */}
           {availableContent.length > 0 && (
             <div className="flex flex-col items-center bg-purple-50 py-4">
-              {/* Hint for images (GIFs) */}
-              {currentContent?.type === 'image' && (
-                <div className="w-full max-w-[400px] px-4 mb-3">
-                  <div className="bg-purple-600/90 text-white text-sm px-4 py-2.5 rounded-lg text-center">
-                    <p className="font-semibold mb-1">💡 Основное движение</p>
-                    <p className="text-xs opacity-90">
-                      Ознакомьтесь с видео инструкцией{availableContent.length > 1 && ', нажмите на стрелочку вправо'}
-                    </p>
-                  </div>
-                </div>
-              )}
               
               {/* Video/Image Container - Max 400px width, flexible height */}
               <div className="w-full max-w-[400px] px-4 md:px-0">
                 <div className="relative w-full">
+                  {/* Hint for images (GIFs) - overlaid on content */}
+                  {currentContent?.type === 'image' && (
+                    <div className="absolute top-4 left-4 right-4 z-10">
+                      <div className="bg-purple-600/95 text-white text-sm px-4 py-2.5 rounded-lg text-center shadow-lg">
+                        <p className="font-semibold mb-1">💡 Основное движение</p>
+                        <p className="text-xs opacity-90">
+                          Ознакомьтесь с видео инструкцией{availableContent.length > 1 && ', нажмите на стрелочку вправо'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                   {/* Current Content */}
                   {currentContent && (
                     <div key={currentContent.id} className="w-full">
@@ -306,15 +315,16 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                               allowFullScreen
                               onError={() => handleContentError(currentContentIndex)}
+                              style={{ pointerEvents: 'auto' }}
                             />
-                            {/* Overlay to block clicks on top portion (title/channel) but allow controls at bottom */}
+                            {/* Strong overlay to block ALL clicks except on bottom 50px control bar */}
                             <div 
-                              className="absolute top-0 left-0 right-0"
+                              className="absolute inset-0 pointer-events-auto"
                               style={{ 
-                                height: 'calc(100% - 60px)',
-                                pointerEvents: 'none',
-                                zIndex: 1
+                                paddingBottom: '50px',
+                                zIndex: 10
                               }}
+                              onClick={(e) => e.stopPropagation()}
                             />
                             <style jsx global>{`
                               /* Hide Vimeo overlay elements */
