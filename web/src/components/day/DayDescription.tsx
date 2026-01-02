@@ -99,16 +99,32 @@ function VideoPlayer({ video }: { video: VideoEmbed }) {
               }}
               onClick={(e) => e.stopPropagation()}
             />
-            {/* Bottom-right corner overlay - blocks Vimeo/YouTube logos */}
-            <div 
-              className="absolute bottom-0 right-0 pointer-events-auto bg-transparent"
-              style={{ 
-                width: '80px',
-                height: '80px',
-                zIndex: 10
-              }}
-              onClick={(e) => e.stopPropagation()}
-            />
+            
+            {/* Provider-specific logo overlays */}
+            {video.type === 'youtube' ? (
+              /* YouTube logo overlay - rectangular, offset from right */
+              <div 
+                className="absolute bottom-0 pointer-events-auto bg-transparent"
+                style={{ 
+                  right: '48px',
+                  width: '100px',
+                  height: '48px',
+                  zIndex: 10
+                }}
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : video.type === 'vimeo' ? (
+              /* Vimeo logo overlay - square in corner */
+              <div 
+                className="absolute bottom-0 right-0 pointer-events-auto bg-transparent"
+                style={{ 
+                  width: '80px',
+                  height: '80px',
+                  zIndex: 10
+                }}
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : null}
             <style jsx>{`
               iframe {
                 pointer-events: auto;

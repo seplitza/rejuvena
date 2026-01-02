@@ -326,16 +326,32 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
                               }}
                               onClick={(e) => e.stopPropagation()}
                             />
-                            {/* Bottom-right corner overlay - blocks Vimeo/YouTube logos */}
-                            <div 
-                              className="absolute bottom-0 right-0 pointer-events-auto bg-transparent"
-                              style={{ 
-                                width: '80px',
-                                height: '80px',
-                                zIndex: 10
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                            />
+                            
+                            {/* Provider-specific logo overlays */}
+                            {currentContent.embedUrl?.includes('youtube.com') ? (
+                              /* YouTube logo overlay - rectangular, offset from right edge to avoid fullscreen button */
+                              <div 
+                                className="absolute bottom-0 pointer-events-auto bg-transparent"
+                                style={{ 
+                                  right: '48px', // Leave space for fullscreen button (mobile: 48px, desktop: 48px)
+                                  width: '100px', // Cover YouTube logo width
+                                  height: '48px', // Cover logo height in control bar
+                                  zIndex: 10
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            ) : currentContent.embedUrl?.includes('vimeo.com') ? (
+                              /* Vimeo logo overlay - square in bottom-right corner */
+                              <div 
+                                className="absolute bottom-0 right-0 pointer-events-auto bg-transparent"
+                                style={{ 
+                                  width: '80px',
+                                  height: '80px',
+                                  zIndex: 10
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            ) : null}
                             <style jsx global>{`
                               /* Hide Vimeo overlay elements */
                               .vp-sidedock,
