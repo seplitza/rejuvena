@@ -34,6 +34,7 @@ const CoursesPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOwnedCourse, setIsOwnedCourse] = useState(false);
   const [pendingNavigationTo, setPendingNavigationTo] = useState<string | null>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   // Redux selectors
   const myCoursesWithProgress = useAppSelector(selectCoursesWithProgress);
@@ -87,35 +88,43 @@ const CoursesPage: React.FC = () => {
   };
 
   const handleStartCourse = async (courseId: string) => {
-    // Check if this course needs activation first
-    // courseId is order.id from the backend
-    const course = myCoursesWithProgress.find(c => 
-      c.id === courseId || c.wpMarathonId === courseId
-    );
-    
-    console.log('🎯 handleStartCourse called with courseId:', courseId, 'course:', course);
-    
-    // CRITICAL: Only activate if orderStatus is NOT "Approved"
-    // Course with orderStatus="Approved" are already activated in backend
-    const needsActivation = course && course.orderNumber === null && course.orderStatus !== 'Approved';
-    
-    if (needsActivation && course.wpMarathonId) {
-      console.log('🚀 Course needs activation before starting:', course.title);
-      
-      // Set pending navigation destination - saga will resolve current day
-      setPendingNavigationTo(`/courses/${courseId}/day/current`);
-      
-      // Create order and auto-activate in background
-      // When saga completes, useEffect will trigger navigation
-      dispatch(createOrder(course.wpMarathonId));
+    // Prevent double clicks
+    if (isNavigating) {
+      console.log('⏸️ Already navigating, ignoring click');
       return;
     }
     
-    console.log('✅ Course already activated (orderStatus:', course?.orderStatus, '), navigating directly');
+    setIsNavigating(true);
     
-    // Check rules acceptance by calling startmarathon API
-    // This API returns isAcceptCourseTerm field
     try {
+      // Check if this course needs activation first
+      // courseId is order.id from the backend
+      const course = myCoursesWithProgress.find(c => 
+        c.id === courseId || c.wpMarathonId === courseId
+      );
+      
+      console.log('🎯 handleStartCourse called with courseId:', courseId, 'course:', course);
+      
+      // CRITICAL: Only activate if orderStatus is NOT "Approved"
+      // Course with orderStatus="Approved" are already activated in backend
+      const needsActivation = course && course.orderNumber === null && course.orderStatus !== 'Approved';
+      
+      if (needsActivation && course.wpMarathonId) {
+        console.log('🚀 Course needs activation before starting:', course.title);
+        
+        // Set pending navigation destination - saga will resolve current day
+        setPendingNavigationTo(`/courses/${courseId}/day/current`);
+        
+        // Create order and auto-activate in background
+        // When saga completes, useEffect will trigger navigation
+        dispatch(createOrder(course.wpMarathonId));
+        return;
+      }
+      
+      console.log('✅ Course already activated (orderStatus:', course?.orderStatus, '), navigating directly');
+      
+      // Check rules acceptance by calling startmarathon API
+      // This API returns isAcceptCourseTerm field
       const marathonData: any = await request.get(endpoints.get_start_marathon, {
         params: {
           marathonId: courseId,
@@ -156,6 +165,9 @@ const CoursesPage: React.FC = () => {
       console.error('❌ Failed to check marathon status:', error);
       // On error, redirect to start page
       router.push(`/courses/${courseId}/start`);
+    } finally {
+      // Reset navigation flag after a delay to allow router to complete
+      setTimeout(() => setIsNavigating(false), 1000);
     }
   };
 
