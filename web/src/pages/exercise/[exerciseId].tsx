@@ -84,9 +84,37 @@ const EXERCISE_DATA: Record<string, any> = {
   },
 };
 
-export default function ExercisePage() {
+// Required for static export
+export async function getStaticPaths() {
+  // Generate paths for all exercises
+  const paths = Object.keys(EXERCISE_DATA).map((id) => ({
+    params: { exerciseId: id },
+  }));
+
+  return {
+    paths,
+    fallback: false, // Show 404 for unknown IDs
+  };
+}
+
+export async function getStaticProps({ params }: { params: { exerciseId: string } }) {
+  const exercise = EXERCISE_DATA[params.exerciseId];
+
+  if (!exercise) {
+    return {
+      notFound: true,
+    };
+  }
+
+  return {
+    props: {
+      exercise,
+    },
+  };
+}
+
+export default function ExercisePage({ exercise }: { exercise: any }) {
   const router = useRouter();
-  const { exerciseId } = router.query;
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isDone, setIsDone] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
@@ -94,10 +122,6 @@ export default function ExercisePage() {
   const [newComment, setNewComment] = useState('');
 
   // Get exercise data
-  const exercise = exerciseId && typeof exerciseId === 'string' 
-    ? EXERCISE_DATA[exerciseId] 
-    : null;
-
   useEffect(() => {
     if (exercise) {
       setIsDone(exercise.isDone || false);
