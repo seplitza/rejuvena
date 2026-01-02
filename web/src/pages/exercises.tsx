@@ -50,6 +50,7 @@ export default function ExercisesPage() {
         // 2. Get day exercises
         const dayData: any = await request.get(endpoints.get_day_exercises, {
           params: {
+            marathonId: DEMO_MARATHON_ID,
             dayId: DEMO_DAY_ID,
             timeZoneOffset: new Date().getTimezoneOffset(),
           },
