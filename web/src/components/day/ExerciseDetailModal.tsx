@@ -13,6 +13,68 @@ interface ExerciseDetailModalProps {
   onClose: () => void;
 }
 
+/**
+ * Get video embed URL based on platform
+ * Supports: YouTube, Vimeo, RuTube, VK Video, Dzen, direct video files
+ */
+function getVideoEmbedUrl(url: string): { embedUrl: string; type: 'iframe' | 'video' } {
+  if (!url) return { embedUrl: '', type: 'iframe' };
+
+  // Direct video file (mp4, webm, etc.)
+  if (url.match(/\.(mp4|webm|ogg|mov)$/i)) {
+    return { embedUrl: url, type: 'video' };
+  }
+
+  // YouTube
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    const videoId = url.includes('youtu.be')
+      ? url.split('youtu.be/')[1]?.split('?')[0]
+      : new URL(url).searchParams.get('v');
+    return { embedUrl: `https://www.youtube.com/embed/${videoId}`, type: 'iframe' };
+  }
+
+  // Vimeo
+  if (url.includes('vimeo.com')) {
+    const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
+    return { embedUrl: `https://player.vimeo.com/video/${videoId}`, type: 'iframe' };
+  }
+
+  // RuTube
+  if (url.includes('rutube.ru')) {
+    let videoId = url.split('rutube.ru/video/')[1]?.split('?')[0];
+    if (!videoId) {
+      videoId = url.split('rutube.ru/play/embed/')[1]?.split('?')[0];
+    }
+    return { embedUrl: `https://rutube.ru/play/embed/${videoId}`, type: 'iframe' };
+  }
+
+  // VK Video
+  if (url.includes('vk.com/video')) {
+    const match = url.match(/video(-?\d+)_(\d+)/);
+    if (match) {
+      const [, oid, id] = match;
+      return { embedUrl: `https://vk.com/video_ext.php?oid=${oid}&id=${id}`, type: 'iframe' };
+    }
+  }
+
+  // Dzen (Яндекс.Дзен)
+  if (url.includes('dzen.ru')) {
+    const videoId = url.split('dzen.ru/video/watch/')[1]?.split('?')[0] || 
+                    url.split('dzen.ru/embed/')[1]?.split('?')[0];
+    if (videoId) {
+      return { embedUrl: `https://dzen.ru/embed/${videoId}`, type: 'iframe' };
+    }
+  }
+
+  // Telegram video
+  if (url.includes('t.me')) {
+    return { embedUrl: url, type: 'iframe' };
+  }
+
+  // Fallback - try as iframe
+  return { embedUrl: url, type: 'iframe' };
+}
+
 export default function ExerciseDetailModal({ exercise, isOpen, onClose }: ExerciseDetailModalProps) {
   // Close on ESC key
   useEffect(() => {
@@ -37,6 +99,7 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose }: Exerc
   if (!isOpen) return null;
 
   const { exerciseName, marathonExerciseName, description, videoUrl, imageUrl, type, duration } = exercise;
+  const { embedUrl, type: videoType } = getVideoEmbedUrl(videoUrl || '');
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -85,34 +148,23 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose }: Exerc
 
         {/* Content - Scrollable */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Video */}
-          {videoUrl && (
+          {/* Video */}embedUrl && (
             <div className="aspect-video w-full bg-gray-900 rounded-lg overflow-hidden">
-              {videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be') ? (
+              {videoType === 'video' ? (
+                <video
+                  src={embedUrl}
+                  controls
+                  className="w-full h-full"
+                  playsInline
+                />
+              ) : (
                 <iframe
-                  src={videoUrl.replace('watch?v=', 'embed/')}
+                  src={embedUrl}
                   className="w-full h-full"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
-                />
-              ) : videoUrl.includes('vimeo.com') ? (
-                <iframe
-                  src={videoUrl.replace('vimeo.com/', 'player.vimeo.com/video/')}
-                  className="w-full h-full"
-                  frameBorder="0"
-                  allow="autoplay; fullscreen; picture-in-picture"
-                  allowFullScreen
-                />
-              ) : videoUrl.includes('vk.com') ? (
-                <iframe
-                  src={videoUrl}
-                  className="w-full h-full"
-                  frameBorder="0"
-                  allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-                  allowFullScreen
-                />
-              ) : (
+               
                 <video src={videoUrl} controls className="w-full h-full" />
               )}
             </div>

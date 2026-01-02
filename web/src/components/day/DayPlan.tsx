@@ -15,6 +15,7 @@ import {
 } from '@/store/modules/day/selectors';
 import { setActiveExerciseId, changeExerciseStatus } from '@/store/modules/day/slice';
 import ExerciseItem from './ExerciseItem';
+import ExerciseDetailModal from './ExerciseDetailModal';
 import type { Exercise } from '@/store/modules/day/slice';
 import Image from 'next/image';
 
@@ -37,6 +38,8 @@ export default function DayPlan() {
     return initial;
   });
 
+  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+
   const handleExerciseClick = (exercise: Exercise, uniqueId: string) => {
     if (exercise.blockExercise) return;
     
@@ -58,13 +61,14 @@ export default function DayPlan() {
       dayId: marathonDay?.id || '',
       uniqueId,
     }));
+    
+    // Open modal immediately after checking
+    setSelectedExercise(exercise);
   };
 
   const handleExerciseDetailClick = (exercise: Exercise) => {
-    // Navigate to exercise detail page
-    if (courseId && dayId) {
-      router.push(`/courses/${courseId}/day/${dayId}/exercise/${exercise.id}`);
-    }
+    // Open modal instead of navigating to separate page
+    setSelectedExercise(exercise);
   };
 
   const toggleCategory = (categoryId: string) => {
@@ -167,7 +171,14 @@ export default function DayPlan() {
         </div>
       </div>
 
-      {/* Removed ExerciseDetailModal - now opens as separate page */}
+      {/* Exercise Detail Modal */}
+      {selectedExercise && (
+        <ExerciseDetailModal
+          exercise={selectedExercise}
+          isOpen={!!selectedExercise}
+          onClose={() => setSelectedExercise(null)}
+        />
+      )}
     </>
   );
 }
