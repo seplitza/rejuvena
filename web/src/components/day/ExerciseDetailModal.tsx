@@ -105,15 +105,18 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose }: Exerc
   console.log('✅ Rendering modal with exercise:', exercise);
 
   // Map API field names to component field names
+  // API returns exerciseDescription, exerciseVideoUrl, etc.
+  // but TypeScript interface expects description, videoUrl, etc.
+  const exerciseData = exercise as any;
   const exerciseName = exercise.exerciseName || '';
   const marathonExerciseName = exercise.marathonExerciseName || '';
-  const description = exercise.exerciseDescription || exercise.description || '';
-  const videoUrl = exercise.exerciseVideoUrl || exercise.videoUrl || '';
-  const imageUrl = exercise.exerciseImageUrl || exercise.imageUrl || '';
+  const description = exerciseData.exerciseDescription || exercise.description || '';
+  const videoUrl = exerciseData.exerciseVideoUrl || exercise.videoUrl || '';
+  const imageUrl = exerciseData.exerciseImageUrl || exercise.imageUrl || '';
   const type = exercise.type || '';
   const duration = exercise.duration || 0;
 
-  console.log('📋 Modal data:', { exerciseName, description, videoUrl, imageUrl });
+  console.log('📋 Modal data:', { exerciseName, description: description?.substring(0, 100), videoUrl, imageUrl });
 
   const { embedUrl, type: videoType } = getVideoEmbedUrl(videoUrl);
 
