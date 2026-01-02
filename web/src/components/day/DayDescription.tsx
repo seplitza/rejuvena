@@ -79,10 +79,10 @@ function VideoPlayer({ video }: { video: VideoEmbed }) {
     case 'vimeo':
     case 'vk':
       return (
-        <div className="aspect-video w-full mb-4">
+        <div className="w-full aspect-square mb-4">
           <iframe
             src={video.url}
-            className="w-full h-full rounded-lg"
+            className="w-full h-full rounded-none md:rounded-lg"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
@@ -95,7 +95,7 @@ function VideoPlayer({ video }: { video: VideoEmbed }) {
         <video
           src={video.url}
           controls
-          className="w-full mb-4 rounded-lg"
+          className="w-full aspect-square object-contain mb-4 rounded-none md:rounded-lg"
         />
       );
     

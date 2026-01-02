@@ -51,13 +51,13 @@ export default function DayPlan() {
   const handleExerciseClick = (exercise: Exercise, uniqueId: string) => {
     if (exercise.blockExercise) return;
     
-    // Toggle active exercise
-    const newActiveId = activeExerciseId === uniqueId ? null : uniqueId;
-    dispatch(setActiveExerciseId(newActiveId));
+    // Open modal when clicking on banner or expand arrow
+    console.log('📱 Banner clicked - opening modal for:', exercise.exerciseName);
+    setSelectedExercise(exercise);
   };
 
   const handleExerciseCheck = (exercise: Exercise, uniqueId: string) => {
-    console.log('🎯 handleExerciseCheck called for:', exercise.exerciseName);
+    console.log('✅ Checkbox clicked - changing status for:', exercise.exerciseName);
     if (exercise.blockExercise || changingStatusRequests[uniqueId]) return;
     
     const currentStatus = updatedExercisesStatus[uniqueId] !== undefined 
@@ -70,10 +70,6 @@ export default function DayPlan() {
       dayId: marathonDay?.id || '',
       uniqueId,
     }));
-    
-    // Open modal immediately after checking
-    console.log('✅ Setting selectedExercise:', exercise);
-    setSelectedExercise(exercise);
   };
 
   const handleExerciseDetailClick = (exercise: Exercise) => {
@@ -190,6 +186,31 @@ export default function DayPlan() {
             console.log('🔴 Closing modal');
             setSelectedExercise(null);
           }}
+          onCheckboxChange={(newStatus) => {
+            // Find uniqueId for this exercise
+            const category = dayCategories.find(c => 
+              c.exercises.some(e => e.id === selectedExercise.id)
+            );
+            if (category) {
+              const exerciseIndex = category.exercises.findIndex(e => e.id === selectedExercise.id);
+              const uniqueId = `${exerciseIndex}-${category.id}-${selectedExercise.id}`;
+              handleExerciseCheck(selectedExercise, uniqueId);
+            }
+          }}
+          isDone={(() => {
+            // Find current status for this exercise
+            const category = dayCategories.find(c => 
+              c.exercises.some(e => e.id === selectedExercise.id)
+            );
+            if (category) {
+              const exerciseIndex = category.exercises.findIndex(e => e.id === selectedExercise.id);
+              const uniqueId = `${exerciseIndex}-${category.id}-${selectedExercise.id}`;
+              return updatedExercisesStatus[uniqueId] !== undefined
+                ? updatedExercisesStatus[uniqueId]
+                : selectedExercise.isDone;
+            }
+            return selectedExercise.isDone;
+          })()}
         />
       )}
     </>

@@ -17,6 +17,8 @@ interface ExerciseDetailModalProps {
   exercise: Exercise;
   isOpen: boolean;
   onClose: () => void;
+  onCheckboxChange?: (newStatus: boolean) => void;
+  isDone?: boolean;
 }
 
 interface ContentItem {
@@ -99,7 +101,7 @@ function getVideoEmbedUrl(url: string): { embedUrl: string; type: 'iframe' | 'vi
   return { embedUrl: url, type: 'iframe' };
 }
 
-export default function ExerciseDetailModal({ exercise, isOpen, onClose }: ExerciseDetailModalProps) {
+export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheckboxChange, isDone }: ExerciseDetailModalProps) {
   const [commentsExpanded, setCommentsExpanded] = useState(false);
   const [currentContentIndex, setCurrentContentIndex] = useState(0);
   const [contentItems, setContentItems] = useState<ContentItem[]>([]);
@@ -211,6 +213,21 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose }: Exerc
                 </div>
               )}
             </div>
+
+            {/* Checkbox Button */}
+            {onCheckboxChange && (
+              <button
+                onClick={() => onCheckboxChange(!isDone)}
+                className="flex-shrink-0 w-6 h-6 rounded-md border-2 border-white/50 hover:border-white transition-colors flex items-center justify-center mr-2"
+                aria-label={isDone ? 'Отметить как невыполненное' : 'Отметить как выполненное'}
+              >
+                {isDone && (
+                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
+            )}
 
             {/* Close Button */}
             <button
