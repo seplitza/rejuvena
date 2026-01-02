@@ -42,27 +42,47 @@ function getVideoEmbedUrl(url: string): { embedUrl: string; type: 'iframe' | 'vi
     return { embedUrl: url, type: 'video' };
   }
 
-  // Already embed URL - return as is
-  if (url.includes('player.vimeo.com/video/') || 
-      url.includes('youtube.com/embed/') || 
-      url.includes('rutube.ru/play/embed/') ||
+  // Already embed URL - add privacy parameters if not present
+  if (url.includes('player.vimeo.com/video/')) {
+    const videoId = url.split('player.vimeo.com/video/')[1]?.split('?')[0];
+    return { 
+      embedUrl: `https://player.vimeo.com/video/${videoId}?title=0&byline=0&portrait=0&dnt=1&controls=1`, 
+      type: 'iframe' 
+    };
+  }
+  
+  if (url.includes('youtube.com/embed/')) {
+    const videoId = url.split('youtube.com/embed/')[1]?.split('?')[0];
+    return { 
+      embedUrl: `https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&showinfo=0&fs=1&controls=1&disablekb=0`, 
+      type: 'iframe' 
+    };
+  }
+  
+  if (url.includes('rutube.ru/play/embed/') ||
       url.includes('vk.com/video_ext.php') ||
       url.includes('dzen.ru/embed/')) {
     return { embedUrl: url, type: 'iframe' };
   }
 
-  // YouTube
+  // YouTube - hide branding and related videos
   if (url.includes('youtube.com') || url.includes('youtu.be')) {
     const videoId = url.includes('youtu.be')
       ? url.split('youtu.be/')[1]?.split('?')[0]
       : new URL(url).searchParams.get('v');
-    return { embedUrl: `https://www.youtube.com/embed/${videoId}`, type: 'iframe' };
+    return { 
+      embedUrl: `https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&showinfo=0&fs=1&controls=1&disablekb=0`, 
+      type: 'iframe' 
+    };
   }
 
-  // Vimeo (only process if NOT already embed)
+  // Vimeo - hide title, author, avatar
   if (url.includes('vimeo.com') && !url.includes('player.vimeo.com')) {
     const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
-    return { embedUrl: `https://player.vimeo.com/video/${videoId}`, type: 'iframe' };
+    return { 
+      embedUrl: `https://player.vimeo.com/video/${videoId}?title=0&byline=0&portrait=0&dnt=1&controls=1`, 
+      type: 'iframe' 
+    };
   }
 
   // RuTube
@@ -270,9 +290,12 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
                           <video
                             src={currentContent.embedUrl}
                             controls
+                            controlsList="nodownload nofullscreen noremoteplayback"
+                            disablePictureInPicture
                             className="w-full aspect-square object-contain bg-white rounded-lg"
                             playsInline
                             onError={() => handleContentError(currentContentIndex)}
+                            onContextMenu={(e) => e.preventDefault()}
                           />
                         ) : (
                           <div className="w-full aspect-square bg-white rounded-lg overflow-hidden">
