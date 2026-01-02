@@ -1,26 +1,163 @@
 /**
- * Demo Exercises Page - Комплекс на шею (real data from API)
- * Loads exercises from marathon API
+ * Demo Exercises Page - Комплекс на шею
+ * Static demo exercises for neck and posture
  */
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Image from 'next/image';
-import { request } from '@/api/request';
-import * as endpoints from '@/api/endpoints';
 import ExerciseItem from '@/components/day/ExerciseItem';
 import ExerciseDetailModal from '@/components/day/ExerciseDetailModal';
 
-// Marathon ID for demo - "Селп курс: база" from mobile app
-const DEMO_MARATHON_ID = '3842e63f-b125-447d-94a1-b1c93be38b4e';
-// Day with "На осанку" category - Day 10 typically has posture exercises
-const DEMO_DAY_ID = '10de5eeb-8612-4e33-b6c0-df656fce9e0f';
+// Static exercises data - matches actual exercises from course
+const POSTURE_EXERCISES = [
+  {
+    id: '1',
+    marathonExerciseId: '1',
+    exerciseName: 'На заднюю поверхность шеи',
+    marathonExerciseName: 'На заднюю поверхность шеи',
+    description: 'Упражнение для укрепления задней поверхности шеи',
+    duration: 300,
+    type: 'Practice' as const,
+    status: 'NotStarted' as const,
+    order: 1,
+    commentsCount: 0,
+    isDone: false,
+    isNew: false,
+    blockExercise: false,
+    exerciseContents: [],
+  },
+  {
+    id: '2',
+    marathonExerciseId: '2',
+    exerciseName: 'На мышцы трапеции',
+    marathonExerciseName: 'На мышцы трапеции',
+    description: 'Упражнение для расслабления трапециевидных мышц',
+    duration: 300,
+    type: 'Practice' as const,
+    status: 'NotStarted' as const,
+    order: 2,
+    commentsCount: 0,
+    isDone: false,
+    isNew: false,
+    blockExercise: false,
+    exerciseContents: [],
+  },
+  {
+    id: '3',
+    marathonExerciseId: '3',
+    exerciseName: 'На переднюю поверхность шеи',
+    marathonExerciseName: 'На переднюю поверхность шеи',
+    description: 'Упражнение для передней части шеи',
+    duration: 300,
+    type: 'Practice' as const,
+    status: 'NotStarted' as const,
+    order: 3,
+    commentsCount: 0,
+    isDone: false,
+    isNew: false,
+    blockExercise: false,
+    exerciseContents: [],
+  },
+  {
+    id: '4',
+    marathonExerciseId: '4',
+    exerciseName: 'Повороты головы',
+    marathonExerciseName: 'Повороты головы',
+    description: 'Упражнение на подвижность шейного отдела',
+    duration: 300,
+    type: 'Practice' as const,
+    status: 'NotStarted' as const,
+    order: 4,
+    commentsCount: 0,
+    isDone: false,
+    isNew: false,
+    blockExercise: false,
+    exerciseContents: [],
+  },
+  {
+    id: '5',
+    marathonExerciseId: '5',
+    exerciseName: 'Наклоны головы',
+    marathonExerciseName: 'Наклоны головы',
+    description: 'Боковые наклоны для растяжки мышц шеи',
+    duration: 300,
+    type: 'Practice' as const,
+    status: 'NotStarted' as const,
+    order: 5,
+    commentsCount: 0,
+    isDone: false,
+    isNew: false,
+    blockExercise: false,
+    exerciseContents: [],
+  },
+  {
+    id: '6',
+    marathonExerciseId: '6',
+    exerciseName: 'Раскрытие плечевых 1',
+    marathonExerciseName: 'Раскрытие плечевых 1',
+    description: 'Раскрытие грудной клетки и плечевого пояса',
+    duration: 300,
+    type: 'Practice' as const,
+    status: 'NotStarted' as const,
+    order: 6,
+    commentsCount: 0,
+    isDone: false,
+    isNew: false,
+    blockExercise: true,
+    exerciseContents: [],
+  },
+  {
+    id: '7',
+    marathonExerciseId: '7',
+    exerciseName: 'Раскрытие плечевых 2',
+    marathonExerciseName: 'Раскрытие плечевых 2',
+    description: 'Продолжение раскрытия плечевого пояса',
+    duration: 300,
+    type: 'Practice' as const,
+    status: 'NotStarted' as const,
+    order: 7,
+    commentsCount: 0,
+    isDone: false,
+    isNew: false,
+    blockExercise: true,
+    exerciseContents: [],
+  },
+  {
+    id: '8',
+    marathonExerciseId: '8',
+    exerciseName: 'Стоечка',
+    marathonExerciseName: 'Стоечка',
+    description: 'Поза для укрепления мышц спины',
+    duration: 300,
+    type: 'Practice' as const,
+    status: 'NotStarted' as const,
+    order: 8,
+    commentsCount: 0,
+    isDone: false,
+    isNew: false,
+    blockExercise: true,
+    exerciseContents: [],
+  },
+  {
+    id: '9',
+    marathonExerciseId: '9',
+    exerciseName: 'На валике',
+    marathonExerciseName: 'На валике',
+    description: 'Расслабляющее упражнение на массажном валике',
+    duration: 600,
+    type: 'Practice' as const,
+    status: 'NotStarted' as const,
+    order: 9,
+    commentsCount: 0,
+    isDone: false,
+    isNew: false,
+    blockExercise: true,
+    exerciseContents: [],
+  },
+];
 
 export default function ExercisesPage() {
   const router = useRouter();
-  const [exercises, setExercises] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [expandedExercises, setExpandedExercises] = useState<Record<string, boolean>>({});
   const [completedExercises, setCompletedExercises] = useState<Record<string, boolean>>({});
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
@@ -30,64 +167,6 @@ export default function ExercisesPage() {
   // Mount modal after hydration
   useEffect(() => {
     setModalMounted(true);
-  }, []);
-
-  // Load exercises from API
-  useEffect(() => {
-    const loadExercises = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // 1. Start marathon to initialize
-        const marathonData = await request.get(endpoints.get_start_marathon, {
-          params: {
-            marathonId: DEMO_MARATHON_ID,
-            timeZoneOffset: new Date().getTimezoneOffset(),
-          },
-        });
-
-        // 2. Get day exercises
-        const dayData: any = await request.get(endpoints.get_day_exercises, {
-          params: {
-            marathonId: DEMO_MARATHON_ID,
-            dayId: DEMO_DAY_ID,
-            timeZoneOffset: new Date().getTimezoneOffset(),
-          },
-        });
-
-        console.log('Day data:', dayData);
-
-        // Find "На осанку" category
-        const categoryName = 'На осанку';
-        const postureCategory = dayData.marathonDay?.dayCategories?.find(
-          (cat: any) => cat.categoryName === categoryName || cat.categoryName.includes('осанку')
-        );
-
-        if (postureCategory && postureCategory.exercises) {
-          // Get all exercises and mark last 4 as locked
-          const allExercises = postureCategory.exercises;
-          const exercisesCount = allExercises.length;
-          
-          const processedExercises = allExercises.map((ex: any, index: number) => ({
-            ...ex,
-            // Lock last 4 exercises (or last 4 if less than 9 total)
-            blockExercise: index >= Math.max(0, exercisesCount - 4),
-          }));
-
-          setExercises(processedExercises);
-        } else {
-          setError('Категория "На осанку" не найдена');
-        }
-      } catch (err: any) {
-        console.error('Failed to load exercises:', err);
-        setError(err.message || 'Не удалось загрузить упражнения');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadExercises();
   }, []);
 
   const handleExerciseToggle = (exerciseId: string) => {
@@ -124,35 +203,6 @@ export default function ExercisesPage() {
     }
     setSelectedExercise(exercise);
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Загрузка упражнений...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto px-4">
-          <div className="text-6xl mb-4">😞</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Ошибка загрузки</h2>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-          >
-            Вернуться
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
@@ -198,7 +248,7 @@ export default function ExercisesPage() {
 
             {/* Exercises */}
             <div className="px-0 sm:px-6 pb-4 space-y-2">
-              {exercises.map((exercise, index) => {
+              {POSTURE_EXERCISES.map((exercise, index) => {
                 const uniqueId = `exercise-${exercise.id || index}`;
                 const isExpanded = expandedExercises[uniqueId] || false;
                 const isDone = completedExercises[uniqueId] || false;
