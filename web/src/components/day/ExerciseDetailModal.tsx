@@ -210,5 +210,3 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose }: Exerc
     </div>
   );
 }
-
-export default ExerciseDetailModal;
