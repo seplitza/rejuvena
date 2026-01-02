@@ -2,12 +2,26 @@ import '@/styles/globals.css';
 import type { AppProps } from 'next/app';
 import { wrapper } from '@/store/store';
 import { useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { useAppDispatch } from '@/store/hooks';
 import { setAuthToken, setUser } from '@/store/modules/auth/slice';
 import { AuthTokenManager, request, endpoints } from '@/api';
 
 function App({ Component, pageProps }: AppProps) {
   const dispatch = useAppDispatch();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Handle GitHub Pages 404 redirect with hash routing
+    // 404.html redirects to /#/path, we need to extract and navigate to /path
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#/')) {
+      const path = hash.slice(1); // Remove # to get /path
+      console.log('🔄 Redirecting from hash:', hash, 'to path:', path);
+      window.history.replaceState(null, '', path);
+      router.replace(path);
+    }
+  }, [router]);
 
   useEffect(() => {
     // Восстанавливаем токен и пользователя из localStorage при загрузке приложения

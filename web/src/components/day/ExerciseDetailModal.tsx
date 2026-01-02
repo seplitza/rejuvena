@@ -105,14 +105,26 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose }: Exerc
   console.log('✅ Rendering modal with exercise:', exercise);
 
   // Map API field names to component field names
-  // API returns exerciseDescription, exerciseVideoUrl, etc.
-  // but TypeScript interface expects description, videoUrl, etc.
+  // API returns:
+  // 1. exerciseDescription - HTML описание
+  // 2. exerciseContents[] - массив с видео/изображениями (из мобильного приложения)
+  //    - каждый элемент: { id, type: 'video'|'image', contentPath: 'url' }
+  // 3. exerciseVideoUrl - прямая ссылка на видео (если есть)
   const exerciseData = exercise as any;
   const exerciseName = exercise.exerciseName || '';
   const marathonExerciseName = exercise.marathonExerciseName || '';
   const description = exerciseData.exerciseDescription || exercise.description || '';
-  const videoUrl = exerciseData.exerciseVideoUrl || exercise.videoUrl || '';
-  const imageUrl = exerciseData.exerciseImageUrl || exercise.imageUrl || '';
+  
+  // Get video URL from exerciseContents array (как в мобильном приложении)
+  const exerciseContents = exerciseData.exerciseContents || [];
+  const videoContent = exerciseContents.find((c: any) => c.type === 'video');
+  const imageContent = exerciseContents.find((c: any) => c.type === 'image');
+  const gifContent = exerciseContents.find((c: any) => c.contentPath?.endsWith('.gif'));
+  
+  const videoUrl = videoContent?.contentPath || exerciseData.exerciseVideoUrl || exercise.videoUrl || '';
+  const imageUrl = imageContent?.contentPath || exerciseData.exerciseImageUrl || exercise.imageUrl || '';
+  const gifUrl = gifContent?.contentPath || '';
+  
   const type = exercise.type || '';
   const duration = exercise.duration || 0;
 
@@ -121,11 +133,8 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose }: Exerc
     description: description?.substring(0, 100), 
     videoUrl, 
     imageUrl,
-    rawExerciseData: {
-      exerciseDescription: exerciseData.exerciseDescription?.substring(0, 50),
-      exerciseVideoUrl: exerciseData.exerciseVideoUrl,
-      exerciseImageUrl: exerciseData.exerciseImageUrl
-    }
+    gifUrl,
+    exerciseContents: exerciseContents.map((c: any) => ({ type: c.type, path: c.contentPath?.substring(0, 50) }))
   });
 
   const { embedUrl, type: videoType } = getVideoEmbedUrl(videoUrl);
@@ -200,8 +209,26 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose }: Exerc
             </div>
           )}
 
+          {/* GIF Tizer (если нет видео) */}
+          {!videoUrl && gifUrl && (
+            <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-100">
+              <Image
+                src={gifUrl}
+                alt={`${exerciseName} - превью`}
+                fill
+                className="object-contain"
+                unoptimized
+              />
+              <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                <div className="bg-white/90 px-4 py-2 rounded-lg text-sm text-gray-800">
+                  GIF-превью упражнения
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Image */}
-          {!videoUrl && imageUrl && (
+          {!videoUrl && !gifUrl && imageUrl && (
             <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-100">
               <Image
                 src={imageUrl}
@@ -227,8 +254,21 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose }: Exerc
           )}
         </div>
 
+        {/* Comments Section */}
+        <div className="border-t border-gray-200 bg-gray-50 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            <span>Комментарии</span>
+          </h3>
+          <div className="text-sm text-gray-500 text-center py-4">
+            Раздел комментариев будет доступен в следующей версии
+          </div>
+        </div>
+
         {/* Footer */}
-        <div className="flex-shrink-0 border-t border-gray-200 px-6 py-4 bg-gray-50">
+        <div className="flex-shrink-0 border-t border-gray-200 px-6 py-4 bg-white">
           <button
             onClick={onClose}
             className="w-full px-6 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors"
