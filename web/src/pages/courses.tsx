@@ -169,15 +169,15 @@ const CoursesPage = () => {
       }
     } catch (error) {
       console.error('❌ Failed to check marathon status:', error);
-      // On error, redi{
-        setIsNavigating(false);
-        setLoadingCourseId(null);
-        setLoadingCourseName('');
-      }
+      // On error, redirect to start page
       router.push(`/courses/${courseId}/start`);
     } finally {
       // Reset navigation flag after a delay to allow router to complete
-      setTimeout(() => setIsNavigating(false), 1000);
+      setTimeout(() => {
+        setIsNavigating(false);
+        setLoadingCourseId(null);
+        setLoadingCourseName('');
+      }, 1000);
     }
   };
 
