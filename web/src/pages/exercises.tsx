@@ -11,11 +11,11 @@ import ExerciseDetailModal from '@/components/day/ExerciseDetailModal';
 // Static exercises data - matches actual exercises from course
 const POSTURE_EXERCISES = [
   {
-    id: '1',
-    marathonExerciseId: '1',
-    exerciseName: 'На заднюю поверхность шеи',
-    marathonExerciseName: 'На заднюю поверхность шеи',
-    description: 'Упражнение для укрепления задней поверхности шеи',
+    id: 'a8d8a1f3-6765-4031-bbb8-cf0baf47f7af',
+    marathonExerciseId: 'a8d8a1f3-6765-4031-bbb8-cf0baf47f7af',
+    exerciseName: 'Стоечка',
+    marathonExerciseName: 'у стены',
+    description: 'Это упражнение - царь упражнений для осанки!',
     duration: 300,
     type: 'Practice' as const,
     status: 'NotStarted' as const,
@@ -201,7 +201,8 @@ export default function ExercisesPage() {
       setShowPaymentModal(true);
       return;
     }
-    setSelectedExercise(exercise);
+    // Navigate to exercise detail page
+    router.push(`/exercise/${exercise.id}`);
   };
 
   return (
