@@ -171,14 +171,12 @@ export default function DayPlan() {
         </div>
       </div>
 
-      {/* Exercise Detail Modal */}
-      {selectedExercise && (
-        <ExerciseDetailModal
-          exercise={selectedExercise}
-          isOpen={!!selectedExercise}
-          onClose={() => setSelectedExercise(null)}
-        />
-      )}
+      {/* Exercise Detail Modal - Always render to prevent tree-shaking */}
+      <ExerciseDetailModal
+        exercise={selectedExercise || ({} as Exercise)}
+        isOpen={!!selectedExercise}
+        onClose={() => setSelectedExercise(null)}
+      />
     </>
   );
 }

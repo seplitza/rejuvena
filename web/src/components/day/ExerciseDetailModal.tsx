@@ -96,7 +96,7 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose }: Exerc
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !exercise || !exercise.marathonExerciseId) return null;
 
   const { exerciseName, marathonExerciseName, description, videoUrl, imageUrl, type, duration } = exercise;
   const { embedUrl, type: videoType } = getVideoEmbedUrl(videoUrl || '');
