@@ -104,8 +104,18 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose }: Exerc
 
   console.log('✅ Rendering modal with exercise:', exercise);
 
-  const { exerciseName, marathonExerciseName, description, videoUrl, imageUrl, type, duration } = exercise;
-  const { embedUrl, type: videoType } = getVideoEmbedUrl(videoUrl || '');
+  // Map API field names to component field names
+  const exerciseName = exercise.exerciseName || '';
+  const marathonExerciseName = exercise.marathonExerciseName || '';
+  const description = exercise.exerciseDescription || exercise.description || '';
+  const videoUrl = exercise.exerciseVideoUrl || exercise.videoUrl || '';
+  const imageUrl = exercise.exerciseImageUrl || exercise.imageUrl || '';
+  const type = exercise.type || '';
+  const duration = exercise.duration || 0;
+
+  console.log('📋 Modal data:', { exerciseName, description, videoUrl, imageUrl });
+
+  const { embedUrl, type: videoType } = getVideoEmbedUrl(videoUrl);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
