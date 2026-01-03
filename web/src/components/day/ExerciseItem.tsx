@@ -121,15 +121,31 @@ export default function ExerciseItem({
             {/* Short Description */}
             {exercise.description && (
               <p className="text-sm text-gray-600 line-clamp-3">
-                {exercise.description
-                  .replace(/<[^>]*>/g, '')
-                  .replace(/&nbsp;/g, ' ')
-                  .replace(/&quot;/g, '"')
-                  .replace(/&amp;/g, '&')
-                  .replace(/&lt;/g, '<')
-                  .replace(/&gt;/g, '>')
-                  .replace(/^[^\n]+\n/, '')
-                  .trim()}
+                {(() => {
+                  let text = exercise.description
+                    .replace(/<[^>]*>/g, '')
+                    .replace(/&nbsp;/g, ' ')
+                    .replace(/&quot;/g, '"')
+                    .replace(/&amp;/g, '&')
+                    .replace(/&lt;/g, '<')
+                    .replace(/&gt;/g, '>')
+                    .trim();
+                  
+                  // Split into lines
+                  const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+                  
+                  // Remove first line if it's just the exercise name or a header
+                  if (lines.length > 1 && lines[0].length < 100) {
+                    // Check if first line matches exercise name or is a short header
+                    const firstLine = lines[0].toLowerCase();
+                    const exerciseLower = exerciseName.toLowerCase();
+                    if (firstLine === exerciseLower || firstLine.includes(exerciseLower) && firstLine.length < 80) {
+                      lines.shift();
+                    }
+                  }
+                  
+                  return lines.join(' ');
+                })()}
               </p>
             )}
 
