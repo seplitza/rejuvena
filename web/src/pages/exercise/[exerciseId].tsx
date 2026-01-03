@@ -85,7 +85,38 @@ export default function ExercisePage({ exercise: initialExercise }: { exercise: 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState('');
+  const [currentContentIndex, setCurrentContentIndex] = useState(0);
+  const [contentItems, setContentItems] = useState<any[]>([]);
   const exercise = initialExercise; // Use static data directly
+
+  // Build content items from exerciseContents
+  useEffect(() => {
+    if (!exercise) return;
+
+    const exerciseContents = exercise.exerciseContents || [];
+    
+    const items = exerciseContents
+      .filter((c: any) => c.type === 'video' || c.type === 'image')
+      .map((c: any) => {
+        const item: any = {
+          id: c.id || Math.random().toString(),
+          type: c.type,
+          contentPath: c.contentPath,
+          loadError: false
+        };
+
+        if (c.type === 'video') {
+          const { embedUrl, type: videoType } = getVideoEmbedUrl(c.contentPath);
+          item.embedUrl = embedUrl;
+          item.videoType = videoType;
+        }
+
+        return item;
+      });
+
+    setContentItems(items);
+    setCurrentContentIndex(0);
+  }, [exercise]);
 
 
   // Get exercise data
@@ -150,15 +181,6 @@ export default function ExercisePage({ exercise: initialExercise }: { exercise: 
     };
   }, []);
 
-  // Get video URL from exerciseContents (before early return check)
-  const videoUrl = exercise?.exerciseContents?.[0]?.contentPath || exercise?.exerciseContents?.[0]?.contentUrl || exercise?.videoUrl || '';
-  const { embedUrl, type: videoType } = getVideoEmbedUrl(videoUrl);
-
-  // Debug logging
-  if (exercise) {
-    console.log('Exercise video debug:', { videoUrl, embedUrl, videoType, exerciseContents: exercise.exerciseContents });
-  }
-
   if (!exercise) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
@@ -220,62 +242,114 @@ export default function ExercisePage({ exercise: initialExercise }: { exercise: 
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-6">
-        {/* Video Section */}
-        {embedUrl ? (
+        {/* Video/Image Carousel */}
+        {contentItems.length > 0 && (
           <div className="bg-white rounded-2xl shadow-lg p-4 mb-6">
-            <div 
-              ref={videoContainerRef}
-              className="relative w-full max-w-[400px] mx-auto"
-              style={{
-                paddingBottom: isFullscreen ? '56.25%' : 'min(100%, 400px)',
-              }}
-            >
-              {videoType === 'video' ? (
-                <video
-                  className="absolute top-0 left-0 w-full h-full rounded-lg object-cover"
-                  src={embedUrl}
-                  controls
-                  playsInline
-                />
-              ) : (
-                <iframe
-                  className="absolute top-0 left-0 w-full h-full rounded-lg"
-                  src={embedUrl}
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              )}
-              
-              {/* Fullscreen Toggle Button */}
-              <button
-                onClick={toggleFullscreen}
-                className="absolute bottom-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded-lg transition-colors z-10"
-                aria-label={isFullscreen ? 'Выйти из полноэкранного режима' : 'Полноэкранный режим'}
-              >
-                {isFullscreen ? (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                  </svg>
+            <div className="w-full max-w-[400px] mx-auto">
+              <div className="relative w-full">
+                {/* Hint for images (GIFs) - overlaid on content */}
+                {contentItems[currentContentIndex]?.type === 'image' && (
+                  <div className="absolute top-4 left-4 right-4 z-10">
+                    <div className="bg-purple-600/95 text-white text-sm px-4 py-2.5 rounded-lg text-center shadow-lg">
+                      <p className="font-semibold mb-1">💡 Основное движение</p>
+                      <p className="text-xs opacity-90">
+                        Ознакомьтесь с видео инструкцией{contentItems.length > 1 && ', нажмите на стрелочку вправо'}
+                      </p>
+                    </div>
+                  </div>
                 )}
-              </button>
+
+                {/* Current Content */}
+                {contentItems[currentContentIndex] && (
+                  <div key={contentItems[currentContentIndex].id} className="w-full">
+                    {contentItems[currentContentIndex].type === 'video' ? (
+                      contentItems[currentContentIndex].videoType === 'video' ? (
+                        <video
+                          src={contentItems[currentContentIndex].embedUrl}
+                          controls
+                          controlsList="nodownload nofullscreen noremoteplayback"
+                          disablePictureInPicture
+                          className="w-full aspect-square object-contain bg-gray-100 rounded-lg"
+                          playsInline
+                          onContextMenu={(e) => e.preventDefault()}
+                        />
+                      ) : (
+                        <div className="w-full aspect-square bg-gray-100 rounded-lg overflow-hidden relative">
+                          <iframe
+                            src={contentItems[currentContentIndex].embedUrl}
+                            className="w-full h-full"
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      )
+                    ) : (
+                      <img
+                        src={contentItems[currentContentIndex].contentPath}
+                        alt={exercise.exerciseName}
+                        className="w-full aspect-square object-contain bg-gray-100 rounded-lg"
+                      />
+                    )}
+                  </div>
+                )}
+
+                {/* Navigation Arrows */}
+                {contentItems.length > 1 && (
+                  <div className="absolute top-1/2 left-0 right-0 transform -translate-y-1/2 flex justify-between px-2 pointer-events-none">
+                    <button
+                      onClick={() => setCurrentContentIndex(Math.max(0, currentContentIndex - 1))}
+                      disabled={currentContentIndex === 0}
+                      className={`w-10 h-10 rounded-full bg-white/90 shadow-lg flex items-center justify-center transition-all pointer-events-auto ${
+                        currentContentIndex === 0 
+                          ? 'opacity-30 cursor-not-allowed' 
+                          : 'hover:bg-white hover:scale-110'
+                      }`}
+                      aria-label="Предыдущее"
+                    >
+                      <svg className="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+
+                    <button
+                      onClick={() => setCurrentContentIndex(Math.min(contentItems.length - 1, currentContentIndex + 1))}
+                      disabled={currentContentIndex === contentItems.length - 1}
+                      className={`w-10 h-10 rounded-full bg-white/90 shadow-lg flex items-center justify-center transition-all pointer-events-auto ${
+                        currentContentIndex === contentItems.length - 1
+                          ? 'opacity-30 cursor-not-allowed'
+                          : 'hover:bg-white hover:scale-110'
+                      }`}
+                      aria-label="Следующее"
+                    >
+                      <svg className="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+
+                {/* Pagination Dots */}
+                {contentItems.length > 1 && (
+                  <div className="flex justify-center space-x-2 mt-4">
+                    {contentItems.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentContentIndex(index)}
+                        className={`w-2 h-2 rounded-full transition-all ${
+                          index === currentContentIndex
+                            ? 'bg-purple-600 w-6'
+                            : 'bg-gray-300 hover:bg-gray-400'
+                        }`}
+                        aria-label={`Перейти к ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        ) : videoUrl ? (
-          <div className="bg-white rounded-2xl shadow-lg p-4 mb-6">
-            <div className="text-center py-8">
-              <div className="text-5xl mb-4">🎥</div>
-              <p className="text-gray-600">
-                Неправильная ссылка на видео.<br />
-                Проверьте, что ссылка скопирована целиком и в ней нет опечаток
-              </p>
-            </div>
-          </div>
-        ) : null}
+        )}
 
         {/* Description Section */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
