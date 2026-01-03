@@ -5,6 +5,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { EXERCISES_MAP, POSTURE_EXERCISES } from '@/data/exercisesData';
 
 /**
  * Get video embed URL based on platform
@@ -53,57 +54,21 @@ function getVideoEmbedUrl(url: string): { embedUrl: string; type: 'iframe' | 'vi
   return { embedUrl: url, type: 'iframe' };
 }
 
-// Static exercise data - will be replaced with API call
-const EXERCISE_DATA: Record<string, any> = {
-  'a8d8a1f3-6765-4031-bbb8-cf0baf47f7af': {
-    id: 'a8d8a1f3-6765-4031-bbb8-cf0baf47f7af',
-    marathonExerciseId: 'a8d8a1f3-6765-4031-bbb8-cf0baf47f7af',
-    exerciseName: 'Стоечка',
-    marathonExerciseName: 'у стены',
-    description: `
-      <h3>Стоечка у стены</h3>
-      <p>Это упражнение - царь упражнений для осанки!</p>
-      <p>Это незаменимый прием для возвращения головы в здоровое положение. Упражнение статическое, качается тягой, однако лучше сначала попробовать, прежде, чем высчитать такие суждения.😁</p>
-      <p>Первый раз попробуй выдержать минуту, затем ты можешь постепенно увеличивать продолжительность, в идеале до 10 минут в день. 💪</p>
-      <p><strong>Что дает нам стоечка у стены:</strong></p>
-      <ul>
-        <li>Улучшается статика шеи.</li>
-        <li>Шея становится длинной и сильной.</li>
-        <li>Позвоночник вспоминает свое выпрямленное естественное положение.</li>
-        <li>Потребление кислорода увеличивается, поскольку в этой позе ваши легкие могут поглощать больше воздуха.</li>
-        <li>Нервная система укрепляется.</li>
-      </ul>
-    `,
-    videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-    duration: 300,
-    type: 'Practice' as const,
-    isDone: false,
-    isNew: false,
-    blockExercise: false,
-    commentsCount: 0,
-  },
-};
-
 // Required for static export
 export async function getStaticPaths() {
   // Generate paths for all exercises
-  const paths = Object.keys(EXERCISE_DATA).map((id) => ({
-    params: { exerciseId: id },
+  const paths = POSTURE_EXERCISES.map((exercise) => ({
+    params: { exerciseId: exercise.id },
   }));
 
-  return {
-    paths,
-    fallback: false, // Show 404 for unknown IDs
-  };
+  return { paths, fallback: false };
 }
 
 export async function getStaticProps({ params }: { params: { exerciseId: string } }) {
-  const exercise = EXERCISE_DATA[params.exerciseId];
+  const exercise = EXERCISES_MAP[params.exerciseId];
 
   if (!exercise) {
-    return {
-      notFound: true,
-    };
+    return { notFound: true };
   }
 
   return {
@@ -115,9 +80,9 @@ export async function getStaticProps({ params }: { params: { exerciseId: string 
 
 export default function ExercisePage({ exercise }: { exercise: any }) {
   const router = useRouter();
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
   const [isDone, setIsDone] = useState(false);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState('');
 
@@ -157,6 +122,41 @@ export default function ExercisePage({ exercise }: { exercise: any }) {
     setNewComment('');
   };
 
+  const toggleFullscreen = () => {
+    if (!videoContainerRef.current) return;
+
+    if (!document.fullscreenElement) {
+      videoContainerRef.current.requestFullscreen().catch((err) => {
+        console.error('Error entering fullscreen:', err);
+      });
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
+  // Listen for fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  // Get video URL from exerciseContents (before early return check)
+  const videoUrl = exercise?.exerciseContents?.[0]?.contentPath || exercise?.exerciseContents?.[0]?.contentUrl || exercise?.videoUrl || '';
+  const { embedUrl, type: videoType } = getVideoEmbedUrl(videoUrl);
+
+  // Debug logging
+  if (exercise) {
+    console.log('Exercise video debug:', { videoUrl, embedUrl, videoType });
+  }
+
   if (!exercise) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
@@ -173,8 +173,6 @@ export default function ExercisePage({ exercise }: { exercise: any }) {
       </div>
     );
   }
-
-  const { embedUrl, type: videoType } = getVideoEmbedUrl(exercise.videoUrl);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
@@ -221,34 +219,61 @@ export default function ExercisePage({ exercise }: { exercise: any }) {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-6">
         {/* Video Section */}
-        {embedUrl && (
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
-            <div className="aspect-square max-w-[400px] mx-auto bg-black">
+        {embedUrl ? (
+          <div className="bg-white rounded-2xl shadow-lg p-4 mb-6">
+            <div 
+              ref={videoContainerRef}
+              className="relative w-full max-w-[400px] mx-auto"
+              style={{
+                paddingBottom: isFullscreen ? '56.25%' : 'min(100%, 400px)',
+              }}
+            >
               {videoType === 'video' ? (
                 <video
-                  ref={videoRef}
-                  className="w-full h-full object-contain"
+                  className="absolute top-0 left-0 w-full h-full rounded-lg object-cover"
+                  src={embedUrl}
                   controls
                   playsInline
-                  onPlay={() => setIsVideoPlaying(true)}
-                  onPause={() => setIsVideoPlaying(false)}
-                >
-                  <source src={embedUrl} type="video/mp4" />
-                  Ваш браузер не поддерживает видео.
-                </video>
+                />
               ) : (
                 <iframe
-                  className="w-full h-full"
+                  className="absolute top-0 left-0 w-full h-full rounded-lg"
                   src={embedUrl}
-                  title={`${exercise.exerciseName} ${exercise.marathonExerciseName || ''}`}
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
               )}
+              
+              {/* Fullscreen Toggle Button */}
+              <button
+                onClick={toggleFullscreen}
+                className="absolute bottom-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded-lg transition-colors z-10"
+                aria-label={isFullscreen ? 'Выйти из полноэкранного режима' : 'Полноэкранный режим'}
+              >
+                {isFullscreen ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                  </svg>
+                )}
+              </button>
             </div>
           </div>
-        )}
+        ) : videoUrl ? (
+          <div className="bg-white rounded-2xl shadow-lg p-4 mb-6">
+            <div className="text-center py-8">
+              <div className="text-5xl mb-4">🎥</div>
+              <p className="text-gray-600">
+                Неправильная ссылка на видео.<br />
+                Проверьте, что ссылка скопирована целиком и в ней нет опечаток
+              </p>
+            </div>
+          </div>
+        ) : null}
 
         {/* Description Section */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
