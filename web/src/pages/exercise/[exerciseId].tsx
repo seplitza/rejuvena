@@ -20,6 +20,10 @@ function getVideoEmbedUrl(url: string): { embedUrl: string; type: 'iframe' | 'vi
 
   // YouTube
   if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    // Already embed URL
+    if (url.includes('/embed/')) {
+      return { embedUrl: url, type: 'iframe' };
+    }
     const videoId = url.includes('youtu.be')
       ? url.split('youtu.be/')[1]?.split('?')[0]
       : new URL(url).searchParams.get('v');
@@ -28,6 +32,10 @@ function getVideoEmbedUrl(url: string): { embedUrl: string; type: 'iframe' | 'vi
 
   // Vimeo
   if (url.includes('vimeo.com')) {
+    // Already embed URL (player.vimeo.com/video/ID)
+    if (url.includes('player.vimeo.com/video/')) {
+      return { embedUrl: url, type: 'iframe' };
+    }
     const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
     return { embedUrl: `https://player.vimeo.com/video/${videoId}`, type: 'iframe' };
   }
@@ -245,7 +253,7 @@ export default function ExercisePage({ exercise: initialExercise }: { exercise: 
         {/* Video/Image Carousel */}
         {contentItems.length > 0 && (
           <div className="bg-white rounded-2xl shadow-lg p-4 mb-6">
-            <div className="w-full max-w-[400px] mx-auto">
+            <div className="w-full max-w-[200px] mx-auto">
               <div className="relative w-full">
                 {/* Hint for images (GIFs) - overlaid on content */}
                 {contentItems[currentContentIndex]?.type === 'image' && (
