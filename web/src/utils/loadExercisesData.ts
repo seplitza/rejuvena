@@ -35,13 +35,22 @@ export async function loadExerciseFromAPI(marathonExerciseId: string) {
       },
     });
 
+    console.log('📦 API Response:', response);
+    console.log('📋 Available exercises:', response.exercises?.map((ex: any) => ({
+      id: ex.id,
+      marathonExerciseId: ex.marathonExerciseId,
+      name: ex.exerciseName,
+    })));
+
     // Find the exercise by marathonExerciseId
     const exercise = response.exercises?.find((ex: any) => 
       ex.marathonExerciseId === marathonExerciseId || ex.id === marathonExerciseId
     );
 
     if (!exercise) {
-      console.warn(`Exercise ${marathonExerciseId} not found in API response`);
+      console.warn(`❌ Exercise ${marathonExerciseId} not found in API response`);
+      console.log('Looking for:', marathonExerciseId);
+      console.log('Available IDs:', response.exercises?.map((ex: any) => ex.marathonExerciseId));
       return null;
     }
 
