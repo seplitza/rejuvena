@@ -122,7 +122,9 @@ export default function ExerciseItem({
           <div className="pt-3 space-y-3">
             {/* Short Description */}
             {exercise.description && (
-              <p className="text-sm text-gray-600 line-clamp-3">{exercise.description}</p>
+              <p className="text-sm text-gray-600 line-clamp-3">
+                {exercise.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim()}
+              </p>
             )}
 
             {/* Exercise Info */}

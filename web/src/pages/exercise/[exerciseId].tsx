@@ -247,7 +247,7 @@ export default function ExercisePage({ exercise: initialExercise }: { exercise: 
       <div className="max-w-4xl mx-auto py-6">
         {/* Video/Image Carousel */}
         {contentItems.length > 0 && (
-          <div className="bg-white shadow-lg mb-6">
+          <div className="bg-white shadow-lg mb-6 py-6">
             <div className="flex flex-col items-center">
               {/* Dynamic container - smaller for GIFs, larger for videos */}
               <div className={`w-full ${contentItems[currentContentIndex]?.type === 'image' ? 'max-w-[200px]' : 'max-w-[400px]'}`}>
