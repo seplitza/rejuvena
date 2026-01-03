@@ -179,7 +179,7 @@ export default function ExercisesPage() {
                 <div className="text-3xl font-bold text-purple-600 mb-3 text-center">100 ₽</div>
                 <div className="text-sm text-gray-700 space-y-2">
                   <p>✓ Доступ к упражнению на 30 дней</p>
-                  <p>✓ Дополнительный месяц (30 дней) пользования <a href="/photo-diary" className="text-purple-600 hover:text-purple-700 underline">Фотодневником</a></p>
+                  <p>✓ Дополнительный месяц (30 дней) пользования <a href="https://seplitza.github.io/rejuvena/photo-diary" className="text-purple-600 hover:text-purple-700 underline">Фотодневником</a></p>
                   <p>✓ Сравнение фотографий</p>
                   <p>✓ Хранение фотографий</p>
                 </div>

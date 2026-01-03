@@ -128,7 +128,7 @@ export default function ExerciseItem({
                   .replace(/&amp;/g, '&')
                   .replace(/&lt;/g, '<')
                   .replace(/&gt;/g, '>')
-                  .replace(new RegExp(`^${exerciseName}\s*`, 'i'), '')
+                  .replace(/^[^\n]+\n/, '')
                   .trim()}
               </p>
             )}
@@ -179,13 +179,9 @@ export default function ExerciseItem({
                 e.stopPropagation();
                 onDetailClick();
               }}
-              className={`w-full px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                blockExercise
-                  ? 'text-white bg-purple-600 hover:bg-purple-700'
-                  : 'text-purple-600 bg-purple-50 hover:bg-purple-100'
-              }`}
+              className="w-full px-4 py-2 text-sm font-medium text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
             >
-              {blockExercise ? 'Оплатить доступ (100 ₽)' : 'Посмотреть детали'}
+              Посмотреть детали
             </button>
           </div>
         </div>
