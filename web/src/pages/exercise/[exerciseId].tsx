@@ -6,6 +6,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { EXERCISES_MAP, POSTURE_EXERCISES } from '@/data/exercisesData';
+import { loadExerciseFromAPI } from '@/utils/loadExercisesData';
 
 /**
  * Get video embed URL based on platform
@@ -78,13 +79,46 @@ export async function getStaticProps({ params }: { params: { exerciseId: string 
   };
 }
 
-export default function ExercisePage({ exercise }: { exercise: any }) {
+export default function ExercisePage({ exercise: initialExercise }: { exercise: any }) {
   const router = useRouter();
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const [isDone, setIsDone] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState('');
+  const [exercise, setExercise] = useState(initialExercise);
+  const [loading, setLoading] = useState(false);
+
+  // Load full exercise data from API on client side
+  useEffect(() => {
+    async function loadFullExerciseData() {
+      if (!initialExercise?.marathonExerciseId) return;
+      
+      setLoading(true);
+      try {
+        const apiExercise = await loadExerciseFromAPI(initialExercise.marathonExerciseId);
+        
+        if (apiExercise) {
+          // Merge API data with initial static data
+          setExercise({
+            ...initialExercise,
+            description: apiExercise.exerciseDescription || apiExercise.description || initialExercise.description,
+            exerciseContents: apiExercise.exerciseContents || initialExercise.exerciseContents || [],
+            videoUrl: apiExercise.videoUrl,
+            imageUrl: apiExercise.imageUrl,
+            commentsCount: apiExercise.commentsCount || 0,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load exercise from API:', error);
+        // Keep using initial exercise data
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadFullExerciseData();
+  }, [initialExercise]);
 
   // Get exercise data
   useEffect(() => {
@@ -154,7 +188,7 @@ export default function ExercisePage({ exercise }: { exercise: any }) {
 
   // Debug logging
   if (exercise) {
-    console.log('Exercise video debug:', { videoUrl, embedUrl, videoType });
+    console.log('Exercise video debug:', { videoUrl, embedUrl, videoType, exerciseContents: exercise.exerciseContents });
   }
 
   if (!exercise) {
