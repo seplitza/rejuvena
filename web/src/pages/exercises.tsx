@@ -7,13 +7,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import ExerciseItem from '@/components/day/ExerciseItem';
 import ExerciseDetailModal from '@/components/day/ExerciseDetailModal';
-import { POSTURE_EXERCISES } from '@/data/exercisesData';
+import { POSTURE_EXERCISES } from '@/data/exercisesData.generated';
+import type { Exercise } from '@/store/modules/day/slice';
 
 export default function ExercisesPage() {
   const router = useRouter();
   const [expandedExercises, setExpandedExercises] = useState<Record<string, boolean>>({});
   const [completedExercises, setCompletedExercises] = useState<Record<string, boolean>>({});
-  const [selectedExercise, setSelectedExercise] = useState<any>(null);
+  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [modalMounted, setModalMounted] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 

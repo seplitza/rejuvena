@@ -5,8 +5,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { EXERCISES_MAP, POSTURE_EXERCISES } from '@/data/exercisesData';
-import { loadExerciseFromAPI } from '@/utils/loadExercisesData';
+import { EXERCISES_MAP, POSTURE_EXERCISES } from '@/data/exercisesData.generated';
 
 /**
  * Get video embed URL based on platform
@@ -86,39 +85,8 @@ export default function ExercisePage({ exercise: initialExercise }: { exercise: 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState('');
-  const [exercise, setExercise] = useState(initialExercise);
-  const [loading, setLoading] = useState(false);
+  const exercise = initialExercise; // Use static data directly
 
-  // Load full exercise data from API on client side
-  useEffect(() => {
-    async function loadFullExerciseData() {
-      if (!initialExercise?.marathonExerciseId) return;
-      
-      setLoading(true);
-      try {
-        const apiExercise = await loadExerciseFromAPI(initialExercise.marathonExerciseId);
-        
-        if (apiExercise) {
-          // Merge API data with initial static data
-          setExercise({
-            ...initialExercise,
-            description: apiExercise.exerciseDescription || apiExercise.description || initialExercise.description,
-            exerciseContents: apiExercise.exerciseContents || initialExercise.exerciseContents || [],
-            videoUrl: apiExercise.videoUrl,
-            imageUrl: apiExercise.imageUrl,
-            commentsCount: apiExercise.commentsCount || 0,
-          });
-        }
-      } catch (error) {
-        console.error('Failed to load exercise from API:', error);
-        // Keep using initial exercise data
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadFullExerciseData();
-  }, [initialExercise]);
 
   // Get exercise data
   useEffect(() => {
