@@ -252,109 +252,139 @@ export default function ExercisePage({ exercise: initialExercise }: { exercise: 
       <div className="max-w-4xl mx-auto px-4 py-6">
         {/* Video/Image Carousel */}
         {contentItems.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-lg p-4 mb-6">
-            <div className="w-full max-w-[200px] mx-auto">
-              <div className="relative w-full">
-                {/* Hint for images (GIFs) - overlaid on content */}
-                {contentItems[currentContentIndex]?.type === 'image' && (
-                  <div className="absolute top-4 left-4 right-4 z-10">
-                    <div className="bg-purple-600/95 text-white text-sm px-4 py-2.5 rounded-lg text-center shadow-lg">
-                      <p className="font-semibold mb-1">💡 Основное движение</p>
-                      <p className="text-xs opacity-90">
-                        Ознакомьтесь с видео инструкцией{contentItems.length > 1 && ', нажмите на стрелочку вправо'}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Current Content */}
-                {contentItems[currentContentIndex] && (
-                  <div key={contentItems[currentContentIndex].id} className="w-full">
-                    {contentItems[currentContentIndex].type === 'video' ? (
-                      contentItems[currentContentIndex].videoType === 'video' ? (
-                        <video
-                          src={contentItems[currentContentIndex].embedUrl}
-                          controls
-                          controlsList="nodownload nofullscreen noremoteplayback"
-                          disablePictureInPicture
-                          className="w-full aspect-square object-contain bg-gray-100 rounded-lg"
-                          playsInline
-                          onContextMenu={(e) => e.preventDefault()}
-                        />
-                      ) : (
-                        <div className="w-full aspect-square bg-gray-100 rounded-lg overflow-hidden relative">
-                          <iframe
+          <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+            <div className="flex flex-col items-center">
+              {/* Dynamic container - smaller for GIFs, larger for videos */}
+              <div className={`w-full ${contentItems[currentContentIndex]?.type === 'image' ? 'max-w-[200px]' : 'max-w-[400px]'}`}>
+                <div className="relative w-full">
+                  {/* Current Content */}
+                  {contentItems[currentContentIndex] && (
+                    <div key={contentItems[currentContentIndex].id} className="w-full">
+                      {contentItems[currentContentIndex].type === 'video' ? (
+                        contentItems[currentContentIndex].videoType === 'video' ? (
+                          <video
                             src={contentItems[currentContentIndex].embedUrl}
-                            className="w-full h-full"
-                            frameBorder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
+                            controls
+                            controlsList="nodownload nofullscreen noremoteplayback"
+                            disablePictureInPicture
+                            className="w-full aspect-square object-contain bg-white rounded-lg"
+                            playsInline
+                            onContextMenu={(e) => e.preventDefault()}
+                          />
+                        ) : (
+                          <div className="w-full aspect-square bg-white rounded-lg overflow-hidden relative">
+                            <iframe
+                              src={contentItems[currentContentIndex].embedUrl}
+                              className="w-full h-full"
+                              frameBorder="0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                            />
+                            {/* Overlay to block clicks on video provider logos */}
+                            {contentItems[currentContentIndex].embedUrl?.includes('youtube.com') && (
+                              <div 
+                                className="absolute bottom-0 pointer-events-auto bg-transparent"
+                                style={{ 
+                                  right: '48px',
+                                  width: '100px',
+                                  height: '48px',
+                                  zIndex: 10
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            )}
+                            {contentItems[currentContentIndex].embedUrl?.includes('vimeo.com') && (
+                              <div 
+                                className="absolute bottom-0 right-0 pointer-events-auto bg-transparent"
+                                style={{ 
+                                  width: '80px',
+                                  height: '80px',
+                                  zIndex: 10
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            )}
+                            {/* Top bar overlay */}
+                            <div 
+                              className="absolute top-0 left-0 right-0 pointer-events-auto bg-transparent"
+                              style={{ 
+                                height: '20%',
+                                zIndex: 10
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </div>
+                        )
+                      ) : (
+                        <div className="w-full aspect-square flex items-center justify-center bg-white rounded-lg">
+                          <img
+                            src={contentItems[currentContentIndex].contentPath}
+                            alt={exercise.exerciseName}
+                            className="w-full h-full object-contain"
                           />
                         </div>
-                      )
-                    ) : (
-                      <img
-                        src={contentItems[currentContentIndex].contentPath}
-                        alt={exercise.exerciseName}
-                        className="w-full aspect-square object-contain bg-gray-100 rounded-lg"
-                      />
-                    )}
-                  </div>
-                )}
+                      )}
+                    </div>
+                  )}
 
-                {/* Navigation Arrows */}
-                {contentItems.length > 1 && (
-                  <div className="absolute top-1/2 left-0 right-0 transform -translate-y-1/2 flex justify-between px-2 pointer-events-none">
-                    <button
-                      onClick={() => setCurrentContentIndex(Math.max(0, currentContentIndex - 1))}
-                      disabled={currentContentIndex === 0}
-                      className={`w-10 h-10 rounded-full bg-white/90 shadow-lg flex items-center justify-center transition-all pointer-events-auto ${
-                        currentContentIndex === 0 
-                          ? 'opacity-30 cursor-not-allowed' 
-                          : 'hover:bg-white hover:scale-110'
-                      }`}
-                      aria-label="Предыдущее"
-                    >
-                      <svg className="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                    </button>
+                  {/* Navigation Arrows - only show if not at boundaries */}
+                  {contentItems.length > 1 && (
+                    <>
+                      {currentContentIndex > 0 && (
+                        <button
+                          onClick={() => setCurrentContentIndex(currentContentIndex - 1)}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all z-20"
+                          aria-label="Предыдущее"
+                        >
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                      )}
+                      
+                      {currentContentIndex < contentItems.length - 1 && (
+                        <button
+                          onClick={() => setCurrentContentIndex(currentContentIndex + 1)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all z-20"
+                          aria-label="Следующее"
+                        >
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      )}
 
-                    <button
-                      onClick={() => setCurrentContentIndex(Math.min(contentItems.length - 1, currentContentIndex + 1))}
-                      disabled={currentContentIndex === contentItems.length - 1}
-                      className={`w-10 h-10 rounded-full bg-white/90 shadow-lg flex items-center justify-center transition-all pointer-events-auto ${
-                        currentContentIndex === contentItems.length - 1
-                          ? 'opacity-30 cursor-not-allowed'
-                          : 'hover:bg-white hover:scale-110'
-                      }`}
-                      aria-label="Следующее"
-                    >
-                      <svg className="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  </div>
-                )}
-
-                {/* Pagination Dots */}
-                {contentItems.length > 1 && (
-                  <div className="flex justify-center space-x-2 mt-4">
-                    {contentItems.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentContentIndex(index)}
-                        className={`w-2 h-2 rounded-full transition-all ${
-                          index === currentContentIndex
-                            ? 'bg-purple-600 w-6'
-                            : 'bg-gray-300 hover:bg-gray-400'
-                        }`}
-                        aria-label={`Перейти к ${index + 1}`}
-                      />
-                    ))}
-                  </div>
-                )}
+                      {/* Carousel Indicators */}
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
+                        {contentItems.map((_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setCurrentContentIndex(index)}
+                            className={`w-2 h-2 rounded-full transition-all ${
+                              index === currentContentIndex 
+                                ? 'bg-white w-6' 
+                                : 'bg-white/50 hover:bg-white/70'
+                            }`}
+                            aria-label={`Перейти к ${index + 1}`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
+
+              {/* Hint for images (GIFs) - shown BELOW the image */}
+              {contentItems[currentContentIndex]?.type === 'image' && contentItems.length > 1 && (
+                <div className="mt-4 w-full max-w-[400px]">
+                  <div className="bg-purple-600/95 text-white text-sm px-4 py-3 rounded-lg text-center shadow-lg">
+                    <p className="font-semibold mb-1">💡 Основное движение</p>
+                    <p className="text-xs opacity-90">
+                      Ознакомьтесь с видео инструкцией, нажмите на стрелочку вправо
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
