@@ -8,8 +8,8 @@ import * as endpoints from '@/api/endpoints';
 
 // Course "Омолодись" - Marathon ID
 const OMOLODJIS_MARATHON_ID = '3842e63f-b125-447d-94a1-b1c93be38b4e';
-// Day with neck exercises - Day ID  
-const NECK_EXERCISES_DAY_ID = 'e4285131-1339-4a1e-90d8-0c9fdf03b4ee';
+// Day with all base exercises (including "На валике") - Day ID  
+const NECK_EXERCISES_DAY_ID = 'cd0f536a-f2ac-4494-a0e3-159a2504317d';
 
 /**
  * Load exercise data from API by marathonExerciseId
