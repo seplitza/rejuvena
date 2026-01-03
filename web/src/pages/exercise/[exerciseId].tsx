@@ -223,12 +223,7 @@ export default function ExercisePage({ exercise: initialExercise }: { exercise: 
             </button>
             
             <div className="flex-1 text-center px-4">
-              <h1 className="text-xl font-bold">
-                <span className="font-bold">{exercise.exerciseName}</span>
-                {exercise.marathonExerciseName && (
-                  <span className="font-normal"> {exercise.marathonExerciseName}</span>
-                )}
-              </h1>
+              <h1 className="text-xl font-bold">{exercise.exerciseName}</h1>
             </div>
 
             <button
@@ -249,10 +244,10 @@ export default function ExercisePage({ exercise: initialExercise }: { exercise: 
       </header>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 py-6">
+      <div className="max-w-4xl mx-auto py-6">
         {/* Video/Image Carousel */}
         {contentItems.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+          <div className="bg-white shadow-lg mb-6">
             <div className="flex flex-col items-center">
               {/* Dynamic container - smaller for GIFs, larger for videos */}
               <div className={`w-full ${contentItems[currentContentIndex]?.type === 'image' ? 'max-w-[200px]' : 'max-w-[400px]'}`}>
@@ -313,6 +308,24 @@ export default function ExercisePage({ exercise: initialExercise }: { exercise: 
                               }}
                               onClick={(e) => e.stopPropagation()}
                             />
+                            {/* Global styles for fullscreen mode */}
+                            <style jsx global>{`
+                              /* Hide YouTube logo and title in fullscreen */
+                              iframe[src*="youtube.com"]:fullscreen .ytp-chrome-top,
+                              iframe[src*="youtube.com"]:fullscreen .ytp-title,
+                              iframe[src*="youtube.com"]:fullscreen .ytp-watermark,
+                              iframe[src*="youtube.com"]:fullscreen .ytp-show-cards-title {
+                                display: none !important;
+                                pointer-events: none !important;
+                              }
+                              
+                              /* Block clicks on YouTube logo in fullscreen */
+                              .ytp-watermark,
+                              .ytp-chrome-top,
+                              .ytp-title-link {
+                                pointer-events: none !important;
+                              }
+                            `}</style>
                           </div>
                         )
                       ) : (
@@ -390,7 +403,7 @@ export default function ExercisePage({ exercise: initialExercise }: { exercise: 
         )}
 
         {/* Description Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 mx-4">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Описание</h2>
           <div 
             className="prose prose-purple max-w-none"
@@ -399,7 +412,7 @@ export default function ExercisePage({ exercise: initialExercise }: { exercise: 
         </div>
 
         {/* Comments Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
+        <div className="bg-white rounded-2xl shadow-lg p-6 mx-4">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
             Комментарии ({comments.length})
           </h2>
