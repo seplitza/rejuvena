@@ -87,11 +87,10 @@ export default function ExerciseItem({
         {/* Exercise Name */}
         <button
           onClick={onToggle}
-          disabled={blockExercise}
-          className={`flex-1 text-left min-w-0 ${blockExercise ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+          className="flex-1 text-left min-w-0 cursor-pointer"
         >
           <p className={`text-sm font-medium ${getTextColor()} truncate`}>
-            <span className="font-bold">{exerciseName}</span> {marathonExerciseName}
+            {exerciseName}
           </p>
         </button>
 
@@ -105,10 +104,9 @@ export default function ExerciseItem({
         {/* Expand/Collapse Icon */}
         <button
           onClick={onToggle}
-          disabled={blockExercise}
           className={`flex-shrink-0 text-gray-400 transition-transform ${
             isActive ? 'rotate-180' : ''
-          } ${blockExercise ? 'cursor-not-allowed' : 'hover:text-gray-600'}`}
+          } hover:text-gray-600`}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -117,13 +115,21 @@ export default function ExerciseItem({
       </div>
 
       {/* Expanded Details */}
-      {isActive && !blockExercise && (
+      {isActive && (
         <div className="px-3 pb-3 border-t border-gray-200">
           <div className="pt-3 space-y-3">
             {/* Short Description */}
             {exercise.description && (
               <p className="text-sm text-gray-600 line-clamp-3">
-                {exercise.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim()}
+                {exercise.description
+                  .replace(/<[^>]*>/g, '')
+                  .replace(/&nbsp;/g, ' ')
+                  .replace(/&quot;/g, '"')
+                  .replace(/&amp;/g, '&')
+                  .replace(/&lt;/g, '<')
+                  .replace(/&gt;/g, '>')
+                  .replace(new RegExp(`^${exerciseName}\s*`, 'i'), '')
+                  .trim()}
               </p>
             )}
 
@@ -173,9 +179,13 @@ export default function ExerciseItem({
                 e.stopPropagation();
                 onDetailClick();
               }}
-              className="w-full px-4 py-2 text-sm font-medium text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+              className={`w-full px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                blockExercise
+                  ? 'text-white bg-purple-600 hover:bg-purple-700'
+                  : 'text-purple-600 bg-purple-50 hover:bg-purple-100'
+              }`}
             >
-              Посмотреть детали
+              {blockExercise ? 'Оплатить доступ (100 ₽)' : 'Посмотреть детали'}
             </button>
           </div>
         </div>

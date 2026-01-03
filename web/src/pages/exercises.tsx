@@ -169,17 +169,19 @@ export default function ExercisesPage() {
                 </svg>
               </div>
 
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Премиум доступ</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Доступ к упражнению</h3>
               
               <p className="text-gray-600 mb-6">
-                Для доступа к этому упражнению необходимо приобрести полный комплекс
+                Оплатите, пожалуйста, <strong>100 рублей</strong> для открытия этого упражнения на <strong>1 месяц (30 дней)</strong>.
               </p>
 
-              <div className="bg-purple-50 rounded-xl p-4 mb-6">
-                <div className="text-3xl font-bold text-purple-600 mb-2">100 ₽</div>
-                <div className="text-sm text-gray-600">
-                  • Доступ к 4 премиум упражнениям<br/>
-                  • Продление фотодневника на 1 месяц
+              <div className="bg-purple-50 rounded-xl p-4 mb-6 text-left">
+                <div className="text-3xl font-bold text-purple-600 mb-3 text-center">100 ₽</div>
+                <div className="text-sm text-gray-700 space-y-2">
+                  <p>✓ Доступ к упражнению на 30 дней</p>
+                  <p>✓ Дополнительный месяц (30 дней) пользования <a href="/photo-diary" className="text-purple-600 hover:text-purple-700 underline">Фотодневником</a></p>
+                  <p>✓ Сравнение фотографий</p>
+                  <p>✓ Хранение фотографий</p>
                 </div>
               </div>
 
