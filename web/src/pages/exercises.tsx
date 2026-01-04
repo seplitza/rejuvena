@@ -9,7 +9,8 @@ import ExerciseItem from '@/components/day/ExerciseItem';
 import ExerciseDetailModal from '@/components/day/ExerciseDetailModal';
 import type { Exercise } from '@/store/modules/day/slice';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api-rejuvena.duckdns.org';
+// Always use new API for exercises page
+const NEW_API_URL = 'https://api-rejuvena.duckdns.org';
 
 interface ExerciseFromAPI {
   _id: string;
@@ -69,7 +70,7 @@ export default function ExercisesPage() {
     const loadExercises = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${API_URL}/api/exercises/public`);
+        const response = await fetch(`${NEW_API_URL}/api/exercises/public`);
         
         if (!response.ok) {
           throw new Error(`Failed to load exercises: ${response.statusText}`);

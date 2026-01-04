@@ -5,7 +5,11 @@
 
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api-rejuvena.duckdns.org';
+// Legacy API for auth and courses
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://new-facelift-service-b8cta5hpgcgqf8c7.eastus-01.azurewebsites.net';
+
+// New API for exercises only
+export const NEW_API_URL = 'https://api-rejuvena.duckdns.org';
 
 // Token management for web
 class AuthTokenManager {
