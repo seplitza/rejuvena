@@ -11,13 +11,23 @@ interface Exercise {
   updatedAt: string;
 }
 
+interface Tag {
+  _id: string;
+  name: string;
+  color: string;
+}
+
 export default function ExerciseList() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [allTags, setAllTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTagId, setSelectedTagId] = useState<string>('');
 
   useEffect(() => {
     loadExercises();
+    loadTags();
   }, []);
 
   const loadExercises = async () => {
@@ -28,6 +38,15 @@ export default function ExerciseList() {
       console.error('Failed to load exercises:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadTags = async () => {
+    try {
+      const response = await api.get('/tags');
+      setAllTags(response.data);
+    } catch (error) {
+      console.error('Failed to load tags:', error);
     }
   };
 
@@ -44,8 +63,24 @@ export default function ExerciseList() {
   };
 
   const filteredExercises = exercises.filter(e => {
-    if (filter === 'published') return e.isPublished;
-    if (filter === 'draft') return !e.isPublished;
+    // Фильтр по статусу публикации
+    if (filter === 'published' && !e.isPublished) return false;
+    if (filter === 'draft' && e.isPublished) return false;
+    
+    // Поиск по названию или ID
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const matchesTitle = e.title.toLowerCase().includes(query);
+      const matchesId = e._id.toLowerCase().includes(query);
+      if (!matchesTitle && !matchesId) return false;
+    }
+    
+    // Фильтр по тегу
+    if (selectedTagId) {
+      const hasTag = e.tags.some((tag: any) => tag._id === selectedTagId);
+      if (!hasTag) return false;
+    }
+    
     return true;
   });
 
@@ -91,6 +126,71 @@ export default function ExerciseList() {
             {f === 'all' ? 'Все' : f === 'published' ? 'Опубликованные' : 'Черновики'}
           </button>
         ))}
+      </div>
+
+      {/* Search and Tag Filter */}
+      <div style={{ marginBottom: '24px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Поиск по названию или ID..."
+          style={{
+            flex: '1 1 300px',
+            padding: '12px 16px',
+            border: '1px solid #D1D5DB',
+            borderRadius: '8px',
+            fontSize: '14px',
+            outline: 'none'
+          }}
+        />
+        
+        <select
+          value={selectedTagId}
+          onChange={(e) => setSelectedTagId(e.target.value)}
+          style={{
+            flex: '0 1 200px',
+            padding: '12px 16px',
+            border: '1px solid #D1D5DB',
+            borderRadius: '8px',
+            fontSize: '14px',
+            outline: 'none',
+            cursor: 'pointer',
+            background: 'white'
+          }}
+        >
+          <option value="">Все теги</option>
+          {allTags.map(tag => (
+            <option key={tag._id} value={tag._id}>
+              {tag.name}
+            </option>
+          ))}
+        </select>
+
+        {(searchQuery || selectedTagId) && (
+          <button
+            onClick={() => {
+              setSearchQuery('');
+              setSelectedTagId('');
+            }}
+            style={{
+              padding: '12px 16px',
+              border: '1px solid #D1D5DB',
+              background: 'white',
+              color: '#6B7280',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            Сбросить
+          </button>
+        )}
+      </div>
+
+      {/* Results count */}
+      <div style={{ marginBottom: '16px', color: '#6B7280', fontSize: '14px' }}>
+        Найдено упражнений: {filteredExercises.length} из {exercises.length}
       </div>
 
       {/* List */}

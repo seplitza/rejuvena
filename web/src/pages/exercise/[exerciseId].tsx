@@ -5,7 +5,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { EXERCISES_MAP, POSTURE_EXERCISES } from '@/data/exercisesData.generated';
+import { POSTURE_EXERCISES } from '@/data/exercisesData.generated';
 
 /**
  * Get video embed URL based on platform
@@ -63,31 +63,42 @@ function getVideoEmbedUrl(url: string): { embedUrl: string; type: 'iframe' | 'vi
 }
 
 // Required for static export
-export async function getStaticPaths() {
-  // Generate paths for all exercises
-  const paths = POSTURE_EXERCISES.map((exercise) => ({
-    params: { exerciseId: exercise.id },
-  }));
 
-  return { paths, fallback: false };
-}
 
-export async function getStaticProps({ params }: { params: { exerciseId: string } }) {
-  const exercise = EXERCISES_MAP[params.exerciseId];
-
-  if (!exercise) {
-    return { notFound: true };
-  }
-
-  return {
-    props: {
-      exercise,
-    },
-  };
-}
-
-export default function ExercisePage({ exercise: initialExercise }: { exercise: any }) {
+export default function ExercisePage() {
   const router = useRouter();
+  const { exerciseId } = router.query;
+  const [exercise, setExercise] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!exerciseId) return;
+    
+    const fetchExercise = async () => {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api-rejuvena.duckdns.org";
+        const response = await fetch(`${API_URL}/api/exercises/public`);
+        const exercises = await response.json();
+        const foundExercise = exercises.find((ex: any) => ex.id === exerciseId);
+        
+        if (foundExercise) {
+          setExercise(foundExercise);
+        } else {
+          router.push("/404");
+        }
+      } catch (error) {
+        console.error("Failed to load exercise:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchExercise();
+  }, [exerciseId, router]);
+
+  if (loading) return <div>Загрузка...</div>;
+  if (!exercise) return <div>Упражнение не найдено</div>;
+
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const [isDone, setIsDone] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -95,7 +106,6 @@ export default function ExercisePage({ exercise: initialExercise }: { exercise: 
   const [newComment, setNewComment] = useState('');
   const [currentContentIndex, setCurrentContentIndex] = useState(0);
   const [contentItems, setContentItems] = useState<any[]>([]);
-  const exercise = initialExercise; // Use static data directly
 
   // Build content items from exerciseContents
   useEffect(() => {

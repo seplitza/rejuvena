@@ -4,6 +4,40 @@ import { authMiddleware, AuthRequest } from '../middleware/auth.middleware';
 
 const router = Router();
 
+// Public endpoints - no auth required
+// Get all published exercises (for frontend app)
+router.get('/public', async (req, res: Response) => {
+  try {
+    const exercises = await Exercise.find({ isPublished: true })
+      .populate('tags')
+      .select('-__v')
+      .sort({ updatedAt: -1 });
+    res.json(exercises);
+  } catch (error) {
+    console.error('Get public exercises error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get single published exercise by ID (for frontend app)
+router.get('/public/:id', async (req, res: Response) => {
+  try {
+    const exercise = await Exercise.findOne({ 
+      _id: req.params.id, 
+      isPublished: true 
+    }).populate('tags').select('-__v');
+    
+    if (!exercise) {
+      return res.status(404).json({ message: 'Exercise not found' });
+    }
+    res.json(exercise);
+  } catch (error) {
+    console.error('Get public exercise error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Admin endpoints - auth required
 // Get all exercises
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {

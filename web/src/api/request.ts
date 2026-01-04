@@ -5,7 +5,7 @@
 
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.faceliftnaturally.me';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api-rejuvena.duckdns.org';
 
 // Token management for web
 class AuthTokenManager {

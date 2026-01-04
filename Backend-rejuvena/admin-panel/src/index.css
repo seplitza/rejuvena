@@ -66,3 +66,67 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* TipTap Editor Styles */
+.ProseMirror {
+  padding: 16px;
+  min-height: 200px;
+  border: 1px solid #E5E7EB;
+  border-radius: 0 0 8px 8px;
+  background: white;
+  color: #1F2937 !important;
+  outline: none;
+}
+
+.ProseMirror p {
+  margin: 0.5em 0;
+  color: #1F2937 !important;
+}
+
+.ProseMirror h1,
+.ProseMirror h2,
+.ProseMirror h3,
+.ProseMirror h4 {
+  color: #111827 !important;
+  font-weight: 600;
+  margin: 1em 0 0.5em;
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 1.5em;
+  color: #1F2937 !important;
+}
+
+.ProseMirror li {
+  color: #1F2937 !important;
+}
+
+.ProseMirror strong {
+  font-weight: 600;
+  color: #111827 !important;
+}
+
+.ProseMirror em {
+  color: #374151 !important;
+}
+
+.ProseMirror a {
+  color: #4F46E5 !important;
+  text-decoration: underline;
+}
+
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+/* Override any white text colors */
+.ProseMirror [style*="color: white"],
+.ProseMirror [style*="color: #fff"],
+.ProseMirror [style*="color: #ffffff"],
+.ProseMirror [style*="color: rgb(255, 255, 255)"],
+.ProseMirror [style*="color: rgba(255, 255, 255"] {
+  color: #1F2937 !important;
+}

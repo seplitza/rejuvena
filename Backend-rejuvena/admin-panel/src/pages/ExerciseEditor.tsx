@@ -366,7 +366,9 @@ export default function ExerciseEditor() {
 
         {/* Tags */}
         <div style={{ marginBottom: '24px' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>Теги</h3>
+          <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
+            Теги {selectedTags.length > 0 && <span style={{ color: '#6B7280', fontSize: '14px', fontWeight: 'normal' }}>({selectedTags.length} выбрано)</span>}
+          </h3>
           
           {/* Create New Tag */}
           <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
@@ -374,23 +376,33 @@ export default function ExerciseEditor() {
               type="text"
               value={newTagName}
               onChange={(e) => setNewTagName(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleCreateTag();
+                }
+              }}
               placeholder="Создать новый тег"
               style={{
                 flex: 1,
                 padding: '8px 12px',
                 border: '1px solid #D1D5DB',
-                borderRadius: '6px'
+                borderRadius: '6px',
+                fontSize: '14px'
               }}
             />
             <button
               onClick={handleCreateTag}
+              disabled={!newTagName.trim()}
               style={{
                 padding: '8px 16px',
-                background: '#10B981',
+                background: newTagName.trim() ? '#10B981' : '#D1D5DB',
                 color: 'white',
                 border: 'none',
                 borderRadius: '6px',
-                cursor: 'pointer'
+                cursor: newTagName.trim() ? 'pointer' : 'not-allowed',
+                fontSize: '14px',
+                fontWeight: '500'
               }}
             >
               + Создать
@@ -399,29 +411,48 @@ export default function ExerciseEditor() {
 
           {/* Tag Selection */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {availableTags.map(tag => (
-              <button
-                key={tag._id}
-                onClick={() => {
-                  if (selectedTags.includes(tag._id)) {
-                    setSelectedTags(selectedTags.filter(t => t !== tag._id));
-                  } else {
-                    setSelectedTags([...selectedTags, tag._id]);
-                  }
-                }}
-                style={{
-                  padding: '8px 16px',
-                  border: selectedTags.includes(tag._id) ? 'none' : `1px solid ${tag.color}`,
-                  background: selectedTags.includes(tag._id) ? tag.color : 'white',
-                  color: selectedTags.includes(tag._id) ? 'white' : tag.color,
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '14px'
-                }}
-              >
-                {tag.name}
-              </button>
-            ))}
+            {availableTags.map(tag => {
+              const isSelected = selectedTags.includes(tag._id);
+              return (
+                <button
+                  key={tag._id}
+                  onClick={() => {
+                    if (isSelected) {
+                      setSelectedTags(selectedTags.filter(t => t !== tag._id));
+                    } else {
+                      setSelectedTags([...selectedTags, tag._id]);
+                    }
+                  }}
+                  style={{
+                    padding: '8px 16px',
+                    border: isSelected ? 'none' : `2px solid ${tag.color}`,
+                    background: isSelected ? tag.color : 'white',
+                    color: isSelected ? 'white' : tag.color,
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: isSelected ? '600' : '500',
+                    transition: 'all 0.2s',
+                    position: 'relative',
+                    paddingRight: isSelected ? '32px' : '16px'
+                  }}
+                  title={isSelected ? 'Нажмите, чтобы убрать' : 'Нажмите, чтобы добавить'}
+                >
+                  {tag.name}
+                  {isSelected && (
+                    <span style={{ 
+                      position: 'absolute', 
+                      right: '8px', 
+                      top: '50%', 
+                      transform: 'translateY(-50%)',
+                      fontSize: '16px'
+                    }}>
+                      ✓
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -482,13 +513,34 @@ function SortableMediaItem({ id, media, onDelete }: SortableMediaItemProps) {
       {media.type === 'image' ? (
         <img src={media.url} alt="" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '6px' }} />
       ) : (
-        <div style={{ width: '60px', height: '60px', background: '#E5E7EB', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          🎥
-        </div>
+        <video 
+          src={media.url} 
+          style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '6px', background: '#000' }}
+          muted
+        />
       )}
-      <div style={{ flex: 1 }}>
-        <div style={{ fontSize: '14px', fontWeight: '500' }}>{media.filename}</div>
-        <div style={{ fontSize: '12px', color: '#6B7280' }}>{media.type}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: '14px', fontWeight: '500', marginBottom: '4px' }}>{media.filename}</div>
+        <a 
+          href={media.url} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          style={{ 
+            fontSize: '12px', 
+            color: '#4F46E5', 
+            textDecoration: 'underline',
+            display: 'block',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {media.url}
+        </a>
+        <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '2px' }}>
+          {media.type}
+        </div>
       </div>
       <button
         onClick={onDelete}
@@ -498,7 +550,8 @@ function SortableMediaItem({ id, media, onDelete }: SortableMediaItemProps) {
           color: 'white',
           border: 'none',
           borderRadius: '6px',
-          cursor: 'pointer'
+          cursor: 'pointer',
+          flexShrink: 0
         }}
       >
         Удалить

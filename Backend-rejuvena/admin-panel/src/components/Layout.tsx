@@ -62,6 +62,86 @@ export default function Layout({ onLogout }: LayoutProps) {
           >
             💪 Упражнения
           </Link>
+
+          <Link
+            to="/comments"
+            style={{
+              display: 'block',
+              padding: '12px 16px',
+              marginBottom: '8px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              color: 'white',
+              background: isActive('/comments') ? '#4F46E5' : 'transparent',
+              transition: 'background 0.2s'
+            }}
+          >
+            💬 Управление комментариями
+          </Link>
+
+          <Link
+            to="/users"
+            style={{
+              display: 'block',
+              padding: '12px 16px',
+              marginBottom: '8px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              color: 'white',
+              background: isActive('/users') ? '#4F46E5' : 'transparent',
+              transition: 'background 0.2s'
+            }}
+          >
+            👥 Пользователи
+          </Link>
+
+          <Link
+            to="/notifications"
+            style={{
+              display: 'block',
+              padding: '12px 16px',
+              marginBottom: '8px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              color: 'white',
+              background: isActive('/notifications') ? '#4F46E5' : 'transparent',
+              transition: 'background 0.2s'
+            }}
+          >
+            🔔 Уведомления
+          </Link>
+
+          <Link
+            to="/orders"
+            style={{
+              display: 'block',
+              padding: '12px 16px',
+              marginBottom: '8px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              color: 'white',
+              background: isActive('/orders') ? '#4F46E5' : 'transparent',
+              transition: 'background 0.2s'
+            }}
+          >
+            🛒 Заказы
+          </Link>
+
+          <Link
+            to="/revenue"
+            style={{
+              display: 'block',
+              padding: '12px 16px',
+              marginBottom: '8px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              color: 'white',
+              background: isActive('/revenue') ? '#4F46E5' : 'transparent',
+              transition: 'background 0.2s'
+            }}
+          >
+            💰 Доходы
+          </Link>
         </nav>
 
         <button
