@@ -1,26 +1,113 @@
 /**
- * Demo Exercises Page - Комплекс на шею
- * Static demo exercises for neck and posture
+ * Exercises Page - All Exercises from New Backend
+ * Loads exercises from api-rejuvena.duckdns.org
  */
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import ExerciseItem from '@/components/day/ExerciseItem';
 import ExerciseDetailModal from '@/components/day/ExerciseDetailModal';
-import { POSTURE_EXERCISES } from '@/data/exercisesData.generated';
 import type { Exercise } from '@/store/modules/day/slice';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api-rejuvena.duckdns.org';
+
+interface ExerciseFromAPI {
+  _id: string;
+  title: string;
+  description: string;
+  content?: string;
+  duration?: string;
+  carouselMedia: Array<{
+    type: string;
+    url: string;
+    filename: string;
+    order: number;
+  }>;
+  tags: Array<{
+    _id: string;
+    name: string;
+    slug: string;
+    color: string;
+  }>;
+  category?: string;
+  order: number;
+}
+
+// Extend Exercise with missing fields
+interface ExtendedExercise extends Omit<Exercise, 'marathonExerciseId' | 'description' | 'duration' | 'type' | 'status' | 'commentsCount' | 'isDone' | 'isNew'> {
+  exerciseDescription?: string;
+  exerciseContents?: Array<{
+    id: string;
+    type: string;
+    contentPath: string;
+    order: number;
+    isActive: boolean;
+    videoServer: string;
+  }>;
+  tags?: string[];
+  category?: string;
+}
 
 export default function ExercisesPage() {
   const router = useRouter();
+  const [exercises, setExercises] = useState<ExtendedExercise[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [expandedExercises, setExpandedExercises] = useState<Record<string, boolean>>({});
   const [completedExercises, setCompletedExercises] = useState<Record<string, boolean>>({});
-  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+  const [selectedExercise, setSelectedExercise] = useState<ExtendedExercise | null>(null);
   const [modalMounted, setModalMounted] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   // Mount modal after hydration
   useEffect(() => {
     setModalMounted(true);
+  }, []);
+
+  // Load exercises from API
+  useEffect(() => {
+    const loadExercises = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${API_URL}/api/exercises/public`);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to load exercises: ${response.statusText}`);
+        }
+        
+        const data: ExerciseFromAPI[] = await response.json();
+        
+        // Transform API data to match Exercise interface
+        const transformedExercises: ExtendedExercise[] = data.map((ex) => ({
+          id: ex._id,
+          exerciseName: ex.title,
+          marathonExerciseName: ex.duration || '',
+          exerciseDescription: ex.content || ex.description || '',
+          blockExercise: false,
+          order: ex.order,
+          exerciseContents: ex.carouselMedia.map((media) => ({
+            id: media.url,
+            type: media.type,
+            contentPath: media.url,
+            order: media.order,
+            isActive: true,
+            videoServer: '',
+          })),
+          tags: ex.tags.map(tag => tag.name),
+          category: ex.category || 'Общие',
+        }));
+
+        setExercises(transformedExercises);
+        setError(null);
+      } catch (err) {
+        console.error('Error loading exercises:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load exercises');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadExercises();
   }, []);
 
   const handleExerciseToggle = (exerciseId: string) => {
@@ -30,34 +117,35 @@ export default function ExercisesPage() {
     }));
   };
 
-  const handleExerciseCheck = (exercise: any, uniqueId: string) => {
-    if (exercise.blockExercise) {
-      setShowPaymentModal(true);
-      return;
-    }
-    
+  const handleExerciseCheck = (exercise: ExtendedExercise, uniqueId: string) => {
     setCompletedExercises(prev => ({
       ...prev,
       [uniqueId]: !prev[uniqueId],
     }));
   };
 
-  const handleExerciseClick = (exercise: any, uniqueId: string) => {
-    if (exercise.blockExercise) {
-      setShowPaymentModal(true);
-      return;
-    }
+  const handleExerciseClick = (exercise: ExtendedExercise) => {
     setSelectedExercise(exercise);
   };
 
-  const handleExerciseDetailClick = (exercise: any) => {
-    if (exercise.blockExercise) {
-      setShowPaymentModal(true);
-      return;
-    }
-    // Navigate to exercise detail page
+  const handleExerciseDetailClick = (exercise: ExtendedExercise) => {
     router.push(`/exercise/${exercise.id}`);
   };
+
+  // Group exercises by category
+  const exercisesByCategory = exercises.reduce((acc, exercise) => {
+    const category = exercise.category || 'Общие';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(exercise);
+    return acc;
+  }, {} as Record<string, ExtendedExercise[]>);
+
+  const categories = Object.keys(exercisesByCategory);
+  const filteredExercises = selectedCategory === 'all' 
+    ? exercises 
+    : exercisesByCategory[selectedCategory] || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
@@ -75,7 +163,7 @@ export default function ExercisesPage() {
               </svg>
             </button>
             
-            <h1 className="text-xl font-bold flex-1 text-center">Комплекс на шею</h1>
+            <h1 className="text-xl font-bold flex-1 text-center">Все упражнения</h1>
             
             <div className="w-10"></div>
           </div>
@@ -84,53 +172,101 @@ export default function ExercisesPage() {
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-6">
-        {/* Exercises List */}
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-4">
-            <h2 className="text-xl font-bold">План упражнений</h2>
+        {loading ? (
+          <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Загрузка упражнений...</p>
           </div>
-
-          {/* Category: На осанку */}
-          <div className="bg-white">
-            {/* Category Header */}
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center space-x-3">
-                <div className="text-3xl">🧘</div>
-                <h3 className="text-lg font-semibold text-gray-900">На осанку</h3>
+        ) : error ? (
+          <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+            <div className="text-red-500 text-5xl mb-4">⚠️</div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Ошибка загрузки</h3>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              Попробовать снова
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Category Filter */}
+            <div className="mb-6 bg-white rounded-2xl shadow-lg p-4">
+              <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                <button
+                  onClick={() => setSelectedCategory('all')}
+                  className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
+                    selectedCategory === 'all'
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Все ({exercises.length})
+                </button>
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
+                    className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
+                      selectedCategory === category
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {category} ({exercisesByCategory[category].length})
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Exercises */}
-            <div className="px-0 sm:px-6 pb-4 space-y-2">
-              {POSTURE_EXERCISES.map((exercise, index) => {
-                const uniqueId = `exercise-${exercise.id || index}`;
-                const isExpanded = expandedExercises[uniqueId] || false;
-                const isDone = completedExercises[uniqueId] || false;
-                
-                return (
-                  <ExerciseItem
-                    key={exercise.id || index}
-                    exercise={exercise}
-                    uniqueId={uniqueId}
-                    isActive={isExpanded}
-                    isDone={isDone}
-                    isChanging={false}
-                    onToggle={() => handleExerciseToggle(uniqueId)}
-                    onCheck={() => handleExerciseCheck(exercise, uniqueId)}
-                    onDetailClick={() => handleExerciseDetailClick(exercise)}
-                  />
-                );
-              })}
+            {/* Exercises List */}
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-4">
+                <h2 className="text-xl font-bold">
+                  {selectedCategory === 'all' 
+                    ? `Все упражнения (${exercises.length})`
+                    : `${selectedCategory} (${filteredExercises.length})`
+                  }
+                </h2>
+              </div>
+
+              <div className="px-0 sm:px-6 pb-4 space-y-2">
+                {filteredExercises.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    Упражнения не найдены
+                  </div>
+                ) : (
+                  filteredExercises.map((exercise, index) => {
+                    const uniqueId = `exercise-${exercise.id || index}`;
+                    const isExpanded = expandedExercises[uniqueId] || false;
+                    const isDone = completedExercises[uniqueId] || false;
+                    
+                    return (
+                      <ExerciseItem
+                        key={exercise.id || index}
+                        exercise={exercise as any}
+                        uniqueId={uniqueId}
+                        isActive={isExpanded}
+                        isDone={isDone}
+                        isChanging={false}
+                        onToggle={() => handleExerciseToggle(uniqueId)}
+                        onCheck={() => handleExerciseCheck(exercise, uniqueId)}
+                        onDetailClick={() => handleExerciseClick(exercise)}
+                      />
+                    );
+                  })
+                )}
+              </div>
             </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
 
       {/* Exercise Detail Modal */}
       {modalMounted && selectedExercise && (
         <ExerciseDetailModal
-          exercise={selectedExercise}
+          exercise={selectedExercise as any}
           isOpen={!!selectedExercise}
           onClose={() => setSelectedExercise(null)}
           onCheckboxChange={() => {
@@ -140,87 +276,6 @@ export default function ExercisesPage() {
           isDone={completedExercises[`exercise-${selectedExercise.id}`] || false}
         />
       )}
-
-      {/* Payment Modal */}
-      {showPaymentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div 
-            className="absolute inset-0 bg-black/60"
-            onClick={() => setShowPaymentModal(false)}
-          />
-          
-          {/* Modal Content */}
-          <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-scale-in">
-            <button
-              onClick={() => setShowPaymentModal(false)}
-              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              aria-label="Закрыть"
-            >
-              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            <div className="text-center">
-              <div className="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Доступ к упражнению</h3>
-              
-              <p className="text-gray-600 mb-6">
-                Оплатите, пожалуйста, <strong>100 рублей</strong> для открытия этого упражнения на <strong>1 месяц (30 дней)</strong>.
-              </p>
-
-              <div className="bg-purple-50 rounded-xl p-4 mb-6 text-left">
-                <div className="text-3xl font-bold text-purple-600 mb-3 text-center">100 ₽</div>
-                <div className="text-sm text-gray-700 space-y-2">
-                  <p>✓ Доступ к упражнению на 30 дней</p>
-                  <p>✓ Дополнительный месяц (30 дней) пользования <a href="https://seplitza.github.io/rejuvena/photo-diary" className="text-purple-600 hover:text-purple-700 underline">Фотодневником</a></p>
-                  <p>✓ Сравнение фотографий</p>
-                  <p>✓ Хранение фотографий</p>
-                </div>
-              </div>
-
-              <button
-                onClick={() => {
-                  alert('Интеграция с платежной системой в разработке');
-                  setShowPaymentModal(false);
-                }}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg"
-              >
-                Оплатить 100 ₽
-              </button>
-
-              <button
-                onClick={() => setShowPaymentModal(false)}
-                className="w-full mt-3 text-gray-600 hover:text-gray-800 font-medium py-2"
-              >
-                Позже
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <style jsx>{`
-        @keyframes scale-in {
-          from {
-            opacity: 0;
-            transform: scale(0.9);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-        .animate-scale-in {
-          animation: scale-in 0.2s ease-out;
-        }
-      `}</style>
     </div>
   );
 }
