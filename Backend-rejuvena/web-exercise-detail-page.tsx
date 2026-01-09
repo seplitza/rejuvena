@@ -10,7 +10,7 @@ import PaymentModal from '@/components/PaymentModal';
 import { getExerciseAccess, hasUserAccess } from '@/utils/exerciseAccess';
 
 // Always use new API
-import { NEW_API_URL } from '@/config/api';
+const NEW_API_URL = 'https://api-rejuvena.duckdns.org';
 
 /**
  * Get video embed URL based on platform

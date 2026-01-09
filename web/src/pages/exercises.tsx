@@ -7,10 +7,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import ExerciseItem from '@/components/day/ExerciseItem';
 import ExerciseDetailModal from '@/components/day/ExerciseDetailModal';
+import PaymentModal from '@/components/PaymentModal';
+import { getExerciseAccess, hasUserAccess, getExerciseBadge } from '@/utils/exerciseAccess';
 import type { Exercise } from '@/store/modules/day/slice';
-
-// Always use new API for exercises page
-const NEW_API_URL = 'https://api-rejuvena.duckdns.org';
+import { NEW_API_URL } from '@/config/api';
 
 interface ExerciseFromAPI {
   _id: string;
@@ -57,6 +57,8 @@ export default function ExercisesPage() {
   const [expandedExercises, setExpandedExercises] = useState<Record<string, boolean>>({});
   const [completedExercises, setCompletedExercises] = useState<Record<string, boolean>>({});
   const [selectedExercise, setSelectedExercise] = useState<ExtendedExercise | null>(null);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [selectedPremiumExercise, setSelectedPremiumExercise] = useState<ExtendedExercise | null>(null);
   const [modalMounted, setModalMounted] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
@@ -126,11 +128,36 @@ export default function ExercisesPage() {
   };
 
   const handleExerciseClick = (exercise: ExtendedExercise) => {
-    setSelectedExercise(exercise);
+    // Check if exercise is premium and user doesn't have access
+    const accessInfo = getExerciseAccess(exercise.tags || []);
+    const userHasAccess = hasUserAccess(exercise.id);
+    
+    if (!accessInfo.isFree && !userHasAccess) {
+      // Show payment modal for premium exercises
+      setSelectedPremiumExercise(exercise);
+      setPaymentModalOpen(true);
+    } else {
+      // Show exercise details for free or purchased exercises
+      setSelectedExercise(exercise);
+    }
   };
 
   const handleExerciseDetailClick = (exercise: ExtendedExercise) => {
-    router.push(`/exercise/${exercise.id}`);
+    // Check access before navigation
+    const accessInfo = getExerciseAccess(exercise.tags || []);
+    const userHasAccess = hasUserAccess(exercise.id);
+    
+    if (!accessInfo.isFree && !userHasAccess) {
+      setSelectedPremiumExercise(exercise);
+      setPaymentModalOpen(true);
+    } else {
+      router.push(`/exercise/${exercise.id}`);
+    }
+  };
+
+  const handlePaymentModalClose = () => {
+    setPaymentModalOpen(false);
+    setSelectedPremiumExercise(null);
   };
 
   // Group exercises by category
@@ -243,18 +270,52 @@ export default function ExercisesPage() {
                     const isExpanded = expandedExercises[uniqueId] || false;
                     const isDone = completedExercises[uniqueId] || false;
                     
+                    // Check if exercise is premium
+                    const accessInfo = getExerciseAccess(exercise.tags || []);
+                    const userHasAccess = hasUserAccess(exercise.id);
+                    const isLocked = !accessInfo.isFree && !userHasAccess;
+                    const badge = getExerciseBadge(accessInfo);
+                    
                     return (
-                      <ExerciseItem
-                        key={exercise.id || index}
-                        exercise={exercise as any}
-                        uniqueId={uniqueId}
-                        isActive={isExpanded}
-                        isDone={isDone}
-                        isChanging={false}
-                        onToggle={() => handleExerciseToggle(uniqueId)}
-                        onCheck={() => handleExerciseCheck(exercise, uniqueId)}
-                        onDetailClick={() => handleExerciseClick(exercise)}
-                      />
+                      <div key={exercise.id || index} className="relative">
+                        <ExerciseItem
+                          exercise={exercise as any}
+                          uniqueId={uniqueId}
+                          isActive={isExpanded}
+                          isDone={isDone}
+                          isChanging={false}
+                          onToggle={() => handleExerciseToggle(uniqueId)}
+                          onCheck={() => handleExerciseCheck(exercise, uniqueId)}
+                          onDetailClick={() => handleExerciseClick(exercise)}
+                        />
+                        
+                        {/* Premium Badge/Lock Overlay */}
+                        {isLocked && (
+                          <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
+                            {badge && (
+                              <span className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                {badge}
+                              </span>
+                            )}
+                            <div className="bg-white rounded-full p-2 shadow-lg">
+                              <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                          </div>
+                        )}
+
+      {/* Payment Modal */}
+      {modalMounted && selectedPremiumExercise && (
+        <PaymentModal
+          isOpen={paymentModalOpen}
+          onClose={handlePaymentModalClose}
+          price={getExerciseAccess(selectedPremiumExercise.tags || []).price}
+          exerciseName={selectedPremiumExercise.exerciseName}
+          isPro={getExerciseAccess(selectedPremiumExercise.tags || []).priceType === 'pro'}
+        />
+      )}
+                      </div>
                     );
                   })
                 )}
