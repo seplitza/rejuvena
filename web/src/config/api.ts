@@ -1,10 +1,14 @@
 /**
  * API Configuration
  * Centralized API URL management
+ * 
+ * TRANSITIONAL CONFIGURATION:
+ * - OLD Backend (Azure): auth, courses
+ * - NEW Backend (DuckDNS): exercises only
  */
 
-// Determine API URL based on environment
-const getApiUrl = (): string => {
+// OLD Backend - for auth and courses (legacy Azure)
+const getOldApiUrl = (): string => {
   // Check if we're in browser
   if (typeof window !== 'undefined') {
     // In development, use localhost
@@ -13,23 +17,34 @@ const getApiUrl = (): string => {
     }
   }
   
-  // Production API - use direct IP until DNS propagates
-  // DuckDNS domain: api-rejuvena.duckdns.org -> 37.252.20.170
-  return process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527';
+  // Production: OLD Azure backend
+  return process.env.NEXT_PUBLIC_API_URL || 'https://new-facelift-service-b8cta5hpgcgqf8c7.eastus-01.azurewebsites.net';
 };
 
-export const API_URL = getApiUrl();
+// NEW Backend - for exercises only
+const getNewApiUrl = (): string => {
+  // Check if we're in browser
+  if (typeof window !== 'undefined') {
+    // In development, use localhost
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://localhost:9527';
+    }
+  }
+  
+  // Production: NEW DuckDNS backend
+  return process.env.NEXT_PUBLIC_NEW_API_URL || 'https://api-rejuvena.duckdns.org';
+};
+
+export const API_URL = getOldApiUrl(); // For auth and courses
+export const NEW_API_URL = getNewApiUrl(); // For exercises
 
 export const API_ENDPOINTS = {
   exercises: {
-    public: `${API_URL}/api/exercises/public`,
-    byId: (id: string) => `${API_URL}/api/exercises/${id}`,
+    public: `${NEW_API_URL}/api/exercises/public`,
+    byId: (id: string) => `${NEW_API_URL}/api/exercises/${id}`,
   },
   courses: {
     public: `${API_URL}/api/courses/public`,
     byId: (id: string) => `${API_URL}/api/courses/${id}`,
   },
 };
-
-// For backward compatibility
-export const NEW_API_URL = API_URL;
