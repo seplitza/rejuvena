@@ -160,8 +160,24 @@ export default function ExercisesPage() {
     setSelectedPremiumExercise(null);
   };
 
+  // Sort exercises by tag priority: "На здоровье" (free) -> "Базовое" (100₽) -> "PRO" (200₽)
+  const getSortPriority = (exercise: ExtendedExercise): number => {
+    const accessInfo = getExerciseAccess(exercise.tags || []);
+    if (accessInfo.isFree) return 1; // "На здоровье" first
+    if (accessInfo.priceType === 'basic') return 2; // "Базовое" second
+    if (accessInfo.priceType === 'pro') return 3; // "PRO" third
+    return 4; // Others last
+  };
+
+  const sortedExercises = [...exercises].sort((a, b) => {
+    const priorityA = getSortPriority(a);
+    const priorityB = getSortPriority(b);
+    if (priorityA !== priorityB) return priorityA - priorityB;
+    return a.order - b.order; // Keep original order within same priority
+  });
+
   // Group exercises by category
-  const exercisesByCategory = exercises.reduce((acc, exercise) => {
+  const exercisesByCategory = sortedExercises.reduce((acc, exercise) => {
     const category = exercise.category || 'Общие';
     if (!acc[category]) {
       acc[category] = [];
@@ -172,7 +188,7 @@ export default function ExercisesPage() {
 
   const categories = Object.keys(exercisesByCategory);
   const filteredExercises = selectedCategory === 'all' 
-    ? exercises 
+    ? sortedExercises 
     : exercisesByCategory[selectedCategory] || [];
 
   return (
@@ -230,7 +246,7 @@ export default function ExercisesPage() {
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  Все ({exercises.length})
+                  Все ({sortedExercises.length})
                 </button>
                 {categories.map((category) => (
                   <button
@@ -253,7 +269,7 @@ export default function ExercisesPage() {
               <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-4">
                 <h2 className="text-xl font-bold">
                   {selectedCategory === 'all' 
-                    ? `Все упражнения (${exercises.length})`
+                    ? `Все упражнения (${sortedExercises.length})`
                     : `${selectedCategory} (${filteredExercises.length})`
                   }
                 </h2>
