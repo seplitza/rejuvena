@@ -294,6 +294,21 @@ export default function ExercisesPage() {
                     
                     return (
                       <div key={exercise.id || index} className="relative">
+                        {/* Badge at the top */}
+                        {badge && (
+                          <div className="px-4 pt-3 pb-0">
+                            <span className={`inline-block text-xs font-bold px-3 py-1 rounded-full ${
+                              accessInfo.isFree 
+                                ? 'bg-green-100 text-green-700' 
+                                : accessInfo.priceType === 'pro'
+                                ? 'bg-purple-100 text-purple-700'
+                                : 'bg-blue-100 text-blue-700'
+                            }`}>
+                              {badge}
+                            </span>
+                          </div>
+                        )}
+                        
                         <ExerciseItem
                           exercise={exercise as any}
                           uniqueId={uniqueId}
@@ -305,14 +320,19 @@ export default function ExercisesPage() {
                           onDetailClick={() => handleExerciseClick(exercise)}
                         />
                         
+                        {/* Short description below title */}
+                        {exercise.exerciseDescription && (
+                          <div className="px-4 pb-3 text-sm text-gray-600">
+                            {exercise.exerciseDescription.length > 100 
+                              ? `${exercise.exerciseDescription.substring(0, 100)}...` 
+                              : exercise.exerciseDescription
+                            }
+                          </div>
+                        )}
+                        
                         {/* Premium Badge/Lock Overlay */}
                         {isLocked && (
                           <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
-                            {badge && (
-                              <span className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-2 py-1 rounded-full">
-                                {badge}
-                              </span>
-                            )}
                             <div className="bg-white rounded-full p-2 shadow-lg">
                               <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />

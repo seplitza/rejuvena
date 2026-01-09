@@ -20,7 +20,7 @@ export function getExerciseAccess(tags: string[]): ExerciseAccessInfo {
   const tagNames = tags.map(t => t.toLowerCase());
   
   // Check for FREE tag FIRST (highest priority - overrides everything!)
-  const hasFreeTag = tagNames.includes('бесплатное');
+  const hasFreeTag = tagNames.includes('бесплатное') || tagNames.includes('на здоровье');
   
   if (hasFreeTag) {
     return {
@@ -107,13 +107,13 @@ export function markAsPurchased(exerciseId: string): void {
  * Get display badge for exercise based on access type
  */
 export function getExerciseBadge(accessInfo: ExerciseAccessInfo): string | null {
-  if (accessInfo.isFree) return null;
+  if (accessInfo.isFree) return 'На здоровье';
   
   switch (accessInfo.priceType) {
     case 'pro':
       return 'PRO';
     case 'basic':
-      return 'PREMIUM';
+      return 'Базовое';
     default:
       return null;
   }
