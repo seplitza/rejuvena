@@ -12,6 +12,37 @@ import { getExerciseAccess, hasUserAccess, getExerciseBadge } from '@/utils/exer
 import type { Exercise } from '@/store/modules/day/slice';
 import { NEW_API_URL } from '@/config/api';
 
+/**
+ * Clean HTML tags and format description for display
+ * Shows max 4 lines of text
+ */
+function cleanAndTruncateDescription(html: string, maxLines: number = 4): string {
+  if (!html) return '';
+  
+  // Remove HTML tags
+  let text = html
+    .replace(/<[^>]*>/g, '') // Remove all HTML tags
+    .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .trim();
+  
+  // Split by lines and take first N lines
+  const lines = text.split('\n').filter(line => line.trim());
+  const truncated = lines.slice(0, maxLines).join('\n');
+  
+  // If text is too long, truncate by characters (approximate 4 lines = ~200 chars)
+  const maxChars = maxLines * 50; // ~50 chars per line
+  if (truncated.length > maxChars) {
+    return truncated.substring(0, maxChars).trim() + '...';
+  }
+  
+  return truncated;
+}
+
 interface ExerciseFromAPI {
   _id: string;
   title: string;
@@ -322,11 +353,17 @@ export default function ExercisesPage() {
                         
                         {/* Short description below title */}
                         {exercise.exerciseDescription && (
-                          <div className="px-4 pb-3 text-sm text-gray-600">
-                            {exercise.exerciseDescription.length > 100 
-                              ? `${exercise.exerciseDescription.substring(0, 100)}...` 
-                              : exercise.exerciseDescription
-                            }
+                          <div 
+                            className="px-4 pb-3 text-sm text-gray-600 whitespace-pre-line"
+                            style={{
+                              display: '-webkit-box',
+                              WebkitLineClamp: 4,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis'
+                            }}
+                          >
+                            {cleanAndTruncateDescription(exercise.exerciseDescription, 4)}
                           </div>
                         )}
                         
