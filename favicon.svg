@@ -1,0 +1,10 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Mint circle (top) -->
+  <circle cx="60" cy="35" r="32" fill="#A0E7E5" opacity="0.8"/>
+  
+  <!-- Purple circle (bottom left) -->
+  <circle cx="35" cy="75" r="32" fill="#B794F6" opacity="0.9"/>
+  
+  <!-- Blue circle (bottom right) -->
+  <circle cx="75" cy="75" r="32" fill="#B4C7F7" opacity="0.8"/>
+</svg>
