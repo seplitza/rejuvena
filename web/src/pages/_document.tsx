@@ -10,9 +10,9 @@ export default function Document() {
         <meta name="description" content="Rejuvena - Омоложение лица естественным путем" />
         
         {/* Favicons */}
-        <link rel="icon" type="image/svg+xml" href={`${basePath}/favicon.svg`} />
+        <link rel="icon" type="image/png" href={`${basePath}/favicon.png`} />
         <link rel="alternate icon" href={`${basePath}/favicon.ico`} />
-        <link rel="apple-touch-icon" href={`${basePath}/apple-touch-icon.svg`} />
+        <link rel="apple-touch-icon" href={`${basePath}/apple-touch-icon.png`} />
         <meta name="theme-color" content="#B794F6" />
         
         {/* Telegram Web App API */}
@@ -22,13 +22,7 @@ export default function Document() {
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              (function() {
-                var redirect = sessionStorage.getItem('redirect');
-                if (redirect) {
-                  sessionStorage.removeItem('redirect');
-                  history.replaceState(null, '', redirect);
-                }
-                if (window.location.hash && window.location.hash.startsWith('#/')) {
+                                            var red                                            var red         if                                    io                                            var                                               var red                           f (window.loc                  ow.      on.hash.startsWith('#/')) {
                   var route = window.location.hash.slice(1);
                   history.replaceState(null, '', route);
                 }
