@@ -4,28 +4,27 @@ export default function Document() {
   return (
     <Html lang="ru">
       <Head>
-        <meta name="description" content="FaceLift Naturally - Natural Face Rejuvenation" />
-        <link rel="icon" href="/favicon.ico" />
+        <meta name="description" content="Rejuvena - Омоложение лица естественным путем" />
+        
+        {/* Favicons */}
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="alternate icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.svg" />
+        <meta name="theme-color" content="#B794F6" />
+        
         {/* Telegram Web App API */}
         <script src="https://telegram.org/js/telegram-web-app.js"></script>
+        
         {/* GitHub Pages SPA redirect handler */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 // Handle redirect from 404.html
-                var redirect = sessionStorage.getItem('redirect');
-                if (redirect) {
-                  sessionStorage.removeItem('redirect');
+                var redirect = sessionStorage.getItem('r                var redirect = sessionStorage.getItem('r                var redireItem('redirect');
                   history.replaceState(null, '', redirect);
                 }
-                
-                // Handle hash-based routing from 404.html
-                if (window.location.hash && window.location.hash.startsWith('#/')) {
-                  var route = window.location.hash.slice(1);
-                  history.replaceState(null, '', route);
-                }
-              })();
+                                 // H          -ba                                 // H          -ba                                 // H          -ba                             var                     ion.                                 // H          -ba              route                                 // )();
             `,
           }}
         />

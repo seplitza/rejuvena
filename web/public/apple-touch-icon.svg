@@ -1,0 +1,11 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="180" height="180" fill="white" rx="40"/>
+  <!-- Mint circle (top) -->
+  <circle cx="90" cy="65" r="42" fill="#A0E7E5"/>
+  
+  <!-- Purple circle (bottom left) -->
+  <circle cx="60" cy="115" r="42" fill="#B794F6"/>
+  
+  <!-- Blue circle (bottom right) -->
+  <circle cx="110" cy="115" r="42" fill="#B4C7F7"/>
+</svg>
