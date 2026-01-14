@@ -4,6 +4,7 @@ import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { logout } from '../store/modules/auth/slice';
 import { AuthTokenManager } from '../api';
 import LanguageSelector from '../components/common/LanguageSelector';
+import PremiumPlanCard from '../components/payment/PremiumPlanCard';
 
 const DashboardPage: React.FC = () => {
   const router = useRouter();
@@ -66,6 +67,12 @@ const DashboardPage: React.FC = () => {
             Email: {user?.email || 'Не указан'}
           </p>
         </div>
+
+        {/* Premium Plan Card - только для пользователей без подписки */}
+        {!user?.isPremium && (
+          <div className="mb-6">
+            <PremiumPlanCard />          </div>
+        )}
 
         {/* Quick Actions with colorful icons like burger menu */}
         <div className="bg-white rounded-lg shadow p-6">
