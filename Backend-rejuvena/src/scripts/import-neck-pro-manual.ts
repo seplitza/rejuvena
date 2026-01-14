@@ -11,11 +11,11 @@ dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/rejuvena';
 
 const OLD_API_URL = 'https://new-facelift-service-b8cta5hpgcgqf8c7.eastus-01.azurewebsites.net/api';
-// Курс "+на щеки и глаза" - PRO
-const MARATHON_ID = 'b87370d5-4ce1-49b2-86f4-23deb9a99123';
-const DAY_ID = 'fbab5db9-cab6-4768-9db4-ff37a4985748'; // День 6
+// Курс "+на шею" - PRO
+const MARATHON_ID = 'b8775841-7b7d-43ca-b556-a9ce74d339cf';
+const DAY_ID = '579e5c43-1b08-4d11-a281-b2cfac0850b1'; // День 7
 
-async function importCheeksEyesPro() {
+async function importNeckPro() {
   try {
     console.log('🔌 Подключаемся к MongoDB...');
     await mongoose.connect(MONGODB_URI);
@@ -40,13 +40,14 @@ async function importCheeksEyesPro() {
     const dayCategories = response.data.marathonDay?.dayCategories || [];
     console.log(`📦 Получено категорий: ${dayCategories.length}`);
     
-    // Ищем категорию "PRO на щеки и глаза"
+    // Ищем категорию "PRO на шею"
     const targetCategory = dayCategories.find((cat: any) => 
-      cat.categoryName.includes('щеки') && cat.categoryName.includes('глаза')
+      cat.categoryName.toLowerCase().includes('pro') && 
+      cat.categoryName.toLowerCase().includes('шею')
     );
 
     if (!targetCategory) {
-      console.log('❌ Категория "PRO на щеки и глаза" не найдена');
+      console.log('❌ Категория "PRO на шею" не найдена');
       console.log('Доступные категории:');
       dayCategories.forEach((cat: any) => console.log(`  - ${cat.categoryName}`));
       return;
@@ -56,15 +57,15 @@ async function importCheeksEyesPro() {
 
     // Создаем/получаем теги
     const ruTag = await getRuTag();
-    const tagNames = ['нащекииглаза', 'продвинутое', 'PRO'];
+    const tagNames = ['Шея', '+на шею', 'PRO'];
     const tags = await Promise.all(
       tagNames.map(async (name) => {
         let tag = await Tag.findOne({ name });
         if (!tag) {
           tag = await Tag.create({ 
             name, 
-            slug: name.toLowerCase().replace(/\s+/g, '-'),
-            color: '#3B82F6' 
+            slug: name.toLowerCase().replace(/\s+/g, '-').replace(/\+/g, ''),
+            color: '#10B981' // Зеленый цвет для упражнений на шею
           });
           console.log(`✅ Создан тег: #${name}`);
         }
@@ -137,6 +138,16 @@ async function importCheeksEyesPro() {
     console.log(`🔄 Обновлено существующих: ${updated}`);
     console.log(`❌ Ошибок: ${skipped}`);
     console.log(`📦 Всего обработано: ${imported + updated + skipped}`);
+    
+    console.log('\n📝 Импортированные упражнения:');
+    console.log('1. Вращения головой с акцентом на растяжение');
+    console.log('2. Разволокнение задней поверхности шеи');
+    console.log('3. Массаж ГКСМ');
+    console.log('4. Глубокая пальпация');
+    console.log('5. Хорды');
+    console.log('6. Лифтинг диафрагмы рта');
+    console.log('7. Лифтинг второго подбородка');
+    console.log('8. Перетирание морщин на шее');
 
   } catch (error: any) {
     console.error('❌ Ошибка:', error.message);
@@ -150,4 +161,4 @@ async function importCheeksEyesPro() {
 }
 
 // Запуск
-importCheeksEyesPro().catch(console.error);
+importNeckPro().catch(console.error);
