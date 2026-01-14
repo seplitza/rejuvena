@@ -40,7 +40,7 @@ export default function PaymentModal({
       }
 
       // Создаем платеж через API
-      const response = await fetch('https://api-rejuvena.duckdns.org/api/payment/create', {
+      const response = await fetch('https://new-facelift-service-b8cta5hpgcgqf8c7.eastus-01.azurewebsites.net/api/payment/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
