@@ -20,7 +20,7 @@ const PremiumPlanCard: React.FC = () => {
 
       // Шаг 1: Обмениваем старый Azure токен на новый DuckDNS токен
       console.log("🔄 Exchanging token...");
-      const exchangeResponse = await fetch('http://37.252.20.170:9527/api/auth/exchange-token', {
+      const exchangeResponse = await fetch('https://api-rejuvena.duckdns.org/api/auth/exchange-token', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${oldToken}`
@@ -40,7 +40,7 @@ const PremiumPlanCard: React.FC = () => {
       const newToken = exchangeData.token;
 
       // Шаг 2: Создаем платеж с новым токеном
-      const response = await fetch('http://37.252.20.170:9527/api/payment/create', {
+      const response = await fetch('https://api-rejuvena.duckdns.org/api/payment/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
