@@ -31,7 +31,7 @@ export default function PaymentModal({
     setIsProcessing(true);
     
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('auth_token');
       
       if (!token) {
         alert('Необходимо войти в систему для оплаты');

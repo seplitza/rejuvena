@@ -28,7 +28,7 @@ export default function PaymentButton({
     setError(null);
     
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('auth_token');
       
       if (!token) {
         setError('Необходимо войти в систему');
