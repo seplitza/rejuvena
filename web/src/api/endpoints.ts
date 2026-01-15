@@ -8,7 +8,7 @@ export const get_general_settings = '/generalsetting/getgeneralsetting';
 
 // Auth
 export const register = '/user/register';
-export const login = '/token/auth';
+export const login = '/api/auth/login'; // Unified auth with Azure fallback
 export const reset_password = '/user/resetpassword';
 export const login_google = '/token/login-with-gmail';
 export const login_facebook = '/token/login-with-facebook';

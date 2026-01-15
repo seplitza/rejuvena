@@ -41,17 +41,32 @@ function* loginWithEmailSaga(action: PayloadAction<LoginPayload>): Generator<any
     
     const { email, password } = action.payload;
     const response: any = yield call(request.post, endpoints.login, {
-      username: email,
+      email,
       password,
-      grant_type: 'password',
     });
 
-    yield put(setAuthToken(response.access_token));
-    AuthTokenManager.set(response.access_token);
+    // Unified auth returns {token, user} instead of {access_token}
+    yield put(setAuthToken(response.token));
+    AuthTokenManager.set(response.token);
     
-    // Fetch user profile after login
-    const userProfile: any = yield call(request.get, endpoints.get_user_profile);
-    yield put(setUser(userProfile));
+    // Use user from login response (no need for second API call)
+    if (response.user) {
+      // Map unified auth user to expected format
+      const userProfile = {
+        id: response.user._id || response.user.id,
+        firstName: response.user.email?.split('@')[0] || 'User',
+        lastName: '',
+        fullName: response.user.email?.split('@')[0] || 'User',
+        email: response.user.email,
+        isPremium: response.user.isPremium || false,
+        isLegacyUser: response.user.isLegacyUser || false,
+      };
+      yield put(setUser(userProfile));
+    } else {
+      // Fallback: Fetch user profile from Azure (for backward compatibility)
+      const userProfile: any = yield call(request.get, endpoints.get_user_profile);
+      yield put(setUser(userProfile));
+    }
     
     // Redirect to dashboard (handled in component)
   } catch (error: any) {
