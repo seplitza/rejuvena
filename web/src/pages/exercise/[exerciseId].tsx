@@ -9,8 +9,8 @@ import { useRouter } from 'next/router';
 import PaymentModal from '@/components/PaymentModal';
 import { getExerciseAccess, hasUserAccess } from '@/utils/exerciseAccess';
 
-// Always use new API
-import { NEW_API_URL } from '@/config/api';
+// Always use unified API
+import { API_URL } from '@/config/api';
 
 /**
  * Get video embed URL based on platform
@@ -110,7 +110,7 @@ export default function ExercisePage() {
     const fetchExercise = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${NEW_API_URL}/api/exercises/public`);
+        const response = await fetch(`${API_URL}/api/exercises/public`);
         const exercises: ExerciseFromAPI[] = await response.json();
         const foundExercise = exercises.find((ex) => ex._id === exerciseId);
         

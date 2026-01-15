@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { API_ENDPOINTS } from '@/config/api';
 
 export default function PremiumPlanCard() {
   const [loading, setLoading] = useState(false);
@@ -22,7 +23,7 @@ export default function PremiumPlanCard() {
         return;
       }
 
-      const response = await fetch('https://api-rejuvena.duckdns.org/api/payment/create', {
+      const response = await fetch(API_ENDPOINTS.payment.create, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

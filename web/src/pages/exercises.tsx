@@ -10,7 +10,7 @@ import ExerciseDetailModal from '@/components/day/ExerciseDetailModal';
 import PaymentModal from '@/components/PaymentModal';
 import { getExerciseAccess, hasUserAccess, getExerciseBadge } from '@/utils/exerciseAccess';
 import type { Exercise } from '@/store/modules/day/slice';
-import { NEW_API_URL } from '@/config/api';
+import { API_URL } from '@/config/api';
 
 /**
  * Clean HTML tags and format description for display
@@ -103,7 +103,7 @@ export default function ExercisesPage() {
     const loadExercises = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${NEW_API_URL}/api/exercises/public`);
+        const response = await fetch(`${API_URL}/api/exercises/public`);
         
         if (!response.ok) {
           throw new Error(`Failed to load exercises: ${response.statusText}`);
