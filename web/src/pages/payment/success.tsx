@@ -22,7 +22,7 @@ export default function PaymentSuccess() {
 
     const checkStatus = async () => {
       try {
-        const token = localStorage.getItem('authToken');
+        const token = localStorage.getItem('auth_token');
         
         if (!token) {
           setStatus('error');
