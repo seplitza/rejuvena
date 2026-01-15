@@ -6,7 +6,7 @@
 import axios from 'axios';
 
 // Legacy API for auth and courses
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://new-facelift-service-b8cta5hpgcgqf8c7.eastus-01.azurewebsites.net';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527';
 
 // New API for exercises only
 export const NEW_API_URL = 'https://api-rejuvena.duckdns.org';
@@ -33,7 +33,7 @@ class AuthTokenManager {
 
 // Create axios instance
 const request = axios.create({
-  baseURL: `${API_URL}/api`,
+  baseURL: API_URL,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
