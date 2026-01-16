@@ -5,7 +5,7 @@
 
 import axios from 'axios';
 
-// Legacy API for auth and courses
+// Unified backend API (Jan 15, 2026)
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527';
 
 // New API for exercises only
