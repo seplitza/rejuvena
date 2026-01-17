@@ -67,11 +67,16 @@ export default function Signup() {
       return;
     }
     
-    const result = await dispatch(signupWithEmail({ email, firstName, lastName }));
-    
-    // Если регистрация успешна - показываем модальное окно
-    if (result.meta.requestStatus === 'fulfilled') {
-      setShowSuccessModal(true);
+    try {
+      const result = await dispatch(signupWithEmail({ email, firstName, lastName }));
+      
+      // Если регистрация успешна - показываем модальное окно
+      if (signupWithEmail.fulfilled.match(result)) {
+        setShowSuccessModal(true);
+      }
+    } catch (error) {
+      // Ошибка обрабатывается в Redux state
+      console.error('Signup error:', error);
     }
   };
 
