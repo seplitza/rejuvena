@@ -23,7 +23,7 @@ export const purchase_marathon_by_coupon = '/order/purchasemarathon';
 // User
 export const get_user_profile = '/user/getuserprofiledetail';
 export const update_user_profile = '/user/updateprofile';
-export const change_password = '/user/changepassword';
+export const change_password = '/api/auth/change-password';
 export const delete_account = '/User/DeleteAccount';
 
 // User Exercise
@@ -66,3 +66,7 @@ export const get_marathons_guest_user = '/marathon/GetMarathonsGuestUser';
 export const get_demo_course_list = '/marathon/GetDemoCourseList';
 export const get_course_plan = '/marathon/getcourseplan';
 export const create_order = '/Order/CreateOrder';
+// Payment
+export const payment_create = '/api/payment/create';
+export const payment_history = '/api/payment/history';
+export const payment_status = '/api/payment/status';
