@@ -103,7 +103,7 @@ const DashboardPage: React.FC = () => {
 
               <button
                 className="flex items-center space-x-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left group border border-purple-200"
-                onClick={() => router.push('/profile')}
+                onClick={() => router.push('/profile/settings')}
               >
                 <span className="text-3xl">👤</span>
                 <span className="text-base font-medium text-gray-800 group-hover:text-purple-600">Профиль</span>
