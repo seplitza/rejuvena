@@ -103,8 +103,8 @@ function* sendResetPasswordRequestSaga(action: PayloadAction<ResetPasswordPayloa
     yield put(setError(null));
     
     const { email } = action.payload;
-    yield call(request.get, endpoints.reset_password, {
-      params: { Email: email },
+    yield call(request.post, endpoints.reset_password, {
+      email,
     });
     
     // Success - handled in component
