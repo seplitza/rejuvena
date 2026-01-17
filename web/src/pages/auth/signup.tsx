@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -16,6 +16,7 @@ export default function Signup() {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [language, setLanguage] = useState<'ru' | 'en'>('ru'); // Русский по умолчанию
+  const wasLoading = useRef(false);
 
   const t = {
     ru: {
@@ -60,24 +61,23 @@ export default function Signup() {
     }
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  // Следим за loading state чтобы показать модал после успешной регистрации
+  useEffect(() => {
+    if (wasLoading.current && !loading && !error) {
+      // Была загрузка, теперь закончилась, ошибок нет - значит успех
+      setShowSuccessModal(true);
+    }
+    wasLoading.current = loading;
+  }, [loading, error]);
+
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!agreedToTerms) {
       alert(t[language].agreeError);
       return;
     }
     
-    try {
-      const result = await dispatch(signupWithEmail({ email, firstName, lastName }));
-      
-      // Если регистрация успешна - показываем модальное окно
-      if (signupWithEmail.fulfilled.match(result)) {
-        setShowSuccessModal(true);
-      }
-    } catch (error) {
-      // Ошибка обрабатывается в Redux state
-      console.error('Signup error:', error);
-    }
+    dispatch(signupWithEmail({ email, firstName, lastName }));
   };
 
   const handleGoToLogin = () => {
