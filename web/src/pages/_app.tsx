@@ -30,16 +30,9 @@ function App({ Component, pageProps }: AppProps) {
       if (token) {
         dispatch(setAuthToken(token));
         
-        // Загружаем данные пользователя
-        try {
-          const userProfile = await request.get(endpoints.get_user_profile);
-          dispatch(setUser(userProfile)); // response.data уже извлечён interceptor'ом
-          console.log('✅ User restored from token:', userProfile);
-        } catch (error) {
-          console.error('❌ Failed to load user profile:', error);
-          // Если токен невалидный - удаляем
-          AuthTokenManager.remove();
-        }
+        // Note: Profile loading removed - endpoint not yet implemented on backend
+        // User data will be loaded on specific pages that need it
+        console.log('✅ Token restored from localStorage');
       }
     };
     

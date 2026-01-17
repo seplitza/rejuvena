@@ -9,8 +9,8 @@ export default function Home() {
 
   const content = {
     ru: {
-      title: 'FaceLift Naturally - Естественное Омоложение Лица',
-      heading: 'FaceLift Naturally',
+      title: 'REJUVENA - Естественное Омоложение Лица',
+      heading: 'REJUVENA',
       subtitle: 'Сохраните привлекательность и обратите вспять возрастные изменения лица и осанки с помощью нашего проверенного метода естественного омоложения.',
       signIn: 'Войти',
       getStarted: 'Начать',
@@ -50,8 +50,8 @@ export default function Home() {
       }
     },
     en: {
-      title: 'FaceLift Naturally - Natural Face Rejuvenation',
-      heading: 'FaceLift Naturally',
+      title: 'REJUVENA - Natural Face Rejuvenation',
+      heading: 'REJUVENA',
       subtitle: 'Preserve attractiveness and reverse age-related changes in the face and posture with our proven natural rejuvenation method.',
       signIn: 'Sign In',
       getStarted: 'Get Started',

@@ -30,7 +30,7 @@ export default function PaymentSuccess() {
         }
 
         const response = await fetch(
-          `https://new-facelift-service-b8cta5hpgcgqf8c7.eastus-01.azurewebsites.net/api/payment/status/${orderId}`,
+          `https://api-rejuvena.duckdns.org/api/payment/status/${orderId}`,
           {
             headers: {
               'Authorization': `Bearer ${token}`

@@ -62,10 +62,6 @@ function* loginWithEmailSaga(action: PayloadAction<LoginPayload>): Generator<any
         isLegacyUser: response.user.isLegacyUser || false,
       };
       yield put(setUser(userProfile));
-    } else {
-      // Fallback: Fetch user profile from Azure (for backward compatibility)
-      const userProfile: any = yield call(request.get, endpoints.get_user_profile);
-      yield put(setUser(userProfile));
     }
     
     // Redirect to dashboard (handled in component)
