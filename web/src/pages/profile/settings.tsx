@@ -26,6 +26,9 @@ export default function ProfileSettings() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -100,8 +103,11 @@ export default function ProfileSettings() {
       router.push('/auth/login');
       return;
     }
-    loadPaymentHistory();
-  }, [isAuthenticated]);
+    // Загружаем историю платежей только если пользователь залогинен
+    if (user) {
+      loadPaymentHistory();
+    }
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
     if (user?.createdAt) {
@@ -141,8 +147,12 @@ export default function ProfileSettings() {
       setIsLoadingPayments(true);
       const response = await request.get(endpoints.payment_history);
       setPayments(Array.isArray(response.data) ? response.data : []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load payment history:', error);
+      if (error?.response?.status === 401) {
+        // Если 401 - перенаправляем на логин
+        router.push('/auth/login');
+      }
       setPayments([]);
     } finally {
       setIsLoadingPayments(false);
@@ -175,10 +185,16 @@ export default function ProfileSettings() {
       setNewPassword('');
       setConfirmPassword('');
     } catch (error: any) {
-      if (error.response?.status === 401) {
-        setPasswordError(t[language].wrongPassword);
+      if (error?.response?.status === 401 || error?.status === 401) {
+        // Проверяем, это ошибка авторизации или неверный пароль
+        if (error?.response?.data?.message?.includes('incorrect') || error?.message?.includes('incorrect')) {
+          setPasswordError(t[language].wrongPassword);
+        } else {
+          // Если токен истёк - перенаправляем на логин
+          router.push('/auth/login');
+        }
       } else {
-        setPasswordError(error.response?.data?.message || 'Error changing password');
+        setPasswordError(error?.response?.data?.message || error?.message || 'Error changing password');
       }
     } finally {
       setIsChangingPassword(false);
@@ -261,37 +277,64 @@ export default function ProfileSettings() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   {t[language].currentPassword}
                 </label>
-                <input
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type={showCurrentPassword ? "text" : "password"}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  >
+                    {showCurrentPassword ? '🙈' : '👁️'}
+                  </button>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   {t[language].newPassword}
                 </label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  >
+                    {showNewPassword ? '🙈' : '👁️'}
+                  </button>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   {t[language].confirmPassword}
                 </label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  >
+                    {showConfirmPassword ? '🙈' : '👁️'}
+                  </button>
+                </div>
               </div>
 
               {passwordMessage && (
