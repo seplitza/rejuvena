@@ -9,7 +9,7 @@ export const get_general_settings = '/generalsetting/getgeneralsetting';
 // Auth
 export const register = '/user/register';
 export const login = '/api/auth/login'; // Unified auth with Azure fallback
-export const reset_password = '/user/resetpassword';
+export const reset_password = '/api/auth/reset-password';
 export const login_google = '/token/login-with-gmail';
 export const login_facebook = '/token/login-with-facebook';
 export const login_apple = '/token/login-with-apple';
