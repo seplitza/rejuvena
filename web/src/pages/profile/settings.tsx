@@ -73,9 +73,6 @@ export default function ProfileSettings() {
       failed: 'Ошибка',
       refunded: 'Возврат',
       cancelled: 'Отменено',
-      card: 'Банковская карта',
-      sbp: 'СБП',
-      unknown: 'Неизвестно',
       premiumDays: (days: number) => `Премиум ${days} дн.`,
       backToDashboard: 'Назад к панели',
     },
@@ -107,9 +104,6 @@ export default function ProfileSettings() {
       failed: 'Failed',
       refunded: 'Refunded',
       cancelled: 'Cancelled',
-      card: 'Bank Card',
-      sbp: 'SBP',
-      unknown: 'Unknown',
       premiumDays: (days: number) => `Premium ${days}d`,
       backToDashboard: 'Back to Dashboard',
     }
@@ -380,6 +374,27 @@ export default function ProfileSettings() {
             </form>
           </div>
 
+          {/* Photo Diary Section */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">{t[language].photoDiary}</h2>
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-700 font-medium">
+                    {t[language].diaryActive}
+                  </p>
+                  <p className="text-2xl font-bold text-purple-600 mt-1">
+                    {diaryExpiresAt ? new Date(diaryExpiresAt).toLocaleDateString('ru-RU') : 'Не активен'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-gray-600 text-sm">{t[language].daysLeft}</p>
+                  <p className="text-3xl font-bold text-purple-600">{daysRemaining}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Payment History Section */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-bold text-gray-800 mb-4">{t[language].paymentHistory}</h2>
@@ -406,9 +421,7 @@ export default function ProfileSettings() {
                         <td className="py-3 px-4 text-sm">{formatDate(payment.createdAt)}</td>
                         <td className="py-3 px-4 font-semibold">{payment.amount} ₽</td>
                         <td className="py-3 px-4 text-gray-600">
-                          {payment.paymentMethod === 'card' ? t[language].card : 
-                           payment.paymentMethod === 'sbp' ? t[language].sbp : 
-                           t[language].unknown}
+                          Альфа-банк
                         </td>
                         <td className="py-3 px-4 text-sm text-gray-600">
                           {payment.metadata?.duration 
