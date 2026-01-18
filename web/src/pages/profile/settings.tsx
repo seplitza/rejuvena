@@ -146,7 +146,9 @@ export default function ProfileSettings() {
     try {
       setIsLoadingPayments(true);
       const response = await request.get(endpoints.payment_history);
-      setPayments(Array.isArray(response.data) ? response.data : []);
+      // Backend returns {success: true, payments: [...]}
+      // Axios interceptor already unwraps response.data, so response = {success, payments}
+      setPayments(Array.isArray(response.payments) ? response.payments : []);
     } catch (error: any) {
       console.error('Failed to load payment history:', error);
       if (error?.response?.status === 401) {
