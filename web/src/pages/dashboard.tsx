@@ -68,10 +68,26 @@ const DashboardPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Premium Plan Card - только для пользователей без подписки */}
-        {!user?.isPremium && (
+        {/* Premium Status or Plan Card */}
+        {user?.isPremium ? (
+          <div className="mb-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg shadow-lg p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold mb-2">✨ Премиум доступ активен</h3>
+                <p className="text-purple-100">
+                  Активен до: {user?.premiumEndDate ? new Date(user.premiumEndDate).toLocaleDateString('ru-RU') : 'неизвестно'}
+                </p>
+                <p className="text-purple-100 mt-1">
+                  🎯 Полный доступ ко всем упражнениям и материалам
+                </p>
+              </div>
+              <div className="text-6xl">👑</div>
+            </div>
+          </div>
+        ) : (
           <div className="mb-6">
-            <PremiumPlanCard />          </div>
+            <PremiumPlanCard />
+          </div>
         )}
 
         {/* Quick Actions with colorful icons like burger menu */}

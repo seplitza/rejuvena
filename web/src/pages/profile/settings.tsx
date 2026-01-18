@@ -7,14 +7,17 @@ import { request } from '@/api/request';
 import * as endpoints from '@/api/endpoints';
 
 interface Payment {
-  _id: string;
-  userId: string;
+  id: string;
+  orderNumber: string;
   amount: number;
-  status: 'pending' | 'completed' | 'failed' | 'cancelled';
-  paymentMethod: string;
-  transactionId?: string;
+  status: 'pending' | 'processing' | 'succeeded' | 'failed' | 'refunded' | 'cancelled';
+  paymentMethod: 'card' | 'sbp' | 'unknown';
+  description: string;
   createdAt: string;
-  updatedAt: string;
+  metadata?: {
+    planType?: string;
+    duration?: number;
+  };
 }
 
 export default function ProfileSettings() {
@@ -59,14 +62,21 @@ export default function ProfileSettings() {
       amount: 'Сумма',
       date: 'Дата',
       method: 'Метод оплаты',
+      access: 'Доступ',
       photoDiary: 'Фотодневник',
       diaryActive: 'Активен до',
       diaryExpired: 'Доступ истёк',
       daysLeft: 'Осталось дней',
       pending: 'Ожидание',
-      completed: 'Завершено',
+      processing: 'Обработка',
+      succeeded: 'Успешно',
       failed: 'Ошибка',
+      refunded: 'Возврат',
       cancelled: 'Отменено',
+      card: 'Банковская карта',
+      sbp: 'СБП',
+      unknown: 'Неизвестно',
+      premiumDays: (days: number) => `Премиум ${days} дн.`,
       backToDashboard: 'Назад к панели',
     },
     en: {
@@ -86,14 +96,21 @@ export default function ProfileSettings() {
       amount: 'Amount',
       date: 'Date',
       method: 'Payment Method',
+      access: 'Access',
       photoDiary: 'Photo Diary',
       diaryActive: 'Active until',
       diaryExpired: 'Access expired',
       daysLeft: 'Days remaining',
       pending: 'Pending',
-      completed: 'Completed',
+      processing: 'Processing',
+      succeeded: 'Success',
       failed: 'Failed',
+      refunded: 'Refunded',
       cancelled: 'Cancelled',
+      card: 'Bank Card',
+      sbp: 'SBP',
+      unknown: 'Unknown',
+      premiumDays: (days: number) => `Premium ${days}d`,
       backToDashboard: 'Back to Dashboard',
     }
   };
@@ -145,7 +162,7 @@ export default function ProfileSettings() {
   const loadPaymentHistory = async () => {
     try {
       setIsLoadingPayments(true);
-      const response = await request.get(endpoints.payment_history);
+      const response = await request.get(endpoints.payment_history) as any;
       // Backend returns {success: true, payments: [...]}
       // Axios interceptor already unwraps response.data, so response = {success, payments}
       setPayments(Array.isArray(response.payments) ? response.payments : []);
@@ -213,9 +230,11 @@ export default function ProfileSettings() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'text-green-600';
+      case 'succeeded': return 'text-green-600';
+      case 'processing': return 'text-blue-600';
       case 'pending': return 'text-yellow-600';
       case 'failed': return 'text-red-600';
+      case 'refunded': return 'text-orange-600';
       case 'cancelled': return 'text-gray-600';
       default: return 'text-gray-600';
     }
@@ -377,17 +396,25 @@ export default function ProfileSettings() {
                       <th className="text-left py-3 px-4 text-gray-600">{t[language].date}</th>
                       <th className="text-left py-3 px-4 text-gray-600">{t[language].amount}</th>
                       <th className="text-left py-3 px-4 text-gray-600">{t[language].method}</th>
+                      <th className="text-left py-3 px-4 text-gray-600">{t[language].access}</th>
                       <th className="text-left py-3 px-4 text-gray-600">{t[language].status}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {payments.map((payment) => (
-                      <tr key={payment._id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-4">{formatDate(payment.createdAt)}</td>
+                      <tr key={payment.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-3 px-4 text-sm">{formatDate(payment.createdAt)}</td>
                         <td className="py-3 px-4 font-semibold">{payment.amount} ₽</td>
-                        <td className="py-3 px-4 text-gray-600">{payment.paymentMethod}</td>
+                        <td className="py-3 px-4 text-gray-600">
+                          {t[language][payment.paymentMethod as keyof typeof t.ru] || payment.paymentMethod}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-600">
+                          {payment.metadata?.duration 
+                            ? t[language].premiumDays(payment.metadata.duration)
+                            : payment.description}
+                        </td>
                         <td className="py-3 px-4">
-                          <span className={`font-medium ${getStatusColor(payment.status)}`}>
+                          <span className={`text-sm font-medium ${getStatusColor(payment.status)}`}>
                             {t[language][payment.status as keyof typeof t.ru]}
                           </span>
                         </td>
