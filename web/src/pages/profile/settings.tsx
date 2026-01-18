@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
-import { useAppSelector } from '@/store/hooks';
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import { setUser } from '@/store/modules/auth/slice';
 import { request } from '@/api/request';
 import * as endpoints from '@/api/endpoints';
 
@@ -22,6 +23,7 @@ interface Payment {
 
 export default function ProfileSettings() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
   const [language, setLanguage] = useState<'ru' | 'en'>('ru');
 
@@ -386,8 +388,13 @@ export default function ProfileSettings() {
               })
               .then(res => res.json())
               .then(data => {
+                // Update Redux state
+                dispatch(setUser({
+                  ...user,
+                  firstName: data.firstName,
+                  lastName: data.lastName
+                }));
                 alert('Профиль обновлен!');
-                window.location.reload();
               })
               .catch(err => alert('Ошибка при обновлении профиля'));
             }}>

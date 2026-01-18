@@ -167,10 +167,11 @@ const DashboardPage: React.FC = () => {
             </div>
         </div>
 
-        {/* Recent Activity Section */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Последняя активность</h2>
-          {recentPayments.length === 0 ? (
+        {/* Recent Activity Section - only for authenticated users */}
+        {isAuthenticated && (
+          <div className="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Последняя активность</h2>
+            {recentPayments.length === 0 ? (
             <div className="text-center py-8">
               <div className="text-gray-400 text-5xl mb-2">📭</div>
               <p className="text-gray-500">Активности пока нет</p>
@@ -188,13 +189,13 @@ const DashboardPage: React.FC = () => {
                     </div>
                     <div>
                       <p className="font-medium text-gray-800">
-                        {payment.status === 'succeeded' ? 'Оплата успешна' : 
+                        {payment.status === 'succeeded' ? 'Премиум доступ' : 
                          payment.status === 'processing' ? 'Обработка оплаты' : 
                          payment.status === 'failed' ? 'Ошибка оплаты' : 'Ожидание оплаты'}
                       </p>
                       <p className="text-sm text-gray-500">
                         {payment.metadata?.planType === 'premium' 
-                          ? `Премиум доступ на ${payment.metadata.duration} дней` 
+                          ? `Премиум доступ на ${payment.metadata.duration} дней`
                           : 'Покупка'}
                       </p>
                     </div>
@@ -210,8 +211,7 @@ const DashboardPage: React.FC = () => {
             </div>
           )}
         </div>
-
-
+        )}
       </main>
     </div>
   );
