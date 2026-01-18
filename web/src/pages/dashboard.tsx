@@ -200,7 +200,7 @@ const DashboardPage: React.FC = () => {
               </button>
             </div>
         </div>
-      </main></main>
+      </main>
     </div>
   );
 };
