@@ -265,25 +265,6 @@ export default function ProfileSettings() {
             )}
           </div>
 
-          {/* Photo Diary Status */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">{t[language].photoDiary}</h2>
-            {diaryExpiresAt && (
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">{t[language].diaryActive}:</span>
-                  <span className={`font-semibold ${daysRemaining > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatDate(diaryExpiresAt.toISOString())}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">{t[language].daysLeft}:</span>
-                  <span className="font-bold text-2xl text-purple-600">{daysRemaining}</span>
-                </div>
-              </div>
-            )}
-          </div>
-
           {/* Change Password Section */}
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
             <h2 className="text-xl font-bold text-gray-800 mb-4">{t[language].changePassword}</h2>
@@ -376,7 +357,7 @@ export default function ProfileSettings() {
 
           {/* Photo Diary Section */}
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">{t[language].photoDiary}</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-4"><Link href="/photo-diary" className="hover:text-purple-600 transition-colors cursor-pointer">{t[language].photoDiary}</Link></h2>
             <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
