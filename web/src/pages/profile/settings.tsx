@@ -141,7 +141,7 @@ export default function ProfileSettings() {
 
     // Добавляем 30 дней за каждую успешную покупку
     payments
-      .filter(p => p.status === 'completed')
+      .filter(p => p.status === 'succeeded')
       .forEach(payment => {
         // Если в покупке указан конкретный срок (например, курс на год), используем его
         // Пока по умолчанию +30 дней за каждую покупку
@@ -406,16 +406,26 @@ export default function ProfileSettings() {
                         <td className="py-3 px-4 text-sm">{formatDate(payment.createdAt)}</td>
                         <td className="py-3 px-4 font-semibold">{payment.amount} ₽</td>
                         <td className="py-3 px-4 text-gray-600">
-                          {t[language][payment.paymentMethod as keyof typeof t.ru] || payment.paymentMethod}
+                          {payment.paymentMethod === 'card' ? t[language].card : 
+                           payment.paymentMethod === 'sbp' ? t[language].sbp : 
+                           t[language].unknown}
                         </td>
                         <td className="py-3 px-4 text-sm text-gray-600">
                           {payment.metadata?.duration 
-                            ? t[language].premiumDays(payment.metadata.duration)
+                            ? (typeof t[language].premiumDays === 'function' 
+                                ? t[language].premiumDays(payment.metadata.duration)
+                                : `Premium ${payment.metadata.duration}d`)
                             : payment.description}
                         </td>
                         <td className="py-3 px-4">
                           <span className={`text-sm font-medium ${getStatusColor(payment.status)}`}>
-                            {t[language][payment.status as keyof typeof t.ru]}
+                            {payment.status === 'succeeded' ? t[language].succeeded :
+                             payment.status === 'processing' ? t[language].processing :
+                             payment.status === 'pending' ? t[language].pending :
+                             payment.status === 'failed' ? t[language].failed :
+                             payment.status === 'refunded' ? t[language].refunded :
+                             payment.status === 'cancelled' ? t[language].cancelled :
+                             payment.status}
                           </span>
                         </td>
                       </tr>
