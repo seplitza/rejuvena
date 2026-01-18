@@ -6,13 +6,47 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { useAppDispatch } from '@/store/hooks';
+import { setUser } from '@/store/modules/auth/slice';
 
 export default function PaymentSuccess() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const { orderId } = router.query;
   
   const [status, setStatus] = useState<'checking' | 'processing' | 'succeeded' | 'failed' | 'error'>('checking');
   const [payment, setPayment] = useState<any>(null);
+
+  // Обновляем данные пользователя после успешной оплаты
+  const refreshUserData = async () => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) return;
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527'}/api/auth/me`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.ok) {
+        const userData = await response.json();
+        dispatch(setUser({
+          id: userData._id || userData.id,
+          firstName: userData.email?.split('@')[0] || 'User',
+          email: userData.email,
+          isPremium: userData.isPremium || false,
+          premiumEndDate: userData.premiumEndDate,
+          isLegacyUser: userData.isLegacyUser || false
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to refresh user data:', error);
+    }
+  };
 
   useEffect(() => {
     if (!orderId) {
@@ -43,6 +77,11 @@ export default function PaymentSuccess() {
         if (data.success && data.payment) {
           setPayment(data.payment);
           setStatus(data.payment.status);
+          
+          // Если платеж успешен - обновляем данные пользователя
+          if (data.payment.status === 'succeeded') {
+            await refreshUserData();
+          }
         } else {
           setStatus('error');
         }
@@ -64,7 +103,7 @@ export default function PaymentSuccess() {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [orderId, status]);
+  }, [orderId, status, dispatch]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center p-4">
