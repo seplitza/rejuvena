@@ -71,16 +71,21 @@ const DashboardPage: React.FC = () => {
             <LanguageSelector />
             <button
               onClick={() => {
-                // Clear auth state in Redux
-                dispatch(logout());
-                // Clear token from localStorage
-                AuthTokenManager.remove();
-                // Redirect to login page
-                router.push('/auth/login');
+                if (isAuthenticated) {
+                  // Clear auth state in Redux
+                  dispatch(logout());
+                  // Clear token from localStorage
+                  AuthTokenManager.remove();
+                  // Redirect to login page
+                  router.push('/auth/login');
+                } else {
+                  // Redirect to login page
+                  router.push('/auth/login');
+                }
               }}
               className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
             >
-              Выйти
+              {isAuthenticated ? 'Выйти' : 'Войти'}
             </button>
           </div>
         </div>
@@ -91,7 +96,7 @@ const DashboardPage: React.FC = () => {
         {/* Welcome Section */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-            Добро пожаловать, {user?.firstName || 'Пользователь'}!
+            Добро пожаловать, {user?.firstName || 'Гость'}!
           </h2>
           <p className="text-gray-600">
             Email: {user?.email || 'Не указан'}
@@ -107,6 +112,11 @@ const DashboardPage: React.FC = () => {
                 <p className="text-purple-100">
                   Активен до: {user?.premiumEndDate ? new Date(user.premiumEndDate).toLocaleDateString('ru-RU') : 'неизвестно'}
                 </p>
+                {user?.premiumEndDate && (
+                  <p className="text-purple-100 mt-1">
+                    Осталось дней: {Math.max(0, Math.ceil((new Date(user.premiumEndDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))}
+                  </p>
+                )}
                 <p className="text-purple-100 mt-1">
                   🎯 Полный доступ ко всем упражнениям и материалам
                 </p>
@@ -119,6 +129,80 @@ const DashboardPage: React.FC = () => {
             <PremiumPlanCard />
           </div>
         )}
+
+        {/* Quick Actions with colorful icons like burger menu */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <button
+                className="flex items-center space-x-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left group border border-purple-200"
+                onClick={() => router.push('/courses')}
+              >
+                <span className="text-3xl">📚</span>
+                <span className="text-base font-medium text-gray-800 group-hover:text-purple-600">Мои курсы</span>
+              </button>
+
+              <button
+                className="flex items-center space-x-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left group border border-purple-200"
+                onClick={() => router.push('/exercises')}
+              >
+                <span className="text-3xl">🏋️</span>
+                <span className="text-base font-medium text-gray-800 group-hover:text-purple-600">Упражнения</span>
+              </button>
+
+              <button
+                className="flex items-center space-x-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left group border border-purple-200"
+                onClick={() => router.push('/photo-diary')}
+              >
+                <span className="text-3xl">📸</span>
+                <span className="text-base font-medium text-gray-800 group-hover:text-purple-600">Фото-дневник</span>
+              </button>
+
+              <button
+                className="flex items-center space-x-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left group border border-purple-200"
+                onClick={() => router.push('/profile/settings')}
+              >
+                <span className="text-3xl">👤</span>
+                <span className="text-base font-medium text-gray-800 group-hover:text-purple-600">Профиль</span>
+              </button>
+            </div>
+        </div>
+
+        {/* Quick Actions with colorful icons like burger menu */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <button
+                className="flex items-center space-x-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left group border border-purple-200"
+                onClick={() => router.push('/courses')}
+              >
+                <span className="text-3xl">📚</span>
+                <span className="text-base font-medium text-gray-800 group-hover:text-purple-600">Мои курсы</span>
+              </button>
+
+              <button
+                className="flex items-center space-x-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left group border border-purple-200"
+                onClick={() => router.push('/exercises')}
+              >
+                <span className="text-3xl">🏋️</span>
+                <span className="text-base font-medium text-gray-800 group-hover:text-purple-600">Упражнения</span>
+              </button>
+
+              <button
+                className="flex items-center space-x-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left group border border-purple-200"
+                onClick={() => router.push('/photo-diary')}
+              >
+                <span className="text-3xl">📸</span>
+                <span className="text-base font-medium text-gray-800 group-hover:text-purple-600">Фото-дневник</span>
+              </button>
+
+              <button
+                className="flex items-center space-x-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left group border border-purple-200"
+                onClick={() => router.push('/profile/settings')}
+              >
+                <span className="text-3xl">👤</span>
+                <span className="text-base font-medium text-gray-800 group-hover:text-purple-600">Профиль</span>
+              </button>
+            </div>
+        </div>
 
         {/* Recent Activity Section */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
@@ -164,42 +248,7 @@ const DashboardPage: React.FC = () => {
           )}
         </div>
 
-        {/* Quick Actions with colorful icons like burger menu */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <button
-                className="flex items-center space-x-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left group border border-purple-200"
-                onClick={() => router.push('/courses')}
-              >
-                <span className="text-3xl">📚</span>
-                <span className="text-base font-medium text-gray-800 group-hover:text-purple-600">Мои курсы</span>
-              </button>
 
-              <button
-                className="flex items-center space-x-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left group border border-purple-200"
-                onClick={() => router.push('/exercises')}
-              >
-                <span className="text-3xl">🏋️</span>
-                <span className="text-base font-medium text-gray-800 group-hover:text-purple-600">Упражнения</span>
-              </button>
-
-              <button
-                className="flex items-center space-x-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left group border border-purple-200"
-                onClick={() => router.push('/photo-diary')}
-              >
-                <span className="text-3xl">📸</span>
-                <span className="text-base font-medium text-gray-800 group-hover:text-purple-600">Фото-дневник</span>
-              </button>
-
-              <button
-                className="flex items-center space-x-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left group border border-purple-200"
-                onClick={() => router.push('/profile/settings')}
-              >
-                <span className="text-3xl">👤</span>
-                <span className="text-base font-medium text-gray-800 group-hover:text-purple-600">Профиль</span>
-              </button>
-            </div>
-        </div>
       </main>
     </div>
   );
