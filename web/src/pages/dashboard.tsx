@@ -167,43 +167,6 @@ const DashboardPage: React.FC = () => {
             </div>
         </div>
 
-        {/* Quick Actions with colorful icons like burger menu */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <button
-                className="flex items-center space-x-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left group border border-purple-200"
-                onClick={() => router.push('/courses')}
-              >
-                <span className="text-3xl">📚</span>
-                <span className="text-base font-medium text-gray-800 group-hover:text-purple-600">Мои курсы</span>
-              </button>
-
-              <button
-                className="flex items-center space-x-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left group border border-purple-200"
-                onClick={() => router.push('/exercises')}
-              >
-                <span className="text-3xl">🏋️</span>
-                <span className="text-base font-medium text-gray-800 group-hover:text-purple-600">Упражнения</span>
-              </button>
-
-              <button
-                className="flex items-center space-x-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left group border border-purple-200"
-                onClick={() => router.push('/photo-diary')}
-              >
-                <span className="text-3xl">📸</span>
-                <span className="text-base font-medium text-gray-800 group-hover:text-purple-600">Фото-дневник</span>
-              </button>
-
-              <button
-                className="flex items-center space-x-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left group border border-purple-200"
-                onClick={() => router.push('/profile/settings')}
-              >
-                <span className="text-3xl">👤</span>
-                <span className="text-base font-medium text-gray-800 group-hover:text-purple-600">Профиль</span>
-              </button>
-            </div>
-        </div>
-
         {/* Recent Activity Section */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Последняя активность</h2>
