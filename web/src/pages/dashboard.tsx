@@ -44,9 +44,15 @@ const DashboardPage: React.FC = () => {
     };
     
     if (isAuthenticated) {
+      console.log('🔍 Dashboard user data:', {
+        isPremium: user?.isPremium,
+        premiumEndDate: user?.premiumEndDate,
+        premiumEndDateType: typeof user?.premiumEndDate,
+        fullUser: user
+      });
       loadPayments();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
 
   if (!isAuthenticated) {
     return (
@@ -189,7 +195,7 @@ const DashboardPage: React.FC = () => {
                     </div>
                     <div>
                       <p className="font-medium text-gray-800">
-                        {payment.status === 'succeeded' ? 'Премиум доступ' : 
+                        {payment.status === 'succeeded' ? 'Оплата принята' : 
                          payment.status === 'processing' ? 'Обработка оплаты' : 
                          payment.status === 'failed' ? 'Ошибка оплаты' : 'Ожидание оплаты'}
                       </p>
