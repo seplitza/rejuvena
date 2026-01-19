@@ -171,6 +171,28 @@ const PhotoDiaryPage: React.FC = () => {
   };
 
   // Сохранение оригинала на сервер (100% качество, хранится 1 месяц)
+  // Отметить первую загрузку фото в дневник
+  const markFirstPhotoDiaryUpload = async () => {
+    if (!isAuthenticated || !user?.id) return;
+    
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527'}/api/photo-diary/mark-first-upload`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ First photo diary upload marked:', data.firstPhotoDiaryUpload);
+      }
+    } catch (error) {
+      console.error('❌ Failed to mark first photo upload:', error);
+    }
+  };
   const saveOriginalToServer = async (imageDataUrl: string, type: 'before' | 'after', photoKey: keyof PhotoSet) => {
     if (!user?.id) {
       console.log('⚠️ No user ID, skipping metadata save');
@@ -645,6 +667,9 @@ const PhotoDiaryPage: React.FC = () => {
         
         // 1. Сохраняем оригинал на СЕРВЕР (100% качество, хранится 1 месяц)
         await saveOriginalToServer(result, type, photoKey);
+        
+        // Отметить первую загрузку (если это первое фото)
+        await markFirstPhotoDiaryUpload();
         
         // 2. Сохраняем сжатый оригинал в браузер для preview (50% качество, 24 часа)
         const compressedOriginal = await compressOriginalForPreview(result);
