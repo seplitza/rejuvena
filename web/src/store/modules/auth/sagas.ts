@@ -60,6 +60,7 @@ function* loginWithEmailSaga(action: PayloadAction<LoginPayload>): Generator<any
         email: response.user.email,
         isPremium: response.user.isPremium || false,
         premiumEndDate: response.user.premiumEndDate,
+        createdAt: response.user.createdAt,
         isLegacyUser: response.user.isLegacyUser || false,
       };
       yield put(setUser(userProfile));
