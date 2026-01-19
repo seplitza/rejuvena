@@ -66,9 +66,12 @@ export function getExerciseAccess(tags: string[]): ExerciseAccessInfo {
 
 /**
  * Check if user has access to exercise
- * For now, checks localStorage for purchased exercises
+ * Checks: 1) Premium status (all access) 2) Individual purchase in localStorage
  */
-export function hasUserAccess(exerciseId: string): boolean {
+export function hasUserAccess(exerciseId: string, userIsPremium?: boolean): boolean {
+  // Premium users have access to ALL exercises
+  if (userIsPremium) return true;
+  
   // Check localStorage for purchased exercises
   if (typeof window === 'undefined') return false;
   

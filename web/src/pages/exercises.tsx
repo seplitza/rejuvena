@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { useAppSelector } from '../store/hooks';
 import ExerciseItem from '@/components/day/ExerciseItem';
 import ExerciseDetailModal from '@/components/day/ExerciseDetailModal';
 import PaymentModal from '@/components/PaymentModal';
@@ -82,6 +83,7 @@ interface ExtendedExercise extends Omit<Exercise, 'marathonExerciseId' | 'descri
 
 export default function ExercisesPage() {
   const router = useRouter();
+  const { user } = useAppSelector((state) => state.auth);
   const [exercises, setExercises] = useState<ExtendedExercise[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -161,7 +163,7 @@ export default function ExercisesPage() {
   const handleExerciseClick = (exercise: ExtendedExercise) => {
     // Check if exercise is premium and user doesn't have access
     const accessInfo = getExerciseAccess(exercise.tags || []);
-    const userHasAccess = hasUserAccess(exercise.id);
+    const userHasAccess = hasUserAccess(exercise.id, user?.isPremium);
     
     if (!accessInfo.isFree && !userHasAccess) {
       // Show payment modal for premium exercises
@@ -176,7 +178,7 @@ export default function ExercisesPage() {
   const handleExerciseDetailClick = (exercise: ExtendedExercise) => {
     // Check access before navigation
     const accessInfo = getExerciseAccess(exercise.tags || []);
-    const userHasAccess = hasUserAccess(exercise.id);
+    const userHasAccess = hasUserAccess(exercise.id, user?.isPremium);
     
     if (!accessInfo.isFree && !userHasAccess) {
       setSelectedPremiumExercise(exercise);
@@ -319,7 +321,7 @@ export default function ExercisesPage() {
                     
                     // Check if exercise is premium
                     const accessInfo = getExerciseAccess(exercise.tags || []);
-                    const userHasAccess = hasUserAccess(exercise.id);
+                    const userHasAccess = hasUserAccess(exercise.id, user?.isPremium);
                     const isLocked = !accessInfo.isFree && !userHasAccess;
                     const badge = getExerciseBadge(accessInfo);
                     
