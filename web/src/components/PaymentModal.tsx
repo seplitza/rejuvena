@@ -42,8 +42,8 @@ export default function PaymentModal({
         throw new Error('Не авторизован');
       }
 
-      // Call backend API to purchase exercise
-      const response = await fetch(`${API_URL}/api/exercise-purchase/purchase`, {
+      // Call backend API to create payment order in Alfa-Bank
+      const response = await fetch(`${API_URL}/api/payment/create-exercise`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -59,31 +59,25 @@ export default function PaymentModal({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Ошибка оплаты');
+        throw new Error(data.error || 'Ошибка создания платежа');
       }
 
-      if (data.success) {
-        // Mark as purchased in localStorage
+      if (data.success && data.payment?.paymentUrl) {
+        // Mark as purchased in localStorage (will be confirmed after payment)
         markAsPurchased(exerciseId);
         
-        // Show success message
-        alert(`✓ Упражнение "${exerciseName}" успешно приобретено! Активность фотодневника продлена на +1 месяц.`);
-        
-        // Call success callback
-        if (onSuccess) {
-          onSuccess();
-        }
-        
-        // Close modal
-        onClose();
+        // Redirect to Alfa-Bank payment page
+        window.location.href = data.payment.paymentUrl;
+      } else {
+        throw new Error('Не получен URL для оплаты');
       }
     } catch (err: any) {
       console.error('Purchase error:', err);
-      const errorMsg = err.message || 'Произошла ошибка при оплате';
+      const errorMsg = err.message || 'Произошла ошибка при создании платежа';
       setError(errorMsg);
       
-      // If already purchased, mark as purchased locally
-      if (errorMsg === 'Exercise already purchased') {
+      // If already purchased, just close
+      if (errorMsg.includes('already purchased')) {
         markAsPurchased(exerciseId);
         alert('Упражнение уже куплено!');
         onClose();
