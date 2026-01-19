@@ -494,6 +494,7 @@ export default function ExercisePage() {
 
       {/* Payment Modal */}
       <PaymentModal
+        exerciseId={exercise._id}
         isOpen={paymentModalOpen}
         onClose={() => setPaymentModalOpen(false)}
         price={accessInfo.price}
