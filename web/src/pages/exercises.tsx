@@ -387,7 +387,12 @@ export default function ExercisesPage() {
           onClose={handlePaymentModalClose}
           price={getExerciseAccess(selectedPremiumExercise.tags || []).price}
           exerciseName={selectedPremiumExercise.exerciseName}
+          exerciseId={selectedPremiumExercise.id}
           isPro={getExerciseAccess(selectedPremiumExercise.tags || []).priceType === 'pro'}
+          onSuccess={() => {
+            // Refresh exercises after successful purchase
+            window.location.reload();
+          }}
         />
       )}
                       </div>

@@ -4,32 +4,78 @@
  */
 
 import { useState } from 'react';
+import { markAsPurchased } from '@/utils/exerciseAccess';
+import request from '@/config/api';
 
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   price: number;
   exerciseName: string;
+  exerciseId: string;
   isPro?: boolean;
+  onSuccess?: () => void;
 }
 
-export default function PaymentModal({ isOpen, onClose, price, exerciseName, isPro = false }: PaymentModalProps) {
+export default function PaymentModal({ 
+  isOpen, 
+  onClose, 
+  price, 
+  exerciseName, 
+  exerciseId,
+  isPro = false,
+  onSuccess
+}: PaymentModalProps) {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
     setIsProcessing(true);
-    // TODO: Implement actual payment logic
-    setTimeout(() => {
-      alert('Оплата в разработке');
+    setError(null);
+
+    try {
+      // Call backend API to purchase exercise
+      const response = await request.post('/api/exercise-purchase/purchase', {
+        exerciseId,
+        exerciseName,
+        price
+      });
+
+      if (response.success) {
+        // Mark as purchased in localStorage
+        markAsPurchased(exerciseId);
+        
+        // Show success message
+        alert(`✓ Упражнение "${exerciseName}" успешно приобретено! Активность фотодневника продлена на +1 месяц.`);
+        
+        // Call success callback
+        if (onSuccess) {
+          onSuccess();
+        }
+        
+        // Close modal
+        onClose();
+      }
+    } catch (err: any) {
+      console.error('Purchase error:', err);
+      const errorMsg = err.response?.data?.error || 'Произошла ошибка при оплате';
+      setError(errorMsg);
+      
+      // If already purchased, mark as purchased locally
+      if (errorMsg === 'Exercise already purchased') {
+        markAsPurchased(exerciseId);
+        alert('Упражнение уже куплено!');
+        onClose();
+      }
+    } finally {
       setIsProcessing(false);
-      onClose();
-    }, 500);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in">
         {/* Header */}
         <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-4">
@@ -40,6 +86,12 @@ export default function PaymentModal({ isOpen, onClose, price, exerciseName, isP
 
         {/* Content */}
         <div className="p-6">
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+          
           <div className="text-center mb-6">
             <div className="text-6xl mb-4">🔓</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">

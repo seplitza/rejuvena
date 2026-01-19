@@ -10,7 +10,7 @@ const router = Router();
 // Register new user (with email notification)
 router.post('/register', async (req: Request, res: Response) => {
   try {
-    const { email } = req.body;
+    const { email, firstName, lastName } = req.body;
     
     // Normalize email to lowercase
     const normalizedEmail = email.toLowerCase().trim();
@@ -37,6 +37,8 @@ router.post('/register', async (req: Request, res: Response) => {
     const user = new User({
       email: normalizedEmail,
       password: hashedPassword,
+      firstName: firstName?.trim() || '',
+      lastName: lastName?.trim() || '',
       role: 'admin',
       isPremium: false
     });
@@ -66,7 +68,12 @@ router.post('/register', async (req: Request, res: Response) => {
       user: {
         id: user._id,
         email: user.email,
-        role: user.role
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        isPremium: false,
+        createdAt: user.createdAt,
+        firstPhotoDiaryUpload: user.firstPhotoDiaryUpload
       }
     });
   } catch (error) {
@@ -107,8 +114,13 @@ router.post('/login', async (req: Request, res: Response) => {
       user: {
         id: user._id,
         email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
         role: user.role,
         isPremium: user.isPremium || false,
+        premiumEndDate: user.premiumEndDate,
+        createdAt: user.createdAt,
+        firstPhotoDiaryUpload: user.firstPhotoDiaryUpload,
         isLegacyUser: user.isLegacyUser || false
       }
     });
@@ -128,6 +140,31 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
     res.json(user);
   } catch (error) {
     console.error('Get user error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update profile
+router.put('/update-profile', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { firstName, lastName } = req.body;
+    
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update fields if provided
+    if (firstName !== undefined) user.firstName = firstName.trim();
+    if (lastName !== undefined) user.lastName = lastName.trim();
+
+    await user.save();
+
+    // Return updated user without password
+    const updatedUser = await User.findById(req.userId).select('-password');
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Update profile error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

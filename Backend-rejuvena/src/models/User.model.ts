@@ -3,11 +3,14 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface IUser extends Document {
   email: string;
   password: string;
+  firstName?: string;
+  lastName?: string;
   role: 'superadmin' | 'admin';
   isPremium?: boolean;
   premiumEndDate?: Date;
   isLegacyUser?: boolean; // Флаг для пользователей из старого Azure бэка
   azureUserId?: string; // ID пользователя в Azure (для связи)
+  firstPhotoDiaryUpload?: Date; // Дата первой загрузки фото в дневник
   createdAt: Date;
 }
 
@@ -22,6 +25,14 @@ const UserSchema = new Schema<IUser>({
   password: {
     type: String,
     required: true
+  },
+  firstName: {
+    type: String,
+    trim: true
+  },
+  lastName: {
+    type: String,
+    trim: true
   },
   role: {
     type: String,
@@ -38,6 +49,9 @@ const UserSchema = new Schema<IUser>({
   isLegacyUser: {
     type: Boolean,
     default: false
+  },
+  firstPhotoDiaryUpload: {
+    type: Date
   },
   azureUserId: {
     type: String
