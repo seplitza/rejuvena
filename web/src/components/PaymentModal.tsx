@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { markAsPurchased } from '@/utils/exerciseAccess';
-import request from '@/config/api';
+import { API_URL } from '@/config/api';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -36,14 +36,33 @@ export default function PaymentModal({
     setError(null);
 
     try {
+      // Get auth token
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('Не авторизован');
+      }
+
       // Call backend API to purchase exercise
-      const response = await request.post('/api/exercise-purchase/purchase', {
-        exerciseId,
-        exerciseName,
-        price
+      const response = await fetch(`${API_URL}/api/exercise-purchase/purchase`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          exerciseId,
+          exerciseName,
+          price
+        })
       });
 
-      if (response.success) {
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Ошибка оплаты');
+      }
+
+      if (data.success) {
         // Mark as purchased in localStorage
         markAsPurchased(exerciseId);
         
@@ -60,7 +79,7 @@ export default function PaymentModal({
       }
     } catch (err: any) {
       console.error('Purchase error:', err);
-      const errorMsg = err.response?.data?.error || 'Произошла ошибка при оплате';
+      const errorMsg = err.message || 'Произошла ошибка при оплате';
       setError(errorMsg);
       
       // If already purchased, mark as purchased locally
