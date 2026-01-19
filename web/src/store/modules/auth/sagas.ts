@@ -59,6 +59,7 @@ function* loginWithEmailSaga(action: PayloadAction<LoginPayload>): Generator<any
         fullName: response.user.email?.split('@')[0] || 'User',
         email: response.user.email,
         isPremium: response.user.isPremium || false,
+        premiumEndDate: response.user.premiumEndDate,
         isLegacyUser: response.user.isLegacyUser || false,
       };
       yield put(setUser(userProfile));
