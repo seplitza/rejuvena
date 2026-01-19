@@ -4,7 +4,6 @@
  */
 
 import { useState } from 'react';
-import { markAsPurchased } from '@/utils/exerciseAccess';
 import { API_URL } from '@/config/api';
 
 interface PaymentModalProps {
@@ -63,10 +62,8 @@ export default function PaymentModal({
       }
 
       if (data.success && data.payment?.paymentUrl) {
-        // Mark as purchased in localStorage (will be confirmed after payment)
-        markAsPurchased(exerciseId);
-        
         // Redirect to Alfa-Bank payment page
+        // Purchase will be recorded on server after successful payment via callback
         window.location.href = data.payment.paymentUrl;
       } else {
         throw new Error('Не получен URL для оплаты');
@@ -78,7 +75,6 @@ export default function PaymentModal({
       
       // If already purchased, just close
       if (errorMsg.includes('already purchased')) {
-        markAsPurchased(exerciseId);
         alert('Упражнение уже куплено!');
         onClose();
       }

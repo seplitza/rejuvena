@@ -146,6 +146,36 @@ export default function ExercisesPage() {
     loadExercises();
   }, []);
 
+  // Load purchased exercises from backend
+  useEffect(() => {
+    const loadPurchasedExercises = async () => {
+      if (!user) return;
+
+      try {
+        const token = localStorage.getItem('auth_token');
+        if (!token) return;
+
+        const response = await fetch(`${API_URL}/api/exercise-purchase/my-purchases`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const purchasedIds = data.purchases.map((p: any) => p.exerciseId);
+          
+          // Update localStorage with server data
+          localStorage.setItem('purchased_exercises', JSON.stringify(purchasedIds));
+        }
+      } catch (err) {
+        console.error('Error loading purchased exercises:', err);
+      }
+    };
+
+    loadPurchasedExercises();
+  }, [user]);
+
   const handleExerciseToggle = (exerciseId: string) => {
     setExpandedExercises(prev => ({
       ...prev,
