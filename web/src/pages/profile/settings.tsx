@@ -44,7 +44,7 @@ export default function ProfileSettings() {
 
   // Photo diary info
   const [diaryExpiresAt, setDiaryExpiresAt] = useState<Date | null>(null);
-  const [daysRemaining, setDaysRemaining] = useState(0);
+  const [daysRemaining, setDaysRemaining] = useState<number | null>(0);
 
   const t = {
     ru: {
