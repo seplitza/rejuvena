@@ -54,13 +54,14 @@ function* loginWithEmailSaga(action: PayloadAction<LoginPayload>): Generator<any
       // Map unified auth user to expected format
       const userProfile = {
         id: response.user._id || response.user.id,
-        firstName: response.user.email?.split('@')[0] || 'User',
+        firstName: response.user.email?.split(')[0] || 'User',
         lastName: '',
-        fullName: response.user.email?.split('@')[0] || 'User',
+        fullName: response.user.email?.split(')[0] || 'User',
         email: response.user.email,
         isPremium: response.user.isPremium || false,
         premiumEndDate: response.user.premiumEndDate,
         createdAt: response.user.createdAt,
+        firstPhotoDiaryUpload: response.user.firstPhotoDiaryUpload,
         isLegacyUser: response.user.isLegacyUser || false,
       };
       yield put(setUser(userProfile));

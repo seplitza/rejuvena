@@ -112,18 +112,23 @@ export default function ProfileSettings() {
   };
 
   const calculateDiaryExpiry = () => {
-    if (!user?.createdAt) return;
+    // Если первая фотография еще не загружена
+    if (!user?.firstPhotoDiaryUpload) {
+      setDiaryExpiresAt(null);
+      setDaysRemaining(null);
+      return;
+    }
 
-    const registrationDate = new Date(user.createdAt);
-    let totalDays = 30;
+    const firstUploadDate = new Date(user.firstPhotoDiaryUpload);
+    let totalDays = 30; // Бесплатный период
 
     payments
       .filter(p => p.status === 'succeeded')
       .forEach(() => {
-        totalDays += 30;
+        totalDays += 30; // +30 дней за каждую покупку
       });
 
-    const expiryDate = new Date(registrationDate);
+    const expiryDate = new Date(firstUploadDate);
     expiryDate.setDate(expiryDate.getDate() + totalDays);
     
     setDiaryExpiresAt(expiryDate);
@@ -358,12 +363,12 @@ export default function ProfileSettings() {
                     {t[language].diaryActive}
                   </p>
                   <p className="text-2xl font-bold text-purple-600 mt-1">
-                    {diaryExpiresAt ? new Date(diaryExpiresAt).toLocaleDateString('ru-RU') : 'Не активен'}
+                    {diaryExpiresAt ? new Date(diaryExpiresAt).toLocaleDateString('ru-RU') : 'Еще не началась'}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-gray-600 text-sm">{t[language].daysLeft}</p>
-                  <p className="text-3xl font-bold text-purple-600">{daysRemaining}</p>
+                  <p className="text-3xl font-bold text-purple-600">{daysRemaining !== null ? daysRemaining : "-"}</p>
                 </div>
               </div>
             </div>
