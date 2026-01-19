@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
-import { useAppSelector } from '../store/hooks';
+import { useAppSelector, useAppDispatch } from '../store/hooks';
 import Head from 'next/head';
+import { setUser } from '../store/modules/auth/slice';
 import * as faceapi from 'face-api.js';
 
 interface PhotoSet {
@@ -41,6 +42,7 @@ const PhotoDiaryPage: React.FC = () => {
   const router = useRouter();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [showRules, setShowRules] = useState(false);
+  const dispatch = useAppDispatch();
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [cropError, setCropError] = useState<string | null>(null);
@@ -188,11 +190,18 @@ const PhotoDiaryPage: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         console.log('✅ First photo diary upload marked:', data.firstPhotoDiaryUpload);
+        
+        // Обновить пользователя в Redux с новой датой
+        dispatch(setUser({
+          ...user,
+          firstPhotoDiaryUpload: data.firstPhotoDiaryUpload
+        }));
       }
     } catch (error) {
       console.error('❌ Failed to mark first photo upload:', error);
     }
   };
+
   const saveOriginalToServer = async (imageDataUrl: string, type: 'before' | 'after', photoKey: keyof PhotoSet) => {
     if (!user?.id) {
       console.log('⚠️ No user ID, skipping metadata save');

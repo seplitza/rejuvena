@@ -54,9 +54,11 @@ function* loginWithEmailSaga(action: PayloadAction<LoginPayload>): Generator<any
       // Map unified auth user to expected format
       const userProfile = {
         id: response.user._id || response.user.id,
-        firstName: response.user.email?.split('@')[0] || 'User',
-        lastName: '',
-        fullName: response.user.email?.split('@')[0] || 'User',
+        firstName: response.user.firstName || response.user.email?.split('@')[0] || 'User',
+        lastName: response.user.lastName || '',
+        fullName: response.user.firstName && response.user.lastName 
+          ? `${response.user.firstName} ${response.user.lastName}` 
+          : (response.user.firstName || response.user.email?.split('@')[0] || 'User'),
         email: response.user.email,
         isPremium: response.user.isPremium || false,
         premiumEndDate: response.user.premiumEndDate,
@@ -64,6 +66,7 @@ function* loginWithEmailSaga(action: PayloadAction<LoginPayload>): Generator<any
         firstPhotoDiaryUpload: response.user.firstPhotoDiaryUpload,
         isLegacyUser: response.user.isLegacyUser || false,
       };
+
 
       yield put(setUser(userProfile));
     }
