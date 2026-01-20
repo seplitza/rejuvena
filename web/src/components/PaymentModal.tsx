@@ -95,7 +95,7 @@ export default function PaymentModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-white/60 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in">
         {/* Header */}
         <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-4">
