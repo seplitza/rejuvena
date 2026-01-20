@@ -301,7 +301,7 @@ export default function ExercisePage() {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto py-6 relative">
         {/* Blur overlay if no access */}
-        {showBlurred && (
+        {showBlurred && !paymentModalOpen && (
           <div className="absolute inset-0 z-20 backdrop-blur-md bg-white/30 flex items-center justify-center">
             <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center">
               <div className="text-6xl mb-4">🔒</div>
