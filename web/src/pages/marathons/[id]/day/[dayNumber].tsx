@@ -8,7 +8,6 @@ import { useRouter } from 'next/router';
 import { useAppSelector } from '@/store/hooks';
 import { API_URL } from '@/config/api';
 import ExerciseItem from '@/components/day/ExerciseItem';
-import ExerciseDetailModal from '@/components/day/ExerciseDetailModal';
 
 interface Exercise {
   _id: string;
@@ -45,7 +44,6 @@ export default function MarathonDayPage() {
   const [dayData, setDayData] = useState<MarathonDay | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set());
   const [completing, setCompleting] = useState(false);
 
@@ -332,22 +330,6 @@ export default function MarathonDayPage() {
                   </div>
                 )}
 
-                {/* View Details Button */}
-                <button
-                  onClick={() => setSelectedExercise(exercise)}
-                  style={{
-                    padding: '10px 20px',
-                    background: '#4F46E5',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontWeight: '500',
-                    fontSize: '14px'
-                  }}
-                >
-                  Открыть упражнение →
-                </button>
               </div>
             ))}
           </div>
@@ -397,13 +379,6 @@ export default function MarathonDayPage() {
         </div>
       )}
 
-      {/* Exercise Detail Modal */}
-      {selectedExercise && (
-        <ExerciseDetailModal
-          exercise={selectedExercise}
-          onClose={() => setSelectedExercise(null)}
-        />
-      )}
     </div>
   );
 }
