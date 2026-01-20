@@ -133,7 +133,7 @@ export default function PaymentFail() {
             </Link>
 
             <Link 
-              href="/support"
+              href="https://t.me/seplitza_support" target="_blank" rel="noopener noreferrer"
               className="w-full text-purple-600 text-center font-medium py-2 px-6 hover:text-purple-700 transition-colors text-sm"
             >
               Связаться с поддержкой →
