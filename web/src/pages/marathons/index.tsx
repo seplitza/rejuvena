@@ -47,7 +47,8 @@ export default function MarathonsPage() {
         throw new Error(`Failed to load marathons: ${response.statusText}`);
       }
       
-      const data: Marathon[] = await response.json();
+      const response_data = await response.json();
+      const data: Marathon[] = response_data.marathons || [];
       setMarathons(data);
       setError(null);
     } catch (err) {
