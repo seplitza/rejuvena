@@ -57,7 +57,9 @@ export default function Login() {
       errorLoginFailed: 'Login failed',
       errorSignupFailed: 'Signup failed',
       errorInvalidCredentials: 'Invalid email or password',
-      errorNetworkError: 'Network error',
+      errorNetworkError: 'Network error. Check your internet or send screenshot to support: https://t.me/seplitza_support',
+      errorCorsIssue: 'Could not connect to server. Try refreshing or send screenshot to support: https://t.me/seplitza_support',
+      errorServerError: 'Server error. Try later or send screenshot to support: https://t.me/seplitza_support',
     },
   };
 

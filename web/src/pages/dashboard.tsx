@@ -15,6 +15,7 @@ interface Payment {
   metadata?: {
     planType?: string;
     duration?: number;
+    exerciseName?: string;
   };
 }
 
