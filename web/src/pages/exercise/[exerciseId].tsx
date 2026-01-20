@@ -494,12 +494,12 @@ export default function ExercisePage() {
 
       {/* Payment Modal */}
       <PaymentModal
-        exerciseId={exercise._id}
+        productType="exercise"
+        productId={exercise._id}
         isOpen={paymentModalOpen}
         onClose={() => setPaymentModalOpen(false)}
         price={accessInfo.price}
-        exerciseName={exercise.title}
-        isPro={accessInfo.priceType === 'pro'}
+        productName={exercise.title}
       />
     </div>
   );

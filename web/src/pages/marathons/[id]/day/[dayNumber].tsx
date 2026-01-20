@@ -400,22 +400,7 @@ export default function MarathonDayPage() {
       {/* Exercise Detail Modal */}
       {selectedExercise && (
         <ExerciseDetailModal
-          exercise={{
-            id: selectedExercise._id,
-            exerciseName: selectedExercise.title,
-            marathonExerciseName: selectedExercise.duration || '',
-            exerciseDescription: selectedExercise.content || selectedExercise.description,
-            blockExercise: false,
-            order: 0,
-            exerciseContents: selectedExercise.carouselMedia.map((media) => ({
-              id: media.url,
-              type: media.type,
-              contentPath: media.url,
-              order: media.order,
-              isActive: true,
-              videoServer: ''
-            }))
-          }}
+          exercise={selectedExercise}
           onClose={() => setSelectedExercise(null)}
         />
       )}

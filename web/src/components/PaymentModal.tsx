@@ -1,201 +1,316 @@
 /**
- * Payment Modal Component
- * Shows payment options for premium exercises
+ * Updated PaymentModal Component - Supports Premium, Exercises, and Marathons
+ * Unified payment flow for all product types
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { API_URL } from '@/config/api';
 
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
+  productType: 'premium' | 'exercise' | 'marathon';
+  productId?: string;
+  productName: string;
   price: number;
-  exerciseName: string;
-  exerciseId: string;
-  isPro?: boolean;
-  onSuccess?: () => void;
+  onPaymentSuccess?: () => void;
 }
 
-export default function PaymentModal({ 
-  isOpen, 
-  onClose, 
-  price, 
-  exerciseName, 
-  exerciseId,
-  isPro = false,
-  onSuccess
+export default function PaymentModal({
+  isOpen,
+  onClose,
+  productType,
+  productId,
+  productName,
+  price,
+  onPaymentSuccess
 }: PaymentModalProps) {
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (!isOpen) {
+      setError(null);
+      setLoading(false);
+    }
+  }, [isOpen]);
 
   const handlePayment = async () => {
-    setIsProcessing(true);
-    setError(null);
-
     try {
-      // Get auth token
+      setLoading(true);
+      setError(null);
+
       const token = localStorage.getItem('auth_token');
       if (!token) {
-        throw new Error('Не авторизован');
+        throw new Error('Требуется авторизация');
       }
 
-      // Call backend API to create payment order in Alfa-Bank
-      const response = await fetch(`${API_URL}/api/payment/create-exercise`, {
+      // Determine endpoint based on product type
+      let endpoint = '';
+      let body: any = {};
+
+      if (productType === 'premium') {
+        endpoint = `${API_URL}/api/payment/create`;
+        body = {
+          amount: price,
+          description: 'Премиум подписка',
+          planType: 'premium',
+          duration: 30 // 30 days
+        };
+      } else if (productType === 'exercise') {
+        endpoint = `${API_URL}/api/payment/create-exercise`;
+        body = {
+          exerciseId: productId,
+          exerciseName: productName,
+          price
+        };
+      } else if (productType === 'marathon') {
+        endpoint = `${API_URL}/api/payment/create-marathon`;
+        body = {
+          marathonId: productId,
+          marathonName: productName,
+          price
+        };
+      }
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          exerciseId,
-          exerciseName,
-          price
-        })
+        body: JSON.stringify(body)
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Ошибка при создании платежа');
+      }
 
       const data = await response.json();
 
-      if (!response.ok) {
-        // Переводим ошибки на русский
-        let errorMessage = "Ошибка создания платежа";
-        if (data.error) {
-          if (data.error.includes("Internal server error")) {
-            errorMessage = "Ошибка сервера. Попробуйте позже или обратитесь в поддержку";
-          } else if (data.error.includes("already purchased")) {
-            errorMessage = "Упражнение уже куплено";
-          } else {
-            errorMessage = data.error;
-          }
-        }
-        throw new Error(errorMessage);
+      if (!data.payment?.paymentUrl) {
+        throw new Error('Не получена ссылка для оплаты');
       }
 
-      if (data.success && data.payment?.paymentUrl) {
-        // Redirect to Alfa-Bank payment page
-        // Purchase will be recorded on server after successful payment via callback
-        window.location.href = data.payment.paymentUrl;
-      } else {
-        throw new Error('Не получен URL для оплаты');
-      }
-    } catch (err: any) {
-      console.error('Purchase error:', err);
-      const errorMsg = err.message || 'Произошла ошибка при создании платежа';
-      setError(errorMsg);
-      
-      // If already purchased, just close
-      if (errorMsg.includes('already purchased')) {
-        alert('Упражнение уже куплено!');
-        onClose();
-      }
+      // Redirect to payment page
+      window.location.href = data.payment.paymentUrl;
+    } catch (err) {
+      console.error('Payment error:', err);
+      setError(err instanceof Error ? err.message : 'Произошла ошибка при оплате');
     } finally {
-      setIsProcessing(false);
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  const getProductIcon = () => {
+    switch (productType) {
+      case 'premium': return '⭐';
+      case 'exercise': return '💪';
+      case 'marathon': return '🏃';
+      default: return '💳';
+    }
+  };
+
+  const getProductTypeLabel = () => {
+    switch (productType) {
+      case 'premium': return 'Премиум подписка';
+      case 'exercise': return 'Упражнение';
+      case 'marathon': return 'Марафон';
+      default: return 'Покупка';
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-4">
-          <h2 className="text-2xl font-bold">
-            Полный доступ
-          </h2>
-        </div>
-
-        {/* Content */}
-        <div className="p-6">
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              {error}
-            </div>
-          )}
-          
-          <div className="text-center mb-6">
-            <div className="text-6xl mb-4">🔓</div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Разблокировать упражнение?
-            </h3>
-            <p className="text-gray-600">
-              "{exerciseName}"
-            </p>
-          </div>
-
-          {/* Features */}
-          <div className="bg-purple-50 rounded-xl p-4 mb-6 space-y-2">
-            <div className="flex items-center text-gray-700">
-              <svg className="w-5 h-5 text-purple-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              Полное видео-инструкция
-            </div>
-            <div className="flex items-center text-gray-700">
-              <svg className="w-5 h-5 text-purple-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              Детальное описание техники
-            </div>
-            <div className="flex items-center text-gray-700">
-              <svg className="w-5 h-5 text-purple-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              Доступ на 1 месяц!
-            </div>
-          </div>
-
-          {/* Price */}
-          <div className="text-center mb-6">
-            <div className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-full">
-              <span className="text-3xl font-bold">{price} ₽</span>
-            </div>
-          </div>
-
-          {/* Buttons */}
-          <div className="space-y-3">
-            <button
-              onClick={handlePayment}
-              disabled={isProcessing}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isProcessing ? (
-                <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Обработка...
-                </span>
-              ) : (
-                `Купить за ${price} ₽`
-              )}
-            </button>
+    <>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9998,
+          padding: '20px'
+        }}
+      >
+        {/* Modal */}
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            background: 'white',
+            borderRadius: '16px',
+            maxWidth: '500px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            zIndex: 9999
+          }}
+        >
+          {/* Header */}
+          <div style={{
+            padding: '24px',
+            borderBottom: '1px solid #E5E7EB',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#111827', margin: 0 }}>
+              {getProductIcon()} Оплата
+            </h2>
             <button
               onClick={onClose}
-              disabled={isProcessing}
-              className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50"
+              disabled={loading}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                fontSize: '24px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                color: '#6B7280',
+                padding: '4px'
+              }}
             >
-              Отмена
+              ×
             </button>
+          </div>
+
+          {/* Content */}
+          <div style={{ padding: '24px' }}>
+            {/* Product Info */}
+            <div style={{
+              background: '#F9FAFB',
+              padding: '20px',
+              borderRadius: '12px',
+              marginBottom: '24px'
+            }}>
+              <div style={{ fontSize: '14px', color: '#6B7280', marginBottom: '8px' }}>
+                {getProductTypeLabel()}
+              </div>
+              <div style={{ fontSize: '18px', fontWeight: '600', color: '#111827', marginBottom: '16px' }}>
+                {productName}
+              </div>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingTop: '16px',
+                borderTop: '1px solid #E5E7EB'
+              }}>
+                <div style={{ fontSize: '16px', color: '#6B7280' }}>
+                  Итого к оплате:
+                </div>
+                <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#4F46E5' }}>
+                  {price} ₽
+                </div>
+              </div>
+            </div>
+
+            {/* Payment Method */}
+            <div style={{ marginBottom: '24px' }}>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '12px' }}>
+                Способ оплаты
+              </div>
+              <div style={{
+                padding: '16px',
+                border: '2px solid #4F46E5',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px'
+              }}>
+                <div style={{ fontSize: '24px' }}>💳</div>
+                <div>
+                  <div style={{ fontSize: '15px', fontWeight: '600', color: '#111827' }}>
+                    Альфа-банк
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#6B7280' }}>
+                    Банковская карта (Visa, MasterCard, МИР)
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div style={{
+                padding: '12px 16px',
+                background: '#FEE2E2',
+                border: '1px solid #FCA5A5',
+                borderRadius: '8px',
+                color: '#DC2626',
+                fontSize: '14px',
+                marginBottom: '20px'
+              }}>
+                ❌ {error}
+              </div>
+            )}
+
+            {/* Info */}
+            <div style={{
+              padding: '16px',
+              background: '#EEF2FF',
+              borderRadius: '8px',
+              marginBottom: '24px'
+            }}>
+              <div style={{ fontSize: '13px', color: '#4F46E5', lineHeight: '1.6' }}>
+                ℹ️ После нажатия кнопки "Оплатить" вы будете перенаправлены на защищённую страницу оплаты Альфа-банка. 
+                {productType === 'marathon' && ' После успешной оплаты вы будете автоматически записаны на марафон.'}
+                {productType === 'exercise' && ' После успешной оплаты упражнение станет доступным в течение 30 дней.'}
+                {productType === 'premium' && ' После успешной оплаты премиум-доступ будет активирован на 30 дней.'}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={onClose}
+                disabled={loading}
+                style={{
+                  flex: 1,
+                  padding: '14px',
+                  background: '#F3F4F6',
+                  color: '#374151',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  opacity: loading ? 0.5 : 1
+                }}
+              >
+                Отмена
+              </button>
+              <button
+                onClick={handlePayment}
+                disabled={loading}
+                style={{
+                  flex: 2,
+                  padding: '14px',
+                  background: loading ? '#9CA3AF' : '#4F46E5',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  transition: 'background 0.2s'
+                }}
+              >
+                {loading ? 'Загрузка...' : `Оплатить ${price} ₽`}
+              </button>
+            </div>
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes scale-in {
-          from {
-            transform: scale(0.9);
-            opacity: 0;
-          }
-          to {
-            transform: scale(1);
-            opacity: 1;
-          }
-        }
-        .animate-scale-in {
-          animation: scale-in 0.2s ease-out;
-        }
-      `}</style>
-    </div>
+    </>
   );
 }

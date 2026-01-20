@@ -413,13 +413,13 @@ export default function ExercisesPage() {
       {/* Payment Modal */}
       {modalMounted && selectedPremiumExercise && (
         <PaymentModal
+          productType="exercise"
           isOpen={paymentModalOpen}
           onClose={handlePaymentModalClose}
           price={getExerciseAccess(selectedPremiumExercise.tags || []).price}
-          exerciseName={selectedPremiumExercise.exerciseName}
-          exerciseId={selectedPremiumExercise.id}
-          isPro={getExerciseAccess(selectedPremiumExercise.tags || []).priceType === 'pro'}
-          onSuccess={() => {
+          productName={selectedPremiumExercise.exerciseName}
+          productId={selectedPremiumExercise.id}
+          onPaymentSuccess={() => {
             // Refresh exercises after successful purchase
             window.location.reload();
           }}
