@@ -197,12 +197,14 @@ const DashboardPage: React.FC = () => {
                       <p className="font-medium text-gray-800">
                         {payment.status === 'succeeded' ? 'Оплата принята' : 
                          payment.status === 'processing' ? 'Обработка оплаты' : 
-                         payment.status === 'failed' ? 'Ошибка оплаты' : 'Ожидание оплаты'}
+                         payment.status === 'failed' ? 'Оплата не прошла' : 'Ожидание оплаты'}
                       </p>
                       <p className="text-sm text-gray-500">
                         {payment.metadata?.planType === 'premium' 
                           ? `Премиум доступ на ${payment.metadata.duration} дней`
-                          : 'Покупка'}
+                          : payment.metadata?.exerciseName
+                            ? `Покупка: ${payment.metadata.exerciseName}`
+                            : 'Покупка'}
                       </p>
                     </div>
                   </div>

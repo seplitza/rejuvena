@@ -34,7 +34,9 @@ export default function Login() {
       errorLoginFailed: 'Ошибка входа',
       errorSignupFailed: 'Ошибка регистрации',
       errorInvalidCredentials: 'Неверный email или пароль',
-      errorNetworkError: 'Ошибка сети',
+      errorNetworkError: 'Ошибка сети. Проверьте интернет-соединение или отправьте скриншот в поддержку: https://t.me/seplitza_support',
+      errorCorsIssue: 'Не удалось подключиться к серверу. Попробуйте обновить страницу или отправьте скриншот в поддержку: https://t.me/seplitza_support',
+      errorServerError: 'Ошибка сервера. Попробуйте позже или отправьте скриншот в поддержку: https://t.me/seplitza_support',
     },
     en: {
       title: 'Sign in to your account',
