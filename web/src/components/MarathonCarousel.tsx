@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/router';
 
 interface Marathon {
   _id: string;
@@ -22,7 +22,7 @@ export default function MarathonCarousel() {
   const [marathons, setMarathons] = useState<Marathon[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   useEffect(() => {
     fetchMarathons();
@@ -53,7 +53,7 @@ export default function MarathonCarousel() {
   };
 
   const handleMarathonClick = (marathonId: string) => {
-    navigate(`/marathons/${marathonId}`);
+    router.push(`/marathons/${marathonId}`);
   };
 
   if (loading) {
