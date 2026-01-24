@@ -1,9 +1,9 @@
 /**
- * Offers Grid - Premium + Marathons
- * Красивый grid с CSS анимациями
+ * Offers Slider - Premium + Marathons
+ * Красивый слайдер с 3D flip эффектом
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { API_ENDPOINTS } from '@/config/api';
 
@@ -23,6 +23,9 @@ export default function OffersGrid() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [purchaseLoading, setPurchaseLoading] = useState<string | null>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const autoPlayRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     fetchMarathons();
@@ -146,6 +149,92 @@ export default function OffersGrid() {
     return `${days} дней`;
   };
 
+  // Premium card data
+  const premiumCard = {
+    id: 'premium',
+    type: 'premium',
+    title: 'Премиум доступ',
+    subtitle: 'Полный доступ ко всем упражнениям',
+    badge: '⭐ Популярный',
+    badgeColor: 'bg-yellow-400 text-yellow-900',
+    gradient: { from: '#9333ea', to: '#ec4899' },
+    borderColor: 'border-purple-200 hover:border-purple-400',
+    price: 990,
+    priceLabel: '/ месяц',
+    features: [
+      { title: 'Полное видео-инструкция', description: 'Детальная демонстрация каждого упражнения' },
+      { title: 'Доступ на 1 месяц', description: '30 дней автоматического доступа' },
+      { title: 'Все категории упражнений', description: '100+ видео, лицо, шея, тело + другое' }
+    ]
+  };
+
+  // All slides: Premium + Marathons
+  const allSlides = [
+    premiumCard,
+    ...marathons.map(m => ({
+      id: m._id,
+      type: 'marathon',
+      title: m.title,
+      subtitle: m.description || 'Марафон омоложения',
+      badge: !m.isPaid ? '🎁 Бесплатно' : null,
+      badgeColor: 'bg-green-400 text-green-900',
+      gradient: { from: '#2563eb', to: '#06b6d4' },
+      borderColor: 'border-blue-200 hover:border-blue-400',
+      price: m.isPaid ? m.cost : null,
+      priceLabel: m.isPaid ? 'разовый платеж' : 'Бесплатно',
+      features: [
+        { title: 'Длительность', description: getDaysText(m.numberOfDays) },
+        { 
+          title: 'Старт марафона', 
+          description: new Date(m.startDate).toLocaleDateString('ru-RU', { 
+            day: 'numeric', 
+            month: 'long',
+            year: 'numeric'
+          })
+        },
+        { 
+          title: m.numberOfDays === 0 ? 'Каждый день' : 'Ежедневные упражнения',
+          description: m.numberOfDays === 0 
+            ? 'Одинаковый набор упражнений каждый день'
+            : 'Новые упражнения каждый день'
+        }
+      ],
+      marathonData: m
+    }))
+  ];
+
+  // Slider controls
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % allSlides.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + allSlides.length) % allSlides.length);
+  };
+
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index);
+    setIsAutoPlaying(false);
+  };
+
+  // Auto-play
+  useEffect(() => {
+    if (isAutoPlaying && allSlides.length > 1) {
+      autoPlayRef.current = setInterval(nextSlide, 5000);
+    }
+    return () => {
+      if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+    };
+  }, [isAutoPlaying, allSlides.length]);
+
+  const handleCardAction = async (slide: any) => {
+    if (slide.type === 'premium') {
+      await handlePremiumPurchase();
+    } else if (slide.marathonData) {
+      await handleMarathonAction(slide.marathonData);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center py-12">
@@ -170,52 +259,72 @@ export default function OffersGrid() {
     );
   }
 
+  if (allSlides.length === 0) {
+    return (
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6 text-center">
+        <p className="text-gray-600">Нет доступных предложений</p>
+      </div>
+    );
+  }
+
+  const currentCard = allSlides[currentSlide];
+
   return (
-    <>
+    <div className="mb-8">
       <style jsx global>{`
-        @keyframes fadeInUp {
+        @keyframes slideIn {
           from {
             opacity: 0;
-            transform: translateY(30px);
+            transform: translateX(100px) rotateY(20deg);
           }
           to {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateX(0) rotateY(0);
           }
         }
 
-        .offer-card {
-          animation: fadeInUp 0.6s ease-out forwards;
-          animation-delay: calc(var(--card-index) * 0.1s);
-          opacity: 0;
-          transition: all 0.3s ease;
+        @keyframes slideOut {
+          from {
+            opacity: 1;
+            transform: translateX(0) rotateY(0);
+          }
+          to {
+            opacity: 0;
+            transform: translateX(-100px) rotateY(-20deg);
+          }
         }
 
-        .offer-card:hover {
-          transform: translateY(-8px) scale(1.02);
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        .slider-card {
+          animation: slideIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+          transform-style: preserve-3d;
+          perspective: 1000px;
         }
 
-        .offer-card-header {
+        .slider-card:hover {
+          transform: scale(1.02) translateY(-8px);
+          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
           background: linear-gradient(135deg, var(--gradient-from), var(--gradient-to));
           position: relative;
           overflow: hidden;
         }
 
-        .offer-card-header::before {
+        .card-header::after {
           content: '';
           position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
-          transform: translateX(-100%);
+          top: -50%;
+          right: -50%;
+          bottom: -50%;
+          left: -50%;
+          background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+          transform: rotate(45deg) translate(-100%, -100%);
           transition: transform 0.6s;
         }
 
-        .offer-card:hover .offer-card-header::before {
-          transform: translateX(100%);
+        .slider-card:hover .card-header::after {
+          transform: rotate(45deg) translate(100%, 100%);
         }
 
         .pulse-badge {
@@ -224,168 +333,164 @@ export default function OffersGrid() {
 
         @keyframes pulse {
           0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.05); }
+          50% { transform: scale(1.08); box-shadow: 0 0 20px rgba(250, 204, 21, 0.5); }
+        }
+
+        .slider-button {
+          transition: all 0.3s ease;
+        }
+
+        .slider-button:hover {
+          transform: scale(1.1);
+          background: rgba(147, 51, 234, 0.95);
+        }
+
+        .slider-button:active {
+          transform: scale(0.95);
+        }
+
+        .dot {
+          transition: all 0.3s ease;
+        }
+
+        .dot:hover {
+          transform: scale(1.3);
         }
       `}</style>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-        {/* Premium Card */}
+      {/* Slider Container */}
+      <div className="relative max-w-md mx-auto">
+        {/* Card */}
         <div 
-          className="offer-card bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-purple-200 hover:border-purple-400"
-          style={{ '--card-index': 0, '--gradient-from': '#9333ea', '--gradient-to': '#ec4899' } as any}
+          key={currentSlide}
+          className="slider-card bg-white rounded-2xl shadow-2xl overflow-hidden border-2 transition-all duration-300"
+          style={{
+            '--gradient-from': currentCard.gradient.from,
+            '--gradient-to': currentCard.gradient.to
+          } as any}
         >
-          <div className="offer-card-header p-6 text-white">
+          {/* Header */}
+          <div className="card-header p-6 text-white">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-2xl font-bold">Премиум доступ</h3>
-              <span className="pulse-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-400 text-yellow-900">
-                ⭐ Популярный
-              </span>
+              <h3 className="text-2xl font-bold">{currentCard.title}</h3>
+              {currentCard.badge && (
+                <span className={`pulse-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${currentCard.badgeColor}`}>
+                  {currentCard.badge}
+                </span>
+              )}
             </div>
-            <p className="text-purple-100">Полный доступ ко всем упражнениям</p>
+            <p className={`${currentCard.type === 'premium' ? 'text-purple-100' : 'text-blue-100'}`}>
+              {currentCard.subtitle}
+            </p>
           </div>
 
+          {/* Body */}
           <div className="p-6">
+            {/* Features */}
             <div className="space-y-4 mb-6">
-              {[
-                { title: 'Полное видео-инструкция', description: 'Детальная демонстрация каждого упражнения' },
-                { title: 'Доступ на 1 месяц', description: '30 дней автоматического доступа' },
-                { title: 'Все категории упражнений', description: '100+ видео, лицо, шея, тело + другое' }
-              ].map((feature, idx) => (
+              {currentCard.features.map((feature: any, idx: number) => (
                 <div key={idx} className="flex items-start space-x-3">
                   <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
                     <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900">{feature.title}</h4>
-                    <p className="text-sm text-gray-600">{feature.description}</p>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-gray-900 text-sm">{feature.title}</h4>
+                    <p className="text-xs text-gray-600 mt-0.5">{feature.description}</p>
                   </div>
                 </div>
               ))}
             </div>
 
+            {/* Price & CTA */}
             <div className="border-t pt-6">
               <div className="flex items-baseline justify-between mb-4">
                 <div>
-                  <span className="text-4xl font-bold text-gray-900">990 ₽</span>
-                  <span className="text-gray-600 ml-2">/ месяц</span>
+                  <span className="text-4xl font-bold text-gray-900">
+                    {currentCard.price !== null ? `${currentCard.price} ₽` : 'Бесплатно'}
+                  </span>
+                  {currentCard.price !== null && (
+                    <span className="text-gray-600 ml-2 text-sm">{currentCard.priceLabel}</span>
+                  )}
                 </div>
               </div>
 
               <button
-                onClick={handlePremiumPurchase}
-                disabled={purchaseLoading === 'premium'}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                onClick={() => handleCardAction(currentCard)}
+                disabled={purchaseLoading === currentCard.id}
+                className="w-full bg-gradient-to-r text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-2xl"
+                style={{
+                  backgroundImage: `linear-gradient(to right, ${currentCard.gradient.from}, ${currentCard.gradient.to})`
+                }}
               >
-                {purchaseLoading === 'premium' ? 'Обработка...' : 'Оплатить 990 ₽'}
+                {purchaseLoading === currentCard.id 
+                  ? 'Обработка...' 
+                  : currentCard.price !== null 
+                    ? `Оплатить ${currentCard.price} ₽` 
+                    : 'Присоединиться бесплатно'
+                }
               </button>
 
-              <p className="text-xs text-gray-500 text-center mt-3">
-                Безопасная оплата через Альфа-Банк
-              </p>
+              {currentCard.price !== null && (
+                <p className="text-xs text-gray-500 text-center mt-3">
+                  Безопасная оплата через Альфа-Банк
+                </p>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Marathon Cards */}
-        {marathons.map((marathon, index) => (
-          <div
-            key={marathon._id}
-            className="offer-card bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-blue-200 hover:border-blue-400"
-            style={{ '--card-index': index + 1, '--gradient-from': '#2563eb', '--gradient-to': '#06b6d4' } as any}
-          >
-            <div className="offer-card-header p-6 text-white">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-2xl font-bold">{marathon.title}</h3>
-                {!marathon.isPaid && (
-                  <span className="pulse-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-400 text-green-900">
-                    🎁 Бесплатно
-                  </span>
-                )}
-              </div>
-              <p className="text-blue-100">{marathon.description || 'Марафон омоложения'}</p>
-            </div>
+        {/* Navigation Arrows */}
+        {allSlides.length > 1 && (
+          <>
+            <button
+              onClick={prevSlide}
+              onMouseEnter={() => setIsAutoPlaying(false)}
+              className="slider-button absolute top-1/2 -left-4 md:-left-6 transform -translate-y-1/2 bg-purple-600 text-white w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg flex items-center justify-center z-10 hover:bg-purple-700"
+            >
+              <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
 
-            <div className="p-6">
-              <div className="space-y-4 mb-6">
-                {[
-                  { title: 'Длительность', description: getDaysText(marathon.numberOfDays) },
-                  { 
-                    title: 'Старт марафона', 
-                    description: new Date(marathon.startDate).toLocaleDateString('ru-RU', { 
-                      day: 'numeric', month: 'long', year: 'numeric'
-                    })
-                  },
-                  { 
-                    title: marathon.numberOfDays === 0 ? 'Каждый день' : 'Ежедневные упражнения',
-                    description: marathon.numberOfDays === 0 
-                      ? 'Одинаковый набор упражнений каждый день'
-                      : 'Новые упражнения каждый день'
-                  }
-                ].map((feature, idx) => (
-                  <div key={idx} className="flex items-start space-x-3">
-                    <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900">{feature.title}</h4>
-                      <p className="text-sm text-gray-600">{feature.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <button
+              onClick={nextSlide}
+              onMouseEnter={() => setIsAutoPlaying(false)}
+              className="slider-button absolute top-1/2 -right-4 md:-right-6 transform -translate-y-1/2 bg-purple-600 text-white w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg flex items-center justify-center z-10 hover:bg-purple-700"
+            >
+              <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </>
+        )}
 
-              <div className="border-t pt-6">
-                <div className="flex items-baseline justify-between mb-4">
-                  <div>
-                    {marathon.isPaid ? (
-                      <>
-                        <span className="text-4xl font-bold text-gray-900">{marathon.cost} ₽</span>
-                        <span className="text-gray-600 ml-2">разовый платеж</span>
-                      </>
-                    ) : (
-                      <span className="text-4xl font-bold text-green-600">Бесплатно</span>
-                    )}
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => handleMarathonAction(marathon)}
-                  disabled={purchaseLoading === marathon._id}
-                  className={`w-full ${
-                    marathon.isPaid
-                      ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700'
-                      : 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700'
-                  } text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl`}
-                >
-                  {purchaseLoading === marathon._id 
-                    ? 'Обработка...'
-                    : marathon.isPaid
-                    ? `Оплатить ${marathon.cost} ₽`
-                    : 'Присоединиться бесплатно'
-                  }
-                </button>
-
-                {marathon.isPaid && (
-                  <p className="text-xs text-gray-500 text-center mt-3">
-                    Безопасная оплата через Альфа-Банк
-                  </p>
-                )}
-              </div>
-            </div>
+        {/* Dots Indicator */}
+        {allSlides.length > 1 && (
+          <div className="flex justify-center items-center space-x-2 mt-6">
+            {allSlides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                className={`dot w-2.5 h-2.5 rounded-full transition-all ${
+                  index === currentSlide 
+                    ? 'bg-purple-600 w-8' 
+                    : 'bg-gray-300 hover:bg-gray-400'
+                }`}
+                aria-label={`Перейти к слайду ${index + 1}`}
+              />
+            ))}
           </div>
-        ))}
+        )}
+
+        {/* Counter */}
+        {allSlides.length > 1 && (
+          <div className="text-center mt-3 text-sm text-gray-500">
+            {currentSlide + 1} / {allSlides.length}
+          </div>
+        )}
       </div>
-
-      {marathons.length === 0 && !loading && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-          <p className="text-blue-600 font-semibold">Марафоны скоро появятся!</p>
-          <p className="text-sm text-gray-600 mt-2">Мы работаем над новыми программами</p>
-        </div>
-      )}
-    </>
+    </div>
   );
 }
