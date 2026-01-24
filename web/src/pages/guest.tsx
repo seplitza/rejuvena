@@ -4,6 +4,7 @@ import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { guestUserLogin } from '../store/modules/auth/slice';
 import LanguageSelector from '../components/common/LanguageSelector';
 import PremiumPlanCard from '../components/payment/PremiumPlanCard';
+import MarathonCarousel from '../components/MarathonCarousel';
 
 const GuestPage: React.FC = () => {
   const router = useRouter();
@@ -52,6 +53,9 @@ const GuestPage: React.FC = () => {
             Email: Не указан
           </p>
         </div>
+
+        {/* Marathon Carousel - Марафоны как редкое событие */}
+        <MarathonCarousel />
 
         {/* Premium Plan Card - для гостей */}
         <div className="mb-6">
