@@ -3,8 +3,7 @@ import { useRouter } from 'next/router';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { guestUserLogin } from '../store/modules/auth/slice';
 import LanguageSelector from '../components/common/LanguageSelector';
-import PremiumPlanCard from '../components/payment/PremiumPlanCard';
-import MarathonCarousel from '../components/MarathonCarousel';
+import OffersGrid from '../components/OffersGrid';
 
 const GuestPage: React.FC = () => {
   const router = useRouter();
@@ -54,13 +53,8 @@ const GuestPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Marathon Carousel - Марафоны как редкое событие */}
-        <MarathonCarousel />
-
-        {/* Premium Plan Card - для гостей */}
-        <div className="mb-6">
-          <PremiumPlanCard />
-        </div>
+        {/* Offers Grid - Premium + Marathons */}
+        <OffersGrid />
 
         {/* Shortcuts */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
