@@ -1,11 +1,17 @@
 /**
  * Offers Grid - Premium + Marathons
- * Показывает Premium подписку и марафоны в едином формате карточек
+ * Показывает Premium подписку и марафоны в едином формате карточек с Swiper slider
  */
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { API_ENDPOINTS } from '@/config/api';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { EffectCoverflow, Navigation, Pagination, Autoplay } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/effect-coverflow';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 interface Marathon {
   _id: string;
@@ -143,192 +149,209 @@ export default function OffersGrid() {
     );
   }
 
+  // Premium card data
+  const premiumCard = {
+    id: 'premium',
+    title: 'Премиум доступ',
+    subtitle: 'Полный доступ ко всем упражнениям',
+    badge: '⭐ Популярный',
+    badgeColor: 'bg-yellow-400 text-yellow-900',
+    gradient: 'from-purple-600 to-pink-600',
+    borderColor: 'border-purple-200 hover:border-purple-400',
+    buttonGradient: 'from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700',
+    price: 990,
+    priceLabel: '/ месяц',
+    buttonText: 'Оплатить 990 ₽',
+    features: [
+      { title: 'Полное видео-инструкция', description: 'Детальная демонстрация каждого упражнения' },
+      { title: 'Доступ на 1 месяц', description: '30 дней автоматического доступа' },
+      { title: 'Все категории упражнений', description: '100+ видео, лицо, шея, тело + другое' }
+    ]
+  };
+
+  // All cards: Premium + Marathons
+  const allCards = [
+    premiumCard,
+    ...marathons.map(m => ({
+      id: m._id,
+      title: m.title,
+      subtitle: m.description || 'Марафон омоложения',
+      badge: !m.isPaid ? '🎁 Бесплатно' : null,
+      badgeColor: 'bg-green-400 text-green-900',
+      gradient: 'from-blue-600 to-cyan-600',
+      borderColor: 'border-blue-200 hover:border-blue-400',
+      buttonGradient: m.isPaid 
+        ? 'from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700'
+        : 'from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700',
+      price: m.isPaid ? m.cost : null,
+      priceLabel: m.isPaid ? 'разовый платеж' : null,
+      buttonText: m.isPaid ? `Оплатить ${m.cost} ₽` : 'Присоединиться бесплатно',
+      isPaidMarathon: m.isPaid,
+      features: [
+        { title: 'Длительность', description: getDaysText(m.numberOfDays) },
+        { 
+          title: 'Старт марафона', 
+          description: new Date(m.startDate).toLocaleDateString('ru-RU', { 
+            day: 'numeric', 
+            month: 'long',
+            year: 'numeric'
+          })
+        },
+        { 
+          title: m.numberOfDays === 0 ? 'Каждый день' : 'Ежедневные упражнения',
+          description: m.numberOfDays === 0 
+            ? 'Одинаковый набор упражнений каждый день'
+            : 'Новые упражнения каждый день'
+        }
+      ],
+      marathonData: m
+    }))
+  ];
+
+  const handleCardAction = async (card: any) => {
+    if (card.id === 'premium') {
+      await handlePremiumPurchase();
+    } else if (card.marathonData) {
+      await handleMarathonAction(card.marathonData);
+    }
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-      {/* Premium Card */}
-      <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border-2 border-purple-200 hover:border-purple-400 transition-all duration-300">
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6 text-white">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-2xl font-bold">Премиум доступ</h3>
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-400 text-yellow-900">
-              ⭐ Популярный
-            </span>
-          </div>
-          <p className="text-purple-100">Полный доступ ко всем упражнениям</p>
-        </div>
+    <div className="mb-6 offers-slider-container">
+      <style jsx global>{`
+        .offers-slider-container .swiper {
+          padding: 20px 10px 50px;
+        }
+        .offers-slider-container .swiper-slide {
+          height: auto;
+          display: flex;
+        }
+        .offers-slider-container .swiper-button-prev,
+        .offers-slider-container .swiper-button-next {
+          color: #9333ea;
+          background: white;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .offers-slider-container .swiper-button-prev:after,
+        .offers-slider-container .swiper-button-next:after {
+          font-size: 18px;
+          font-weight: bold;
+        }
+        .offers-slider-container .swiper-pagination-bullet {
+          background: #9333ea;
+          opacity: 0.5;
+        }
+        .offers-slider-container .swiper-pagination-bullet-active {
+          opacity: 1;
+          background: #9333ea;
+        }
+      `}</style>
 
-        <div className="p-6">
-          <div className="space-y-4 mb-6">
-            <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-900">Полное видео-инструкция</h4>
-                <p className="text-sm text-gray-600">Детальная демонстрация каждого упражнения</p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-900">Доступ на 1 месяц</h4>
-                <p className="text-sm text-gray-600">30 дней автоматического доступа</p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-900">Все категории упражнений</h4>
-                <p className="text-sm text-gray-600">100+ видео, лицо, шея, тело + другое</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t pt-6">
-            <div className="flex items-baseline justify-between mb-4">
-              <div>
-                <span className="text-4xl font-bold text-gray-900">990 ₽</span>
-                <span className="text-gray-600 ml-2">/ месяц</span>
-              </div>
-            </div>
-
-            <button
-              onClick={handlePremiumPurchase}
-              disabled={purchaseLoading === 'premium'}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {purchaseLoading === 'premium' ? 'Обработка...' : 'Оплатить 990 ₽'}
-            </button>
-
-            <p className="text-xs text-gray-500 text-center mt-3">
-              Безопасная оплата через Альфа-Банк
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Marathon Cards */}
-      {marathons.map((marathon) => (
-        <div
-          key={marathon._id}
-          className="bg-white rounded-2xl shadow-2xl overflow-hidden border-2 border-blue-200 hover:border-blue-400 transition-all duration-300"
-        >
-          <div className="bg-gradient-to-r from-blue-600 to-cyan-600 p-6 text-white">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-2xl font-bold">{marathon.title}</h3>
-              {!marathon.isPaid && (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-400 text-green-900">
-                  🎁 Бесплатно
-                </span>
-              )}
-            </div>
-            <p className="text-blue-100">{marathon.description || 'Марафон омоложения'}</p>
-          </div>
-
-          <div className="p-6">
-            <div className="space-y-4 mb-6">
-              <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                  <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+      <Swiper
+        modules={[EffectCoverflow, Navigation, Pagination, Autoplay]}
+        effect="coverflow"
+        grabCursor={true}
+        centeredSlides={true}
+        slidesPerView="auto"
+        coverflowEffect={{
+          rotate: 10,
+          stretch: 0,
+          depth: 150,
+          modifier: 1.5,
+          slideShadows: true,
+        }}
+        navigation={true}
+        pagination={{ clickable: true }}
+        autoplay={{
+          delay: 5000,
+          disableOnInteraction: false,
+        }}
+        breakpoints={{
+          320: {
+            slidesPerView: 1,
+            spaceBetween: 20
+          },
+          768: {
+            slidesPerView: 2,
+            spaceBetween: 30
+          },
+          1024: {
+            slidesPerView: 3,
+            spaceBetween: 30
+          }
+        }}
+        className="offers-swiper"
+      >
+        {allCards.map((card) => (
+          <SwiperSlide key={card.id} style={{ width: '350px', maxWidth: '90vw' }}>
+            <div className={`bg-white rounded-2xl shadow-2xl overflow-hidden border-2 ${card.borderColor} transition-all duration-300 h-full flex flex-col`}>
+              <div className={`bg-gradient-to-r ${card.gradient} p-6 text-white`}>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-2xl font-bold">{card.title}</h3>
+                  {card.badge && (
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${card.badgeColor}`}>
+                      {card.badge}
+                    </span>
+                  )}
                 </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">Длительность</h4>
-                  <p className="text-sm text-gray-600">{getDaysText(marathon.numberOfDays)}</p>
-                </div>
+                <p className={card.id === 'premium' ? 'text-purple-100' : 'text-blue-100'}>
+                  {card.subtitle}
+                </p>
               </div>
 
-              <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                  <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
+              <div className="p-6 flex-grow flex flex-col">
+                <div className="space-y-4 mb-6 flex-grow">
+                  {card.features.map((feature, idx) => (
+                    <div key={idx} className="flex items-start space-x-3">
+                      <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">{feature.title}</h4>
+                        <p className="text-sm text-gray-600">{feature.description}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">Старт марафона</h4>
-                  <p className="text-sm text-gray-600">
-                    {new Date(marathon.startDate).toLocaleDateString('ru-RU', { 
-                      day: 'numeric', 
-                      month: 'long',
-                      year: 'numeric'
-                    })}
-                  </p>
-                </div>
-              </div>
 
-              <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                  <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">
-                    {marathon.numberOfDays === 0 ? 'Каждый день' : 'Ежедневные упражнения'}
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    {marathon.numberOfDays === 0 
-                      ? 'Одинаковый набор упражнений каждый день'
-                      : 'Новые упражнения каждый день'
-                    }
-                  </p>
-                </div>
-              </div>
-            </div>
+                <div className="border-t pt-6">
+                  <div className="flex items-baseline justify-between mb-4">
+                    <div>
+                      {card.price !== null ? (
+                        <>
+                          <span className="text-4xl font-bold text-gray-900">{card.price} ₽</span>
+                          <span className="text-gray-600 ml-2">{card.priceLabel}</span>
+                        </>
+                      ) : card.id !== 'premium' && (
+                        <span className="text-4xl font-bold text-green-600">Бесплатно</span>
+                      )}
+                    </div>
+                  </div>
 
-            <div className="border-t pt-6">
-              <div className="flex items-baseline justify-between mb-4">
-                <div>
-                  {marathon.isPaid ? (
-                    <>
-                      <span className="text-4xl font-bold text-gray-900">{marathon.cost} ₽</span>
-                      <span className="text-gray-600 ml-2">разовый платеж</span>
-                    </>
-                  ) : (
-                    <span className="text-4xl font-bold text-green-600">Бесплатно</span>
+                  <button
+                    onClick={() => handleCardAction(card)}
+                    disabled={purchaseLoading === card.id}
+                    className={`w-full bg-gradient-to-r ${card.buttonGradient} text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {purchaseLoading === card.id ? 'Обработка...' : card.buttonText}
+                  </button>
+
+                  {(card.id === 'premium' || ('isPaidMarathon' in card && card.isPaidMarathon)) && (
+                    <p className="text-xs text-gray-500 text-center mt-3">
+                      Безопасная оплата через Альфа-Банк
+                    </p>
                   )}
                 </div>
               </div>
-
-              <button
-                onClick={() => handleMarathonAction(marathon)}
-                disabled={purchaseLoading === marathon._id}
-                className={`w-full ${
-                  marathon.isPaid
-                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700'
-                    : 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700'
-                } text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                {purchaseLoading === marathon._id
-                  ? 'Обработка...'
-                  : marathon.isPaid
-                  ? `Оплатить ${marathon.cost} ₽`
-                  : 'Присоединиться бесплатно'
-                }
-              </button>
-
-              {marathon.isPaid && (
-                <p className="text-xs text-gray-500 text-center mt-3">
-                  Безопасная оплата через Альфа-Банк
-                </p>
-              )}
             </div>
-          </div>
-        </div>
-      ))}
+          </SwiperSlide>
+        ))}
+      </Swiper>
     </div>
   );
 }
