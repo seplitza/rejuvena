@@ -6,12 +6,17 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { API_ENDPOINTS } from '@/config/api';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { EffectCoverflow, Navigation, Pagination, Autoplay } from 'swiper/modules';
+import dynamic from 'next/dynamic';
+
+// Статический импорт CSS
 import 'swiper/css';
 import 'swiper/css/effect-coverflow';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+
+// Динамический импорт Swiper для избежания SSR проблем
+const Swiper = dynamic(() => import('swiper/react').then(mod => mod.Swiper), { ssr: false });
+const SwiperSlide = dynamic(() => import('swiper/react').then(mod => mod.SwiperSlide), { ssr: false });
 
 interface Marathon {
   _id: string;
@@ -29,7 +34,18 @@ export default function OffersGrid() {
   const router = useRouter();
   const [marathons, setMarathons] = useState<Marathon[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [purchaseLoading, setPurchaseLoading] = useState<string | null>(null);
+  const [swiperModules, setSwiperModules] = useState<any>(null);
+
+  // Динамическая загрузка Swiper модулей
+  useEffect(() => {
+    import('swiper/modules').then((modules) => {
+      setSwiperModules(modules);
+    }).catch(err => {
+      console.error('Failed to load Swiper modules:', err);
+    });
+  }, []);
 
   useEffect(() => {
     fetchMarathons();
@@ -37,14 +53,24 @@ export default function OffersGrid() {
 
   const fetchMarathons = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527'}/api/marathons`);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9527';
+      console.log('Fetching marathons from:', `${apiUrl}/api/marathons`);
+      
+      const response = await fetch(`${apiUrl}/api/marathons`);
+      console.log('Response status:', response.status);
+      
       const data = await response.json();
+      console.log('Marathons data:', data);
       
       if (data.success && data.marathons) {
         setMarathons(data.marathons);
+        console.log('Loaded marathons:', data.marathons.length);
+      } else {
+        setError('Не удалось загрузить марафоны');
       }
     } catch (error) {
       console.error('Failed to fetch marathons:', error);
+      setError('Ошибка загрузки марафонов');
     } finally {
       setLoading(false);
     }
@@ -145,8 +171,28 @@ export default function OffersGrid() {
     return (
       <div className="flex justify-center items-center py-12">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <span className="ml-4 text-gray-600">Загрузка предложений...</span>
       </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6 text-center">
+        <p className="text-red-600 font-semibold">{error}</p>
+        <button 
+          onClick={fetchMarathons}
+          className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+        >
+          Попробовать снова
+        </button>
+      </div>
+    );
+  }
+
+  // Если нет марафонов, показываем только Premium
+  if (marathons.length === 0) {
+    console.warn('No marathons loaded, showing Premium only');
   }
 
   // Premium card data
@@ -215,6 +261,90 @@ export default function OffersGrid() {
       await handleMarathonAction(card.marathonData);
     }
   };
+
+  // Рендер карточки
+  const renderCard = (card: any) => (
+    <div className={`bg-white rounded-2xl shadow-2xl overflow-hidden border-2 ${card.borderColor} transition-all duration-300 h-full flex flex-col`}>
+      <div className={`bg-gradient-to-r ${card.gradient} p-6 text-white`}>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-2xl font-bold">{card.title}</h3>
+          {card.badge && (
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${card.badgeColor}`}>
+              {card.badge}
+            </span>
+          )}
+        </div>
+        <p className={card.id === 'premium' ? 'text-purple-100' : 'text-blue-100'}>
+          {card.subtitle}
+        </p>
+      </div>
+
+      <div className="p-6 flex-grow flex flex-col">
+        <div className="space-y-4 mb-6 flex-grow">
+          {card.features.map((feature: any, idx: number) => (
+            <div key={idx} className="flex items-start space-x-3">
+              <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-900">{feature.title}</h4>
+                <p className="text-sm text-gray-600">{feature.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="border-t pt-6">
+          <div className="flex items-baseline justify-between mb-4">
+            <div>
+              {card.price !== null ? (
+                <>
+                  <span className="text-4xl font-bold text-gray-900">{card.price} ₽</span>
+                  <span className="text-gray-600 ml-2">{card.priceLabel}</span>
+                </>
+              ) : card.id !== 'premium' && (
+                <span className="text-4xl font-bold text-green-600">Бесплатно</span>
+              )}
+            </div>
+          </div>
+
+          <button
+            onClick={() => handleCardAction(card)}
+            disabled={purchaseLoading === card.id}
+            className={`w-full bg-gradient-to-r ${card.buttonGradient} text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {purchaseLoading === card.id ? 'Обработка...' : card.buttonText}
+          </button>
+
+          {(card.id === 'premium' || ('isPaidMarathon' in card && card.isPaidMarathon)) && (
+            <p className="text-xs text-gray-500 text-center mt-3">
+              Безопасная оплата через Альфа-Банк
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Если Swiper модули не загрузились, показываем Grid
+  if (!swiperModules || !Swiper || !SwiperSlide) {
+    console.log('Swiper not loaded, using grid layout');
+    return (
+      <div className="mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {allCards.map((card) => (
+            <div key={card.id}>
+              {renderCard(card)}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const { EffectCoverflow, Navigation, Pagination, Autoplay } = swiperModules;
 
   return (
     <div className="mb-6 offers-slider-container">
@@ -287,68 +417,7 @@ export default function OffersGrid() {
       >
         {allCards.map((card) => (
           <SwiperSlide key={card.id} style={{ width: '350px', maxWidth: '90vw' }}>
-            <div className={`bg-white rounded-2xl shadow-2xl overflow-hidden border-2 ${card.borderColor} transition-all duration-300 h-full flex flex-col`}>
-              <div className={`bg-gradient-to-r ${card.gradient} p-6 text-white`}>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-2xl font-bold">{card.title}</h3>
-                  {card.badge && (
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${card.badgeColor}`}>
-                      {card.badge}
-                    </span>
-                  )}
-                </div>
-                <p className={card.id === 'premium' ? 'text-purple-100' : 'text-blue-100'}>
-                  {card.subtitle}
-                </p>
-              </div>
-
-              <div className="p-6 flex-grow flex flex-col">
-                <div className="space-y-4 mb-6 flex-grow">
-                  {card.features.map((feature, idx) => (
-                    <div key={idx} className="flex items-start space-x-3">
-                      <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-900">{feature.title}</h4>
-                        <p className="text-sm text-gray-600">{feature.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="border-t pt-6">
-                  <div className="flex items-baseline justify-between mb-4">
-                    <div>
-                      {card.price !== null ? (
-                        <>
-                          <span className="text-4xl font-bold text-gray-900">{card.price} ₽</span>
-                          <span className="text-gray-600 ml-2">{card.priceLabel}</span>
-                        </>
-                      ) : card.id !== 'premium' && (
-                        <span className="text-4xl font-bold text-green-600">Бесплатно</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => handleCardAction(card)}
-                    disabled={purchaseLoading === card.id}
-                    className={`w-full bg-gradient-to-r ${card.buttonGradient} text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    {purchaseLoading === card.id ? 'Обработка...' : card.buttonText}
-                  </button>
-
-                  {(card.id === 'premium' || ('isPaidMarathon' in card && card.isPaidMarathon)) && (
-                    <p className="text-xs text-gray-500 text-center mt-3">
-                      Безопасная оплата через Альфа-Банк
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
+            {renderCard(card)}
           </SwiperSlide>
         ))}
       </Swiper>
