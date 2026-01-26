@@ -5,6 +5,7 @@ import { logout } from '../store/modules/auth/slice';
 import { AuthTokenManager, request } from '../api';
 import * as endpoints from '../api/endpoints';
 import LanguageSelector from '../components/common/LanguageSelector';
+import OffersGrid from "../components/OffersGrid";
 import PremiumPlanCard from '../components/payment/PremiumPlanCard';
 
 interface Payment {
@@ -133,7 +134,7 @@ const DashboardPage: React.FC = () => {
           </div>
         ) : (
           <div className="mb-6">
-            <PremiumPlanCard />
+            <OffersGrid />
           </div>
         )}
 
