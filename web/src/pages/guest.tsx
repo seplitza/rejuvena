@@ -11,10 +11,13 @@ const GuestPage: React.FC = () => {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
+    // Только перенаправляем если это НАСТОЯЩИЙ пользователь (не гость)
     if (isAuthenticated && user && user.email && !user.email.includes('@guest')) {
       router.push('/dashboard');
       return;
     }
+    
+    // Автоматический гостевой логин если совсем не авторизован
     if (!isAuthenticated) {
       dispatch(guestUserLogin());
     }
@@ -22,29 +25,79 @@ const GuestPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Header */}
       <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-        <div className="max-w-7xl mx-auto px-4 py-        <div className="max-w-7xl-3xl f        <div className="max-w-7xl mx-aut�бинет</h1>
-          <div className="          <div className="          <div className="          <            <div className="          <div className="        ss          <div className="          <div className="          <div cg-          <div className="          <div classNmd">�          <div className="        >
-          <div className=ader>          <div className=ader>7xl mx-          <div className=ader>          <div className=ader>7xl mx-       fr          <div cpink-50 rounded-lg shadow p-6 mb-6 border border-purple-100">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Добро пожаловать! 👋</h2>
-          <p className="text-gray-600 mb-4">Вы просматриваете сайт в гостевом режиме. <button onClick={() =          <p className="text-gray-600 e="te          <p className="text-gray-600 mb-4">Вы просматриваете сайт в гостевом режиме. <button onClick={() =          <p className="text-gray-600 e="te         800 font-semibold underline">зарегистрируйтесь</button>, чтобы получить полный доступ.</p>
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-900">
+            Личный кабинет
+          </h1>
+          <div className="flex items-center gap-4">
+            <LanguageSelector />
+            <button
+              onClick={() => router.push('/auth/login')}
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+            >
+              Вход
+            </button>
+          </div>
         </div>
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">Наши предложения ✨</h2>
-          <OffersGrid />
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        {/* Welcome Section */}
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+            Добро пожаловать, Гость!
+          </h2>
+          <p className="text-gray-600">
+            Email: Не указан
+          </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-          <button onClick={() => router.push('/exercises')} className="p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-left">
+
+        {/* Offers Grid - Premium + Marathons */}
+        <OffersGrid />
+
+        {/* Shortcuts */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <button
+            onClick={() => router.push('/exercises')}
+            className="p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-left"
+          >
             <div className="text-4xl mb-2">🎯</div>
             <h3 className="font-semibold text-gray-900 mb-1">Упражнения</h3>
             <p className="text-sm text-gray-600">Просмотр доступных упражнений</p>
           </button>
-          <button onClick={() => router.push('/marathons')} className="p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-left">
-            <div className="text-4xl mb-2">🏃</div>
-            <h3 className="font-semibold text-gray-900 mb-1">Марафоны</h3>
-            <p className="text-sm text-gray-600">Присоединяйтесь к марафонам</p>
+
+          <button
+            onClick={() => router.push('/photo-diary')}
+            className="p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-left"
+          >
+            <div className="text-4xl mb-2">📸</div>
+            <h3 className="font-semibold text-gray-900 mb-1">Фото-дневник</h3>
+            <p className="text-sm text-gray-600">Отслеживайте свой прогресс</p>
           </button>
-          <button onClick={() => router.push('/auth/signup')} className="p-6 bg-gradient-to-br from-purple-500          <button onClick={() => router.push('/auth/signup')} className="p-6 bg-grrm          <button onClick={() => router.push('/auth/signup')} className="p-6 bg-gradient-to-br from-purple-500          <button onClick={() => rouц          <button onClick={() => router.push('/auth/pl          <button onClick={() => router.push('/auth/signup')} className="p-6 bg-gradi     </div>
+
+          <button
+            onClick={() => router.push('/profile/settings')}
+            className="p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-left"
+          >
+            <div className="text-4xl mb-2">👤</div>
+            <h3 className="font-semibold text-gray-900 mb-1">Профиль</h3>
+            <p className="text-sm text-gray-600">Настройки аккаунта</p>
+          </button>
+
+          <button
+            onClick={() => router.push('/auth/login')}
+            className="p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-left border-2 border-purple-300"
+          >
+            <div className="text-4xl mb-2">🔐</div>
+            <h3 className="font-semibold text-purple-600 mb-1">Войти</h3>
+            <p className="text-sm text-gray-600">Получить полный доступ</p>
+          </button>
+        </div>
+
+        {/* Гость не видит активность */}
       </main>
     </div>
   );
