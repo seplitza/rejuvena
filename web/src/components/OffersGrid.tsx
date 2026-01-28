@@ -182,7 +182,9 @@ export default function OffersGrid() {
       { title: 'Полное видео-инструкция', description: 'Детальная демонстрация каждого упражнения' },
       { title: 'Доступ на 1 месяц', description: '30 дней автоматического доступа' },
       { title: 'Все категории упражнений', description: '100+ видео, лицо, шея, тело + другое' }
-    ]
+    ],
+    isEnrolled: false,
+    enrollmentStatus: undefined
   };
 
   // All slides: Premium + Marathons
@@ -445,7 +447,7 @@ export default function OffersGrid() {
               >
                 {purchaseLoading === currentCard.id 
                   ? 'Обработка...' 
-                  : currentCard.isEnrolled 
+                  : currentCard.type === 'marathon' && currentCard.isEnrolled
                     ? 'Перейти к марафону →'
                     : currentCard.price !== null 
                       ? `Оплатить ${currentCard.price} ₽` 
