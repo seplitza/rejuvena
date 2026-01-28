@@ -14,35 +14,11 @@ interface Payment {
   status: string;
   createdAt: string;
   metadata?: {
-    type?: 'premium' | 'marathon' | 'exercise';
     planType?: string;
     duration?: number;
-    marathonId?: string;
-    marathonName?: string;
-    exerciseId?: string;
     exerciseName?: string;
   };
 }
-
-// Функция форматирования названия продукта
-const formatProductName = (payment: Payment): string => {
-  const meta = payment.metadata;
-  if (!meta) return 'Покупка';
-  
-  if (meta.type === 'premium' || meta.planType === 'premium') {
-    return 'Покупка: Премиум доступ';
-  }
-  
-  if (meta.type === 'marathon' && meta.marathonName) {
-    return `Покупка: ${meta.marathonName}`;
-  }
-  
-  if (meta.type === 'exercise' && meta.exerciseName) {
-    return `Покупка: ${meta.exerciseName}`;
-  }
-  
-  return 'Покупка';
-};
 
 const DashboardPage: React.FC = () => {
   const router = useRouter();
@@ -226,7 +202,11 @@ const DashboardPage: React.FC = () => {
                          payment.status === 'failed' ? 'Оплата не прошла' : 'Ожидание оплаты'}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {formatProductName(payment)}
+                        {payment.metadata?.planType === 'premium' 
+                          ? `Премиум доступ на ${payment.metadata.duration} дней`
+                          : payment.metadata?.exerciseName
+                            ? `Покупка: ${payment.metadata.exerciseName}`
+                            : 'Покупка'}
                       </p>
                     </div>
                   </div>

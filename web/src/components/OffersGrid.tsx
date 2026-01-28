@@ -15,6 +15,8 @@ interface Marathon {
   cost: number;
   isPaid: boolean;
   startDate: string;
+  userEnrolled?: boolean;
+  userEnrollmentStatus?: 'pending' | 'active' | 'completed' | 'cancelled';
 }
 
 export default function OffersGrid() {
@@ -36,7 +38,14 @@ export default function OffersGrid() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9527';
       console.log('🔍 Fetching marathons from:', `${apiUrl}/api/marathons`);
       
-      const response = await fetch(`${apiUrl}/api/marathons`);
+      // Добавляем токен для получения статуса записи пользователя
+      const headers: any = {};
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(`${apiUrl}/api/marathons`, { headers });
       console.log('📡 Response status:', response.status);
       
       if (!response.ok) {
@@ -100,6 +109,13 @@ export default function OffersGrid() {
   };
 
   const handleMarathonAction = async (marathon: Marathon) => {
+    // Если марафон уже оплачен - переходим на страницу марафона
+    if (marathon.userEnrolled) {
+      router.push(`/marathons/${marathon._id}`);
+      return;
+    }
+
+    // Если марафон платный - создаем платеж
     if (marathon.isPaid) {
       setPurchaseLoading(marathon._id);
       
@@ -138,6 +154,7 @@ export default function OffersGrid() {
         setPurchaseLoading(null);
       }
     } else {
+      // Бесплатный марафон - сразу переходим
       router.push(`/marathons/${marathon._id}`);
     }
   };
@@ -176,8 +193,8 @@ export default function OffersGrid() {
       type: 'marathon',
       title: m.title,
       subtitle: m.description || 'Марафон омоложения',
-      badge: !m.isPaid ? '🎁 Бесплатно' : null,
-      badgeColor: 'bg-green-400 text-green-900',
+      badge: m.userEnrolled ? '✓ Оплачено' : (!m.isPaid ? '🎁 Бесплатно' : null),
+      badgeColor: m.userEnrolled ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-green-400 text-green-900',
       gradient: { from: '#2563eb', to: '#06b6d4' },
       borderColor: 'border-blue-200 hover:border-blue-400',
       price: m.isPaid ? m.cost : null,
@@ -199,7 +216,9 @@ export default function OffersGrid() {
             : 'Новые упражнения каждый день'
         }
       ],
-      marathonData: m
+      marathonData: m,
+      isEnrolled: m.userEnrolled,
+      enrollmentStatus: m.userEnrollmentStatus
     }))
   ];
 
@@ -426,9 +445,11 @@ export default function OffersGrid() {
               >
                 {purchaseLoading === currentCard.id 
                   ? 'Обработка...' 
-                  : currentCard.price !== null 
-                    ? `Оплатить ${currentCard.price} ₽` 
-                    : 'Присоединиться бесплатно'
+                  : currentCard.isEnrolled 
+                    ? 'Перейти к марафону →'
+                    : currentCard.price !== null 
+                      ? `Оплатить ${currentCard.price} ₽` 
+                      : 'Присоединиться бесплатно'
                 }
               </button>
 

@@ -169,29 +169,34 @@ export default function PaymentSuccess() {
                 </div>
               )}
 
-              <div className="bg-purple-50 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-purple-900 mb-2">✨ Теперь вам доступны:</h3>
-                <ul className="space-y-2 text-sm text-purple-800">
-                  <li className="flex items-start">
-                    <span className="mr-2">✓</span>
-                    <span>Полные видео-инструкции всех упражнений</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="mr-2">✓</span>
-                    <span>Детальные описания техник</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="mr-2">✓</span>
-                    <span>Доступ на {payment?.metadata?.duration || 30} дней</span>
-                  </li>
-                </ul>
-              </div>
+              {/* Показываем детали только для премиума, не для марафонов/упражнений */}
+              {payment?.metadata?.type !== 'marathon' && payment?.metadata?.type !== 'exercise' && (
+                <div className="bg-purple-50 rounded-lg p-4 mb-6">
+                  <h3 className="font-semibold text-purple-900 mb-2">✨ Теперь вам доступны:</h3>
+                  <ul className="space-y-2 text-sm text-purple-800">
+                    <li className="flex items-start">
+                      <span className="mr-2">✓</span>
+                      <span>Полные видео-инструкции всех упражнений</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="mr-2">✓</span>
+                      <span>Детальные описания техник</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="mr-2">✓</span>
+                      <span>Доступ на {payment?.metadata?.duration || 30} дней</span>
+                    </li>
+                  </ul>
+                </div>
+              )}
 
               <Link 
-                href="/exercises"
+                href={payment?.metadata?.type === 'marathon' ? '/dashboard' : '/exercises'}
                 className="block w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center font-semibold py-3 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl"
               >
-                Перейти к упражнениям
+                {payment?.metadata?.type === 'marathon' || payment?.metadata?.type === 'exercise' 
+                  ? 'Вернуться в личный кабинет' 
+                  : 'Перейти к упражнениям'}
               </Link>
             </div>
           </div>

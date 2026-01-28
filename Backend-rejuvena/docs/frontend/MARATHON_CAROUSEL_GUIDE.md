@@ -1,4 +1,4 @@
-# Marathon Carousel Integration Guide
+Ghbikj dhtvz gthtdtcnb jgkfne d ,jtdjq ht;bv# Marathon Carousel Integration Guide
 
 ## Интеграция карусели марафонов на главную страницу ЛК
 
