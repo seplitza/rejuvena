@@ -22,6 +22,8 @@ export default function MarathonStartPage() {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
   const [marathon, setMarathon] = useState<Marathon | null>(null);
   const [loading, setLoading] = useState(true);
+  const [timeUntilStart, setTimeUntilStart] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [hasStarted, setHasStarted] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -53,6 +55,35 @@ export default function MarathonStartPage() {
       }
     };
 
+
+  // Countdown timer
+  useEffect(() => {
+    if (!marathon) return;
+
+    const updateCountdown = () => {
+      const now = new Date().getTime();
+      const startDate = new Date(marathon.startDate).getTime();
+      const distance = startDate - now;
+
+      if (distance < 0) {
+        setHasStarted(true);
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      setTimeUntilStart({ days, hours, minutes, seconds });
+      setHasStarted(false);
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+
+    return () => clearInterval(interval);
+  }, [marathon]);
     loadMarathon();
   }, [id, isAuthenticated, router]);
 
@@ -153,17 +184,53 @@ export default function MarathonStartPage() {
           </div>
         )}
 
-        {/* Start Button */}
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl shadow-2xl p-8 text-center">
-          <h3 className="text-2xl font-bold text-white mb-4">Готовы начать?</h3>
-          <p className="text-purple-100 mb-6">Начните свой путь к результатам прямо сейчас!</p>
-          <Link
-            href={`/marathons/${id}/day/1`}
-            className="inline-block bg-white text-purple-600 font-bold text-lg px-8 py-4 rounded-lg hover:bg-gray-100 transition-all duration-200 shadow-lg hover:shadow-xl"
-          >
-            🚀 Начать День 1
-          </Link>
-        </div>
+        {/* Countdown or Start Button */}
+        {!hasStarted ? (
+          <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl shadow-2xl p-8">
+            <h3 className="text-2xl font-bold text-white mb-4 text-center">⏰ Марафон начнется</h3>
+            <p className="text-orange-100 mb-6 text-center">
+              Старт: {new Date(marathon.startDate).toLocaleDateString('ru-RU', { 
+                day: 'numeric', 
+                month: 'long', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </p>
+            <div className="grid grid-cols-4 gap-4 max-w-2xl mx-auto">
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4 text-center">
+                <div className="text-4xl font-bold text-white">{timeUntilStart.days}</div>
+                <div className="text-sm text-orange-100 mt-1">дней</div>
+              </div>
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4 text-center">
+                <div className="text-4xl font-bold text-white">{timeUntilStart.hours}</div>
+                <div className="text-sm text-orange-100 mt-1">часов</div>
+              </div>
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4 text-center">
+                <div className="text-4xl font-bold text-white">{timeUntilStart.minutes}</div>
+                <div className="text-sm text-orange-100 mt-1">минут</div>
+              </div>
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4 text-center">
+                <div className="text-4xl font-bold text-white">{timeUntilStart.seconds}</div>
+                <div className="text-sm text-orange-100 mt-1">секунд</div>
+              </div>
+            </div>
+            <p className="text-center text-white mt-6 text-sm">
+              📧 Мы отправим вам напоминание когда марафон начнется
+            </p>
+          </div>
+        ) : (
+          <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl shadow-2xl p-8 text-center">
+            <h3 className="text-2xl font-bold text-white mb-4">Готовы начать?</h3>
+            <p className="text-purple-100 mb-6">Начните свой путь к результатам прямо сейчас!</p>
+            <Link
+              href={`/marathons/${id}/day/1`}
+              className="inline-block bg-white text-purple-600 font-bold text-lg px-8 py-4 rounded-lg hover:bg-gray-100 transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              🚀 Начать День 1
+            </Link>
+          </div>
+        )}
       </main>
     </div>
   );
