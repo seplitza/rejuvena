@@ -192,7 +192,7 @@ export default function OffersGrid() {
   // All slides: Premium + Marathons
   const allSlides = [
     ...(user?.isPremium ? [] : [premiumCard]),
-    ...marathons.map(m => ({
+    ...marathons.filter(m => !m.userEnrolled).map(m => ({
       id: m._id,
       type: 'marathon',
       title: m.title,
