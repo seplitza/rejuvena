@@ -29,6 +29,7 @@ interface Marathon {
   title: string;
   description?: string;
   numberOfDays: number;
+  startDate: string;
   userEnrolled?: boolean;
   userEnrollmentStatus?: 'pending' | 'active' | 'completed' | 'cancelled';
 }
@@ -59,6 +60,7 @@ const DashboardPage: React.FC = () => {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [recentPayments, setRecentPayments] = useState<Payment[]>([]);
   const [enrolledMarathons, setEnrolledMarathons] = useState<Marathon[]>([]);
+  const [marathonCountdowns, setMarathonCountdowns] = useState<Record<string, { days: number; hours: number; minutes: number; seconds: number; hasStarted: boolean }>>({});
 
   useEffect(() => {
     // Redirect to login if not authenticated
