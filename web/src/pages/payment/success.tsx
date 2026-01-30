@@ -191,11 +191,11 @@ export default function PaymentSuccess() {
               )}
 
               <Link 
-                href={payment?.metadata?.type === 'marathon' ? '/dashboard' : '/exercises'}
+                href={payment?.metadata?.type === 'marathon' && payment?.metadata?.marathonId ? `/marathons/${payment.metadata.marathonId}/start` : '/exercises'}
                 className="block w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center font-semibold py-3 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl"
               >
                 {payment?.metadata?.type === 'marathon' || payment?.metadata?.type === 'exercise' 
-                  ? 'Вернуться в личный кабинет' 
+                  ? 'Перейти в марафон' 
                   : 'Перейти к упражнениям'}
               </Link>
             </div>
