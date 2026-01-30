@@ -55,6 +55,8 @@ export default function MarathonStartPage() {
       }
     };
 
+    loadMarathon();
+  }, [id, isAuthenticated, router]);
 
   // Countdown timer
   useEffect(() => {
@@ -84,8 +86,6 @@ export default function MarathonStartPage() {
 
     return () => clearInterval(interval);
   }, [marathon]);
-    loadMarathon();
-  }, [id, isAuthenticated, router]);
 
   if (loading) {
     return (
