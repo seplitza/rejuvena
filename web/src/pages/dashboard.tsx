@@ -136,7 +136,7 @@ const DashboardPage: React.FC = () => {
         </div>
 
         {/* Premium Status or Plan Card */}
-        {user?.isPremium ? (
+        {user?.isPremium && (
           <div className="mb-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg shadow-lg p-6 text-white">
             <div className="flex items-center justify-between">
               <div>
@@ -150,17 +150,18 @@ const DashboardPage: React.FC = () => {
                   </p>
                 )}
                 <p className="text-purple-100 mt-1">
-                  🎯 Полный доступ ко всем упражнениям и материалам
+                  🎯 Разблокирован доступ ко всем упражнениям
                 </p>
               </div>
               <div className="text-6xl">👑</div>
             </div>
           </div>
-        ) : (
-          <div className="mb-6">
-            <OffersGrid />
-          </div>
         )}
+        
+        {/* Marathons and Offers - Always visible */}
+        <div className="mb-6">
+          <OffersGrid />
+        </div>
 
         {/* Quick Actions with colorful icons like burger menu */}
         <div className="bg-white rounded-lg shadow p-6">
