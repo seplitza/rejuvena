@@ -277,7 +277,11 @@ const DashboardPage: React.FC = () => {
           ) : (
             <div className="space-y-3">
               {recentPayments.map((payment) => (
-                <div key={payment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div 
+                  key={payment.id} 
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                  onClick={() => payment.status === 'succeeded' && router.push(`/payment/success?orderId=${payment.id}`)}
+                >
                   <div className="flex items-center space-x-3">
                     <div className="text-2xl">
                       {payment.status === 'succeeded' ? '✅' : 
