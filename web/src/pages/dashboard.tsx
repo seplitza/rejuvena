@@ -115,6 +115,38 @@ const DashboardPage: React.FC = () => {
     }
   }, [isAuthenticated, user]);
 
+  // Countdown timer for marathons
+  useEffect(() => {
+    if (enrolledMarathons.length === 0) return;
+
+    const updateCountdowns = () => {
+      const newCountdowns: Record<string, { days: number; hours: number; minutes: number; seconds: number; hasStarted: boolean }> = {};
+      
+      enrolledMarathons.forEach((marathon) => {
+        const now = new Date().getTime();
+        const startDate = new Date(marathon.startDate).getTime();
+        const distance = startDate - now;
+
+        if (distance < 0) {
+          newCountdowns[marathon._id] = { days: 0, hours: 0, minutes: 0, seconds: 0, hasStarted: true };
+        } else {
+          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+          newCountdowns[marathon._id] = { days, hours, minutes, seconds, hasStarted: false };
+        }
+      });
+
+      setMarathonCountdowns(newCountdowns);
+    };
+
+    updateCountdowns();
+    const interval = setInterval(updateCountdowns, 1000);
+
+    return () => clearInterval(interval);
+  }, [enrolledMarathons]);
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -193,34 +225,84 @@ const DashboardPage: React.FC = () => {
           </div>
         )}
 
-        {/* Enrolled Marathons Banner */}
+        {/* Enrolled Marathons Banner - Beautiful cards like Premium */}
         {enrolledMarathons.length > 0 && (
           <div className="mb-6 space-y-4">
-            {enrolledMarathons.map((marathon) => (
-              <div 
-                key={marathon._id}
-                className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg shadow-lg p-6 text-white cursor-pointer hover:shadow-xl transition-shadow"
-                onClick={() => router.push(`/marathons/${marathon._id}/start`)}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-xl font-bold">🎯 {marathon.title}</h3>
-                      <span className="text-xs bg-white/20 px-2 py-1 rounded">Оплачено</span>
+            {enrolledMarathons.map((marathon) => {
+              const countdown = marathonCountdowns[marathon._id];
+              const hasStarted = countdown?.hasStarted ?? true;
+
+              return (
+                <div 
+                  key={marathon._id}
+                  className="bg-gradient-to-r from-orange-500 to-pink-500 rounded-lg shadow-lg p-6 text-white cursor-pointer hover:shadow-xl transition-shadow"
+                  onClick={() => router.push(`/marathons/${marathon._id}/start`)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <h3 className="text-2xl font-bold">🎯 {marathon.title}</h3>
+                        <span className="text-xs bg-white/30 px-3 py-1 rounded-full font-semibold">Марафон оплачен</span>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <p className="text-orange-100 flex items-center gap-2">
+                          <span>📅</span>
+                          <span>Длительность: {marathon.numberOfDays} дней</span>
+                        </p>
+                        <p className="text-orange-100 flex items-center gap-2">
+                          <span>🗓️</span>
+                          <span>Старт: {new Date(marathon.startDate).toLocaleDateString('ru-RU', { 
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric'
+                          })}</span>
+                        </p>
+                        
+                        {!hasStarted && countdown && (
+                          <div className="mt-4 bg-white/20 rounded-lg p-4 backdrop-blur-sm">
+                            <p className="text-sm font-semibold mb-2">⏰ До старта марафона:</p>
+                            <div className="flex gap-3">
+                              <div className="text-center">
+                                <div className="text-3xl font-bold">{countdown.days}</div>
+                                <div className="text-xs text-orange-200">дней</div>
+                              </div>
+                              <div className="text-3xl font-bold">:</div>
+                              <div className="text-center">
+                                <div className="text-3xl font-bold">{String(countdown.hours).padStart(2, '0')}</div>
+                                <div className="text-xs text-orange-200">часов</div>
+                              </div>
+                              <div className="text-3xl font-bold">:</div>
+                              <div className="text-center">
+                                <div className="text-3xl font-bold">{String(countdown.minutes).padStart(2, '0')}</div>
+                                <div className="text-xs text-orange-200">минут</div>
+                              </div>
+                              <div className="text-3xl font-bold">:</div>
+                              <div className="text-center">
+                                <div className="text-3xl font-bold">{String(countdown.seconds).padStart(2, '0')}</div>
+                                <div className="text-xs text-orange-200">секунд</div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {hasStarted && (
+                          <div className="mt-2 text-orange-100">
+                            ✨ Разблокирован доступ ко всем упражнениям марафона
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    {marathon.description && (
-                      <p className="text-blue-100 mb-2">{marathon.description}</p>
-                    )}
-                    <p className="text-blue-100">
-                      📅 Длительность: {marathon.numberOfDays} дней
-                    </p>
+                    <div className="ml-6 flex-shrink-0">
+                      <div className="text-7xl mb-2">🏃</div>
+                      <button className="bg-white text-orange-600 font-bold px-6 py-3 rounded-lg hover:bg-orange-50 transition-colors whitespace-nowrap">
+                        {hasStarted ? 'Начать марафон →' : 'Подробнее →'}
+                      </button>
+                    </div>
                   </div>
-                  <button className="ml-4 bg-white text-blue-600 font-semibold px-6 py-3 rounded-lg hover:bg-blue-50 transition-colors flex-shrink-0">
-                    Перейти в марафон →
-                  </button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
         
