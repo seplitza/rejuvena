@@ -219,7 +219,7 @@ export default function PaymentSuccess() {
                 }
                 className="block w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center font-semibold py-3 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl"
               >
-                {payment?.metadata?.type === 'marathon' || payment?.metadata?.planType === 'marathon' || payment?.metadata?.type === 'exercise' 
+                {payment?.metadata?.type === 'marathon' || payment?.metadata?.planType === 'marathon' 
                   ? 'Перейти в марафон' 
                   : 'Перейти к упражнениям'}
               </Link>
