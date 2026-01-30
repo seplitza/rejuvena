@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
+import { useAppSelector } from '@/store/hooks';
 import { API_ENDPOINTS } from '@/config/api';
 
 interface Marathon {
@@ -21,6 +22,7 @@ interface Marathon {
 
 export default function OffersGrid() {
   const router = useRouter();
+  const { user } = useAppSelector((state) => state.auth);
   const [marathons, setMarathons] = useState<Marathon[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -189,7 +191,7 @@ export default function OffersGrid() {
 
   // All slides: Premium + Marathons
   const allSlides = [
-    premiumCard,
+    ...(user?.isPremium ? [] : [premiumCard]),
     ...marathons.map(m => ({
       id: m._id,
       type: 'marathon',
