@@ -24,6 +24,15 @@ interface Payment {
   };
 }
 
+interface Marathon {
+  _id: string;
+  title: string;
+  description?: string;
+  numberOfDays: number;
+  userEnrolled?: boolean;
+  userEnrollmentStatus?: 'pending' | 'active' | 'completed' | 'cancelled';
+}
+
 // Функция форматирования названия продукта
 const formatProductName = (payment: Payment): string => {
   const meta = payment.metadata;
@@ -49,6 +58,7 @@ const DashboardPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [recentPayments, setRecentPayments] = useState<Payment[]>([]);
+  const [enrolledMarathons, setEnrolledMarathons] = useState<Marathon[]>([]);
 
   useEffect(() => {
     // Redirect to login if not authenticated
@@ -69,6 +79,28 @@ const DashboardPage: React.FC = () => {
       }
     };
     
+    const loadMarathons = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527';
+        const token = localStorage.getItem('auth_token');
+        if (!token) return;
+        
+        const response = await fetch(`${apiUrl}/api/marathons`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.marathons) {
+            const enrolled = data.marathons.filter((m: Marathon) => m.userEnrolled);
+            setEnrolledMarathons(enrolled);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load marathons:', error);
+      }
+    };
+    
     if (isAuthenticated) {
       console.log('🔍 Dashboard user data:', {
         isPremium: user?.isPremium,
@@ -77,6 +109,7 @@ const DashboardPage: React.FC = () => {
         fullUser: user
       });
       loadPayments();
+      loadMarathons();
     }
   }, [isAuthenticated, user]);
 
@@ -155,6 +188,37 @@ const DashboardPage: React.FC = () => {
               </div>
               <div className="text-6xl">👑</div>
             </div>
+          </div>
+        )}
+
+        {/* Enrolled Marathons Banner */}
+        {enrolledMarathons.length > 0 && (
+          <div className="mb-6 space-y-4">
+            {enrolledMarathons.map((marathon) => (
+              <div 
+                key={marathon._id}
+                className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg shadow-lg p-6 text-white cursor-pointer hover:shadow-xl transition-shadow"
+                onClick={() => router.push(`/marathons/${marathon._id}/start`)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="text-xl font-bold">🎯 {marathon.title}</h3>
+                      <span className="text-xs bg-white/20 px-2 py-1 rounded">Оплачено</span>
+                    </div>
+                    {marathon.description && (
+                      <p className="text-blue-100 mb-2">{marathon.description}</p>
+                    )}
+                    <p className="text-blue-100">
+                      📅 Длительность: {marathon.numberOfDays} дней
+                    </p>
+                  </div>
+                  <button className="ml-4 bg-white text-blue-600 font-semibold px-6 py-3 rounded-lg hover:bg-blue-50 transition-colors flex-shrink-0">
+                    Перейти в марафон →
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         )}
         

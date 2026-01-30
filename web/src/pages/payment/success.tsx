@@ -190,6 +190,27 @@ export default function PaymentSuccess() {
                 </div>
               )}
 
+              {/* Детали для марафона */}
+              {payment?.metadata?.type === 'marathon' && (
+                <div className="bg-green-50 rounded-lg p-4 mb-6">
+                  <h3 className="font-semibold text-green-900 mb-2">🎯 Марафон "{payment?.metadata?.marathonName}"</h3>
+                  <ul className="space-y-2 text-sm text-green-800">
+                    <li className="flex items-start">
+                      <span className="mr-2">✓</span>
+                      <span>Доступ на {payment?.metadata?.marathonDays || payment?.metadata?.duration || 30} дней</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="mr-2">✓</span>
+                      <span>Ежедневные упражнения и задания</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="mr-2">✓</span>
+                      <span>Персональный трекинг прогресса</span>
+                    </li>
+                  </ul>
+                </div>
+              )}
+
               <Link 
                 href={payment?.metadata?.type === 'marathon' && payment?.metadata?.marathonId ? `/marathons/${payment.metadata.marathonId}/start` : '/exercises'}
                 className="block w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center font-semibold py-3 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl"
