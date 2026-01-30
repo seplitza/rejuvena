@@ -1,7 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  ...(process.env.NODE_ENV === 'production' && { output: 'export' }), // Enable static export for GitHub Pages only in production
+  ...(process.env.NODE_ENV === 'production' && { output: 'export' }), // Enable static export for GitHub Pages only in production  
+  generateBuildId: async () => {
+    return `build-${Date.now()}`
+  },
   images: {
     unoptimized: true, // GitHub Pages doesn't support Next.js Image Optimization
     domains: ['faceliftnaturally.me'],
