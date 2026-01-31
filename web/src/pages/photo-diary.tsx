@@ -175,7 +175,7 @@ const PhotoDiaryPage: React.FC = () => {
   // Сохранение оригинала на сервер (100% качество, хранится 1 месяц)
   // Отметить первую загрузку фото в дневник
   const markFirstPhotoDiaryUpload = async () => {
-    if (!isAuthenticated || !user?.id) return;
+    if (!isAuthenticated || !user?._id) return;
     
     try {
       const token = localStorage.getItem('auth_token');
@@ -203,7 +203,7 @@ const PhotoDiaryPage: React.FC = () => {
   };
 
   const saveOriginalToServer = async (imageDataUrl: string, type: 'before' | 'after', photoKey: keyof PhotoSet) => {
-    if (!user?.id) {
+    if (!user?._id) {
       console.log('⚠️ No user ID, skipping metadata save');
       return;
     }
@@ -298,7 +298,7 @@ const PhotoDiaryPage: React.FC = () => {
         },
         body: JSON.stringify({
           image: base64Data,
-          userId: user.id,
+          userId: user._id,
           period: type,
           photoType: photoKey,
         }),
@@ -320,9 +320,9 @@ const PhotoDiaryPage: React.FC = () => {
   // Автосохранение в localStorage при изменении данных (с сжатием)
   useEffect(() => {
     // НЕ сохраняем пока данные не загружены из localStorage
-    if (isAuthenticated && user?.id && isDataLoadedRef.current) {
-      const storageKey = `photo_diary_${user.id}`;
-      const originalsKey = `photo_diary_originals_${user.id}`;
+    if (isAuthenticated && user?._id && isDataLoadedRef.current) {
+      const storageKey = `photo_diary_${user._id}`;
+      const originalsKey = `photo_diary_originals_${user._id}`;
       try {
         // Создаём копию данных со сжатыми изображениями для localStorage
         const compressedData = {
@@ -373,7 +373,7 @@ const PhotoDiaryPage: React.FC = () => {
         localStorage.setItem(originalsKey, JSON.stringify(originalsData));
         
         // Сохраняем метаданные (даты, EXIF)
-        const metadataKey = `photo_diary_metadata_${user.id}`;
+        const metadataKey = `photo_diary_metadata_${user._id}`;
         localStorage.setItem(metadataKey, JSON.stringify(photoMetadata));
         
         console.log('💾 Photo diary auto-saved (display + originals + metadata)');
@@ -407,10 +407,10 @@ const PhotoDiaryPage: React.FC = () => {
 
   // Загрузка данных из localStorage (только один раз при монтировании)
   useEffect(() => {
-    if (user?.id && !isDataLoadedRef.current) {
-      const storageKey = `photo_diary_${user.id}`;
-      const originalsKey = `photo_diary_originals_${user.id}`;
-      const versionKey = `photo_diary_version_${user.id}`;
+    if (user?._id && !isDataLoadedRef.current) {
+      const storageKey = `photo_diary_${user._id}`;
+      const originalsKey = `photo_diary_originals_${user._id}`;
+      const versionKey = `photo_diary_version_${user._id}`;
       const CURRENT_VERSION = '2.0'; // Версия с server-side originals
       
       // Проверяем версию данных
@@ -459,7 +459,7 @@ const PhotoDiaryPage: React.FC = () => {
       }
       
       // Загружаем метаданные (даты, EXIF)
-      const metadataKey = `photo_diary_metadata_${user.id}`;
+      const metadataKey = `photo_diary_metadata_${user._id}`;
       const savedMetadata = localStorage.getItem(metadataKey);
       if (savedMetadata) {
         try {
@@ -475,7 +475,7 @@ const PhotoDiaryPage: React.FC = () => {
       isDataLoadedRef.current = true;
       console.log('✅ Data load complete, auto-save now enabled');
     }
-  }, [user?.id]);
+  }, [user?._id]);
   
   // Загрузка моделей face-api.js (только один раз)
   useEffect(() => {
@@ -663,7 +663,7 @@ const PhotoDiaryPage: React.FC = () => {
 
     try {
       // Увеличиваем счётчик загрузок (для отложенного промпта регистрации)
-      const userId = user?.id || 'guest';
+      const userId = user?._id || 'guest';
       const uploadCountKey = `rejuvena_upload_count_${userId}`;
       const currentCount = parseInt(localStorage.getItem(uploadCountKey) || '0', 10);
       localStorage.setItem(uploadCountKey, String(currentCount + 1));
@@ -897,7 +897,7 @@ const PhotoDiaryPage: React.FC = () => {
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           },
           body: JSON.stringify({
-            userId: user?.id,
+            userId: user?._id,
             period: cropImage.period,
             photoType: cropImage.photoType,
             cropX: cropArea.x,
@@ -987,7 +987,7 @@ const PhotoDiaryPage: React.FC = () => {
           rows: rowsToInclude,
           metadata: photoMetadata,
           userInfo: {
-            username: user?.email?.split('@')[0] || user?.name || 'Пользователь',
+            username: user?.email?.split('@')[0] || user?.firstName || 'Пользователь',
             realAgeBefore: data.realAgeBefore,
             realAgeAfter: data.realAgeAfter,
             weightBefore: data.weightBefore,
@@ -1008,7 +1008,7 @@ const PhotoDiaryPage: React.FC = () => {
       
       if (result.success && result.collage) {
         // Скачиваем коллаж (с поддержкой мобильных устройств)
-        const username = user?.email?.split('@')[0] || user?.name || 'user';
+        const username = user?.email?.split('@')[0] || user?.firstName || 'user';
         const dateStr = new Date().toLocaleDateString('ru-RU').replace(/\./g, '-');
         const filename = `Фотодневник_${username}_${dateStr}.jpg`;
         
@@ -1093,7 +1093,7 @@ const PhotoDiaryPage: React.FC = () => {
                 onClick={() => {
                   setShowRegistrationPrompt(false);
                   // Redirect to generate-link with prefill (UX improvement from 5ced541)
-                  const userId = user?.id || 'guest';
+                  const userId = user?._id || 'guest';
                   const username = (user as any)?.username || '';
                   router.push(`/generate-link?prefill=true&tg_user_id=${userId}&tg_username=${username}`);
                 }}
@@ -1459,8 +1459,8 @@ const PhotoDiaryPage: React.FC = () => {
                       commentBefore: '',
                       commentAfter: '',
                     });
-                    if (user?.id) {
-                      localStorage.removeItem(`photo_diary_${user.id}`);
+                    if (user?._id) {
+                      localStorage.removeItem(`photo_diary_${user._id}`);
                     }
                     alert('Все фотографии удалены');
                   }

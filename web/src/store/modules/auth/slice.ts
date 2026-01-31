@@ -5,10 +5,27 @@
 
 import { createSlice, createAction, PayloadAction } from '@reduxjs/toolkit';
 
+interface User {
+  _id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  username?: string; // Legacy field
+  telegramUsername?: string;
+  profilePicture?: string;
+  avatar?: string;
+  role: string;
+  isPremium?: boolean;
+  premiumEndDate?: string;
+  firstPhotoDiaryUpload?: string;
+  photoDiaryEndDate?: string;
+  createdAt?: string;
+}
+
 interface AuthState {
   isAuthenticated: boolean;
   token: string | null;
-  user: any | null;
+  user: User | null;
   loading: boolean;
   error: string | null;
 }
@@ -29,7 +46,7 @@ const authSlice = createSlice({
       state.token = action.payload;
       state.isAuthenticated = true;
     },
-    setUser(state, action: PayloadAction<any>) {
+    setUser(state, action: PayloadAction<User | null>) {
       state.user = action.payload;
     },
     setLoading(state, action: PayloadAction<boolean>) {
@@ -55,7 +72,7 @@ export const { setAuthToken, setUser, setLoading, setError, logout } = authSlice
 
 // Async Actions (for sagas)
 export const loginWithEmail = createAction<{ email: string; password: string }>('AUTH/LOGIN_WITH_EMAIL');
-export const signupWithEmail = createAction<{ email: string; firstName: string; lastName: string }>('AUTH/SIGNUP_WITH_EMAIL');
+export const signupWithEmail = createAction<{ email: string; firstName: string; lastName: string; telegramUsername?: string }>('AUTH/SIGNUP_WITH_EMAIL');
 export const sendResetPasswordRequest = createAction<{ email: string }>('AUTH/RESET_PASSWORD');
 export const signInWithGoogle = createAction('AUTH/SIGNIN_WITH_GOOGLE');
 export const signInWithFacebook = createAction('AUTH/SIGNIN_WITH_FACEBOOK');

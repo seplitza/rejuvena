@@ -13,6 +13,7 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [telegramUsername, setTelegramUsername] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [language, setLanguage] = useState<'ru' | 'en'>('ru'); // Русский по умолчанию
@@ -24,6 +25,8 @@ export default function Signup() {
       subtitle: 'Начните свой путь естественного омоложения',
       firstName: 'Имя',
       lastName: 'Фамилия',
+      telegramUsername: 'Telegram никнейм (опционально)',
+      telegramPlaceholder: '@username',
       email: 'Email адрес',
       agree: 'Я согласен с',
       terms: 'Условиями использования',
@@ -44,6 +47,8 @@ export default function Signup() {
       subtitle: 'Start your natural rejuvenation journey',
       firstName: 'First Name',
       lastName: 'Last Name',
+      telegramUsername: 'Telegram username (optional)',
+      telegramPlaceholder: '@username',
       email: 'Email Address',
       agree: 'I agree to the',
       terms: 'Terms and Conditions',
@@ -77,7 +82,7 @@ export default function Signup() {
       return;
     }
     
-    dispatch(signupWithEmail({ email, firstName, lastName }));
+    dispatch(signupWithEmail({ email, firstName, lastName, telegramUsername: telegramUsername.trim() || undefined }));
   };
 
   const handleGoToLogin = () => {
@@ -143,6 +148,25 @@ export default function Signup() {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                 placeholder={language === 'ru' ? 'Иванов' : 'Doe'}
               />
+            </div>
+
+            <div>
+              <label htmlFor="telegramUsername" className="block text-sm font-medium text-gray-700 mb-2">
+                {t[language].telegramUsername}
+              </label>
+              <input
+                id="telegramUsername"
+                type="text"
+                value={telegramUsername}
+                onChange={(e) => setTelegramUsername(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                placeholder={t[language].telegramPlaceholder}
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                {language === 'ru' 
+                  ? 'Укажите ваш Telegram для получения уведомлений о покупках' 
+                  : 'Enter your Telegram to receive purchase notifications'}
+              </p>
             </div>
 
             <div>

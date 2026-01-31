@@ -382,6 +382,7 @@ export default function ProfileSettings() {
               const formData = new FormData(e.currentTarget);
               const firstName = formData.get('firstName') as string;
               const lastName = formData.get('lastName') as string;
+              const telegramUsername = formData.get('telegramUsername') as string;
               
               fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/update-profile`, {
                 method: 'PUT',
@@ -389,16 +390,19 @@ export default function ProfileSettings() {
                   'Content-Type': 'application/json',
                   'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                 },
-                body: JSON.stringify({ firstName, lastName })
+                body: JSON.stringify({ firstName, lastName, telegramUsername })
               })
               .then(res => res.json())
               .then(data => {
                 // Update Redux state
-                dispatch(setUser({
-                  ...user,
-                  firstName: data.firstName,
-                  lastName: data.lastName
-                }));
+                if (user) {
+                  dispatch(setUser({
+                    ...user,
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    telegramUsername: data.telegramUsername
+                  }));
+                }
                 alert('Профиль обновлен!');
               })
               .catch(err => alert('Ошибка при обновлении профиля'));
@@ -428,6 +432,22 @@ export default function ProfileSettings() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Telegram никнейм (опционально)
+                </label>
+                <input
+                  type="text"
+                  name="telegramUsername"
+                  defaultValue={user?.telegramUsername || ''}
+                  placeholder="@username"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Укажите ваш Telegram для получения уведомлений о покупках в боте
+                </p>
               </div>
 
               <button

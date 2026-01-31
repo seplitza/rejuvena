@@ -28,6 +28,7 @@ interface SignupPayload {
   email: string;
   firstName: string;
   lastName: string;
+  telegramUsername?: string;
 }
 
 interface ResetPasswordPayload {
@@ -53,18 +54,19 @@ function* loginWithEmailSaga(action: PayloadAction<LoginPayload>): Generator<any
     if (response.user) {
       // Map unified auth user to expected format
       const userProfile = {
-        id: response.user._id || response.user.id,
-        firstName: response.user.firstName || response.user.email?.split('@')[0] || 'User',
-        lastName: response.user.lastName || '',
+        _id: response.user._id || response.user.id,
+        firstName: response.user.firstName,
+        lastName: response.user.lastName,
         fullName: response.user.firstName && response.user.lastName 
           ? `${response.user.firstName} ${response.user.lastName}` 
           : (response.user.firstName || response.user.email?.split('@')[0] || 'User'),
         email: response.user.email,
+        role: response.user.role || 'admin',
         isPremium: response.user.isPremium || false,
         premiumEndDate: response.user.premiumEndDate,
         createdAt: response.user.createdAt,
         firstPhotoDiaryUpload: response.user.firstPhotoDiaryUpload,
-        isLegacyUser: response.user.isLegacyUser || false,
+        telegramUsername: response.user.telegramUsername,
       };
 
 
@@ -84,11 +86,12 @@ function* signupWithEmailSaga(action: PayloadAction<SignupPayload>): Generator<a
     yield put(setLoading(true));
     yield put(setError(null));
     
-    const { email, firstName, lastName } = action.payload;
+    const { email, firstName, lastName, telegramUsername } = action.payload;
     yield call(request.post, endpoints.register, {
       email,
       firstName,
       lastName,
+      telegramUsername,
       termCondtion: true,
     });
     

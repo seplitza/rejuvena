@@ -5,9 +5,11 @@ export interface IUser extends Document {
   password: string;
   firstName?: string;
   lastName?: string;
+  telegramUsername?: string; // Telegram username для связи с ботом
   role: 'superadmin' | 'admin';
   isPremium?: boolean;
   premiumEndDate?: Date;
+  photoDiaryEndDate?: Date; // Дата окончания доступа к фотодневнику
   isLegacyUser?: boolean; // Флаг для пользователей из старого Azure бэка
   azureUserId?: string; // ID пользователя в Azure (для связи)
   firstPhotoDiaryUpload?: Date; // Дата первой загрузки фото в дневник
@@ -34,6 +36,10 @@ const UserSchema = new Schema<IUser>({
     type: String,
     trim: true
   },
+  telegramUsername: {
+    type: String,
+    trim: true
+  },
   role: {
     type: String,
     enum: ['superadmin', 'admin'],
@@ -44,6 +50,9 @@ const UserSchema = new Schema<IUser>({
     default: false
   },
   premiumEndDate: {
+    type: Date
+  },
+  photoDiaryEndDate: {
     type: Date
   },
   isLegacyUser: {

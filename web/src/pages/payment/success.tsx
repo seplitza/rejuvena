@@ -35,12 +35,12 @@ export default function PaymentSuccess() {
       if (response.ok) {
         const userData = await response.json();
         dispatch(setUser({
-          id: userData._id || userData.id,
+          _id: userData._id || userData.id,
           firstName: userData.email?.split('@')[0] || 'User',
           email: userData.email,
+          role: userData.role || 'admin',
           isPremium: userData.isPremium || false,
           premiumEndDate: userData.premiumEndDate,
-          isLegacyUser: userData.isLegacyUser || false
         }));
       }
     } catch (error) {

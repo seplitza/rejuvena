@@ -26,6 +26,12 @@ router.post('/create', authMiddleware, async (req: AuthRequest, res: Response) =
       });
     }
 
+    // Получаем email пользователя для отправки чека
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
     // Генерируем уникальный номер заказа
     const orderNumber = `ORDER-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 
@@ -52,6 +58,7 @@ router.post('/create', authMiddleware, async (req: AuthRequest, res: Response) =
         orderNumber,
         amount: amountInKopecks,
         description,
+        email: user.email, // Отправляем email для чека
         jsonParams: {
           userId,
           planType,
@@ -109,6 +116,12 @@ router.post('/create-exercise', authMiddleware, async (req: AuthRequest, res: Re
       });
     }
 
+    // Получаем email пользователя для отправки чека
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
     // Проверка, не куплено ли уже упражнение
     const existingPurchase = await ExercisePurchase.findOne({
       userId,
@@ -150,6 +163,7 @@ router.post('/create-exercise', authMiddleware, async (req: AuthRequest, res: Re
         orderNumber,
         amount: amountInKopecks,
         description: productDescription,
+        email: user.email, // Отправляем email для чека
         jsonParams: {
           userId,
           type: 'exercise',
@@ -208,6 +222,12 @@ router.post('/create-marathon', authMiddleware, async (req: AuthRequest, res: Re
       });
     }
 
+    // Получаем email пользователя для отправки чека
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
     // Генерируем уникальный номер заказа
     const orderNumber = `MARATHON-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 
@@ -237,6 +257,7 @@ router.post('/create-marathon', authMiddleware, async (req: AuthRequest, res: Re
         orderNumber,
         amount: amountInKopecks,
         description: productDescription,
+        email: user.email, // Отправляем email для чека
         jsonParams: {
           userId,
           type: 'marathon',
