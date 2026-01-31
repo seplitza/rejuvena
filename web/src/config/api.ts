@@ -10,15 +10,7 @@
 
 // OLD Backend - for auth and courses (legacy Azure)
 const getOldApiUrl = (): string => {
-  // Check if we're in browser
-  if (typeof window !== 'undefined') {
-    // In development, use localhost
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      return 'http://localhost:9527';
-    }
-  }
-  
-  // Production: NEW backend with unified auth (using IP due to DNS issues)
+  // ALWAYS use production backend (local frontend + prod backend for UI testing)
   return process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527';
 };
 

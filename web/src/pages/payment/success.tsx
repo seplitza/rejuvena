@@ -169,22 +169,26 @@ export default function PaymentSuccess() {
                 </div>
               )}
 
-              {/* Показываем детали только для премиума, не для марафонов/упражнений */}
+              {/* Показываем детали премиум доступа */}
               {payment?.metadata?.type !== 'marathon' && payment?.metadata?.type !== 'exercise' && (
                 <div className="bg-purple-50 rounded-lg p-4 mb-6">
                   <h3 className="font-semibold text-purple-900 mb-2">✨ Теперь вам доступны:</h3>
                   <ul className="space-y-2 text-sm text-purple-800">
                     <li className="flex items-start">
                       <span className="mr-2">✓</span>
-                      <span>Полные видео-инструкции всех упражнений</span>
+                      <span>Полные фото и видео-инструкции</span>
                     </li>
                     <li className="flex items-start">
                       <span className="mr-2">✓</span>
-                      <span>Детальные описания техник</span>
+                      <span>Детальное описание техник</span>
                     </li>
                     <li className="flex items-start">
                       <span className="mr-2">✓</span>
-                      <span>Доступ на {payment?.metadata?.duration || 30} дней</span>
+                      <span>Доступ на {(payment?.metadata?.duration || 30) + 30} дней</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="mr-2">✓</span>
+                      <span>Фотодневник на 90 дней</span>
                     </li>
                   </ul>
                 </div>
@@ -197,11 +201,15 @@ export default function PaymentSuccess() {
                   <ul className="space-y-2 text-sm text-green-800">
                     <li className="flex items-start">
                       <span className="mr-2">✓</span>
-                      <span>Доступ на {payment?.metadata?.marathonDays || payment?.metadata?.duration || 30} дней</span>
+                      <span>Доступ на {payment?.metadata?.marathonTenure || 44} дней</span>
                     </li>
                     <li className="flex items-start">
                       <span className="mr-2">✓</span>
                       <span>Ежедневные упражнения и задания</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="mr-2">✓</span>
+                      <span>Фотодневник на 30 дней</span>
                     </li>
                     <li className="flex items-start">
                       <span className="mr-2">✓</span>
@@ -213,16 +221,22 @@ export default function PaymentSuccess() {
 
               <Link 
                 href={
-                  (payment?.metadata?.type === 'marathon' || payment?.metadata?.planType === 'marathon') && payment?.metadata?.marathonId 
+                  (payment?.metadata?.type === 'marathon' || payment?.metadata?.planType === 'marathon') && payment?.metadata?.marathonId
                     ? `/marathons/${payment.metadata.marathonId}/start` 
                     : '/exercises'
                 }
                 className="block w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-center font-semibold py-3 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl"
               >
-                {payment?.metadata?.type === 'marathon' || payment?.metadata?.planType === 'marathon' 
+                {payment?.metadata?.type === 'marathon' || payment?.metadata?.planType === 'marathon'
                   ? 'Перейти в марафон' 
                   : 'Перейти к упражнениям'}
               </Link>
+              
+              {(payment?.metadata?.type === 'marathon' || payment?.metadata?.planType === 'marathon') && (
+                <p className="mt-3 text-center text-sm text-gray-600">
+                  Детали оплаты отправлены в <a href="https://t.me/Seplitza_info_bot" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-700 underline">https://t.me/Seplitza_info_bot</a>
+                </p>
+              )}
             </div>
           </div>
         )}

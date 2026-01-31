@@ -43,12 +43,12 @@ const formatProductName = (payment: Payment): string => {
     return 'Покупка: Премиум доступ';
   }
   
-  if (meta.type === 'marathon' && meta.marathonName) {
-    return `Покупка: ${meta.marathonName}`;
+  if ((meta.type === 'marathon' || meta.planType === 'marathon') && meta.marathonName) {
+    return `Покупка: марафон "${meta.marathonName}"`;
   }
   
-  if (meta.type === 'exercise' && meta.exerciseName) {
-    return `Покупка: ${meta.exerciseName}`;
+  if ((meta.type === 'exercise' || meta.planType === 'exercise') && meta.exerciseName) {
+    return `Покупка: упражнение "${meta.exerciseName}"`;
   }
   
   return 'Покупка';
@@ -85,21 +85,31 @@ const DashboardPage: React.FC = () => {
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527';
         const token = localStorage.getItem('auth_token');
+        console.log('🏃 Loading my enrollments, token:', token ? 'exists' : 'missing');
         if (!token) return;
         
-        const response = await fetch(`${apiUrl}/api/marathons`, {
+        const response = await fetch(`${apiUrl}/api/marathons/user/my-enrollments`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         
+        console.log('📡 My-enrollments response status:', response.status);
+        
         if (response.ok) {
           const data = await response.json();
-          if (data.success && data.marathons) {
-            const enrolled = data.marathons.filter((m: Marathon) => m.userEnrolled);
+          console.log('📦 My-enrollments data:', data);
+          
+          if (data.success && Array.isArray(data.enrollments)) {
+            const enrolled = data.enrollments.map((e: any) => e.marathonId).filter(Boolean);
+            console.log('🎯 Setting enrolled marathons:', enrolled.length, enrolled);
             setEnrolledMarathons(enrolled);
+          } else {
+            console.warn('⚠️ Unexpected enrollments format:', data);
           }
+        } else {
+          console.error('❌ My-enrollments API error:', response.status, response.statusText);
         }
       } catch (error) {
-        console.error('Failed to load marathons:', error);
+        console.error('💥 Failed to load marathons:', error);
       }
     };
     
@@ -248,7 +258,11 @@ const DashboardPage: React.FC = () => {
                       <div className="space-y-2">
                         <p className="text-orange-100 flex items-center gap-2">
                           <span>📅</span>
-                          <span>Длительность: {marathon.numberOfDays} дней</span>
+                          <span>Длительность обучения: {marathon.numberOfDays} дней</span>
+                        </p>
+                        <p className="text-orange-100 flex items-center gap-2">
+                          <span>🏃</span>
+                          <span>Курс практики: 30 дней</span>
                         </p>
                         <p className="text-orange-100 flex items-center gap-2">
                           <span>🗓️</span>

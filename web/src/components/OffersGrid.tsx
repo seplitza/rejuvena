@@ -37,7 +37,7 @@ export default function OffersGrid() {
 
   const fetchMarathons = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9527';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527';
       console.log('🔍 Fetching marathons from:', `${apiUrl}/api/marathons`);
       
       // Добавляем токен для получения статуса записи пользователя
