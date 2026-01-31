@@ -170,7 +170,7 @@ export default function PaymentSuccess() {
               )}
 
               {/* Показываем детали премиум доступа */}
-              {payment?.metadata?.type !== 'marathon' && payment?.metadata?.type !== 'exercise' && (
+              {payment?.metadata?.type !== 'marathon' && payment?.metadata?.type !== 'exercise' && payment?.metadata?.planType !== 'marathon' && payment?.metadata?.planType !== 'exercise' && (
                 <div className="bg-purple-50 rounded-lg p-4 mb-6">
                   <h3 className="font-semibold text-purple-900 mb-2">✨ Теперь вам доступны:</h3>
                   <ul className="space-y-2 text-sm text-purple-800">
@@ -195,7 +195,7 @@ export default function PaymentSuccess() {
               )}
 
               {/* Детали для марафона */}
-              {payment?.metadata?.type === 'marathon' && (
+              {(payment?.metadata?.type === 'marathon' || payment?.metadata?.planType === 'marathon') && (
                 <div className="bg-green-50 rounded-lg p-4 mb-6">
                   <h3 className="font-semibold text-green-900 mb-2">🎯 Марафон "{payment?.metadata?.marathonName}"</h3>
                   <ul className="space-y-2 text-sm text-green-800">
@@ -209,7 +209,7 @@ export default function PaymentSuccess() {
                     </li>
                     <li className="flex items-start">
                       <span className="mr-2">✓</span>
-                      <span>Фотодневник на 30 дней</span>
+                      <span>Фотодневник на 90 дней</span>
                     </li>
                     <li className="flex items-start">
                       <span className="mr-2">✓</span>
