@@ -6,7 +6,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useAppSelector } from '@/store/hooks';
-import { API_ENDPOINTS, API_URL } from '@/config/api';
+import { API_ENDPOINTS } from '@/config/api';
 
 interface Marathon {
   _id: string;
@@ -129,16 +129,17 @@ export default function OffersGrid() {
           return;
         }
 
-        const response = await fetch(`${API_URL}/api/payment/create-marathon`, {
+        const response = await fetch(API_ENDPOINTS.payment.create, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({
-            marathonId: marathon._id,
-            marathonName: marathon.title,
-            price: marathon.cost
+            amount: marathon.cost,
+            description: `Марафон: ${marathon.title}`,
+            planType: 'marathon',
+            marathonId: marathon._id
           })
         });
 

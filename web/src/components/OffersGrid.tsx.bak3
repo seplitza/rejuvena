@@ -136,9 +136,10 @@ export default function OffersGrid() {
             'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({
-            marathonId: marathon._id,
-            marathonName: marathon.title,
-            price: marathon.cost
+            amount: marathon.cost,
+            description: `Марафон: ${marathon.title}`,
+            planType: 'marathon',
+            marathonId: marathon._id
           })
         });
 
