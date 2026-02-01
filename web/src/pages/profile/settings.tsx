@@ -16,6 +16,7 @@ interface Payment {
   description: string;
   createdAt: string;
   metadata?: {
+    type?: string;
     planType?: string;
     duration?: number;
   };
