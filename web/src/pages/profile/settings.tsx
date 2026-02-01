@@ -124,8 +124,13 @@ export default function ProfileSettings() {
 
     payments
       .filter(p => p.status === 'succeeded')
-      .forEach(() => {
-        totalDays += 30; // +30 дней за каждую покупку
+      .forEach((p) => {
+        const isMarathon = p.metadata?.type === 'marathon' || p.metadata?.planType === 'marathon';
+        if (isMarathon) {
+          totalDays += 90; // +90 дней за покупку марафона
+        } else {
+          totalDays += 30; // +30 дней за покупку премиума
+        }
       });
 
     const expiryDate = new Date(firstUploadDate);
