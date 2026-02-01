@@ -11,7 +11,7 @@
 // OLD Backend - for auth and courses (legacy Azure)
 const getOldApiUrl = (): string => {
   // ALWAYS use production backend (local frontend + prod backend for UI testing)
-  return process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527';
+  return process.env.NEXT_PUBLIC_API_URL || 'https://api-rejuvena.duckdns.org';
 };
 
 export const API_URL = getOldApiUrl(); // Unified backend for everything

@@ -421,7 +421,10 @@ router.get('/history', authMiddleware, async (req: AuthRequest, res: Response) =
  * Webhook для получения уведомлений от Альфа-Банка
  * POST /api/payment/webhook
  */
-router.post('/webhook', async (req: Request, res: Response) => {
+/**
+ * Webhook handler logic (extracted for reuse)
+ */
+async function handleWebhook(req: Request, res: Response) {
   try {
     const { orderId, orderNumber, status } = req.body;
 
@@ -490,7 +493,19 @@ router.post('/webhook', async (req: Request, res: Response) => {
       message: error.message
     });
   }
-});
+}
+
+/**
+ * Webhook endpoint (primary)
+ * POST /api/payment/webhook
+ */
+router.post('/webhook', handleWebhook);
+
+/**
+ * Callback/webhook endpoint (Alfabank alias)
+ * POST /api/payment/callback
+ */
+router.post('/callback', handleWebhook);
 
 /**
  * Callback URL для возврата пользователя после оплаты
@@ -628,6 +643,13 @@ async function activateMarathon(userId: string, marathonId: string, paymentId: s
     let enrollment = await MarathonEnrollment.findOne({ userId, marathonId });
 
     const paymentObjectId = new (require('mongoose').Types.ObjectId)(paymentId);
+    
+    // Get marathon details for expiresAt calculation
+    const marathon = await Marathon.findById(marathonId);
+    if (!marathon) {
+      console.error('❌ Marathon not found:', marathonId);
+      return;
+    }
 
     if (enrollment) {
       // Обновляем существующую запись
@@ -636,14 +658,21 @@ async function activateMarathon(userId: string, marathonId: string, paymentId: s
       enrollment.paymentId = paymentObjectId;
       enrollment.enrolledAt = new Date();
     } else {
-      // Создаем новую запись
+      // Создаем новую запись с expiresAt
+      const expiresAt = new Date(marathon.startDate);
+      expiresAt.setDate(expiresAt.getDate() + marathon.tenure);
+      
       enrollment = new MarathonEnrollment({
         userId,
         marathonId,
         status: 'active',
         isPaid: true,
         paymentId: paymentObjectId,
-        enrolledAt: new Date()
+        currentDay: 1,
+        lastAccessedDay: 0,
+        completedDays: [],
+        enrolledAt: new Date(),
+        expiresAt: expiresAt
       });
     }
 
@@ -819,12 +848,27 @@ router.patch('/admin/:paymentId/status', authMiddleware, async (req: AuthRequest
       return res.status(404).json({ error: 'Payment not found' });
     }
 
+    console.log('📝 Admin changed payment status:', {
+      paymentId: payment._id,
+      orderNumber: payment.orderNumber,
+      oldStatus: 'unknown',
+      newStatus: status,
+      metadata: payment.metadata
+    });
+
     // Если статус изменен на succeeded, активируем покупку
     if (status === 'succeeded') {
+      console.log('✅ Status changed to succeeded, checking activation...');
+      
+      // Extract userId (может быть populate объектом или строкой)
+      const userId = (payment.userId as any)?._id 
+        ? (payment.userId as any)._id.toString() 
+        : payment.userId.toString();
+      
       // Активация упражнения
       if (payment.metadata?.type === 'exercise' && payment.metadata.exerciseId) {
         await activateExercise(
-          payment.userId.toString(),
+          userId,
           payment.metadata.exerciseId,
           payment.metadata.exerciseName || 'Упражнение',
           payment.amount / 100
@@ -833,18 +877,24 @@ router.patch('/admin/:paymentId/status', authMiddleware, async (req: AuthRequest
       // Активация премиума
       else if (payment.metadata?.type === 'premium' || payment.metadata?.planType === 'premium') {
         await activatePremium(
-          payment.userId.toString(),
+          userId,
           'premium',
           payment.metadata.duration || 30
         );
       }
       // Активация марафона
       else if ((payment.metadata?.type === 'marathon' || payment.metadata?.planType === 'marathon') && payment.metadata.marathonId) {
+        console.log('🏃 Activating marathon:', {
+          userId: userId,
+          marathonId: payment.metadata.marathonId,
+          paymentId: payment._id.toString()
+        });
         await activateMarathon(
-          payment.userId.toString(),
+          userId,
           payment.metadata.marathonId,
           payment._id.toString()
         );
+        console.log('✅ Marathon activation completed');
       }
       // Marathon без marathonId
       else if ((payment.metadata?.type === 'marathon' || payment.metadata?.planType === 'marathon') && !payment.metadata.marathonId) {
