@@ -21,8 +21,8 @@ export const get_current_marathon = 'order/checkformarathonpurchased';
 export const purchase_marathon_by_coupon = '/order/purchasemarathon';
 
 // User
-// Profile endpoints removed - not implemented on backend yet
-// export const get_user_profile = '/user/getuserprofiledetail';
+// Profile
+export const get_user_profile = '/api/auth/me';
 // export const update_user_profile = '/user/updateprofile';
 export const change_password = '/api/auth/change-password';
 export const delete_account = '/User/DeleteAccount';

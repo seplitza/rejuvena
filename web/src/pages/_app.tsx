@@ -4,7 +4,7 @@ import { wrapper } from '@/store/store';
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAppDispatch } from '@/store/hooks';
-import { setAuthToken, setUser } from '@/store/modules/auth/slice';
+import { setAuthToken, setUser, logout } from '@/store/modules/auth/slice';
 import { AuthTokenManager, request, endpoints } from '@/api';
 
 function App({ Component, pageProps }: AppProps) {
@@ -30,9 +30,19 @@ function App({ Component, pageProps }: AppProps) {
       if (token) {
         dispatch(setAuthToken(token));
         
-        // Note: Profile loading removed - endpoint not yet implemented on backend
-        // User data will be loaded on specific pages that need it
-        console.log('✅ Token restored from localStorage');
+        try {
+          // Загружаем данные пользователя
+          const response = await request(endpoints.get_user_profile);
+          if (response.success && response.user) {
+            dispatch(setUser(response.user));
+            console.log('✅ Token and user profile restored from localStorage');
+          }
+        } catch (error) {
+          console.error('❌ Failed to load user profile:', error);
+          // Если токен невалидный, очищаем
+          AuthTokenManager.remove();
+          dispatch(logout());
+        }
       }
     };
     
