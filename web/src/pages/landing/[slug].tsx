@@ -342,3 +342,19 @@ const LandingPage: React.FC = () => {
 };
 
 export default LandingPage;
+
+// GitHub Pages требует getStaticPaths для динамических маршрутов
+export async function getStaticPaths() {
+  // Все лендинги рендерятся на клиенте через API
+  // Для работы на GitHub Pages используем 404 fallback
+  return {
+    paths: [],
+    fallback: true, // Отображать загрузку пока данные подгружаются
+  };
+}
+
+export async function getStaticProps() {
+  return {
+    props: {},
+  };
+}
