@@ -12,6 +12,7 @@ interface Marathon {
   _id: string;
   title: string;
   description?: string;
+  courseDescription?: string;
   numberOfDays: number;
   cost: number;
   isPaid: boolean;
@@ -30,6 +31,8 @@ export default function OffersGrid() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const autoPlayRef = useRef<NodeJS.Timeout>();
+  const [showModal, setShowModal] = useState(false);
+  const [selectedMarathon, setSelectedMarathon] = useState<Marathon | null>(null);
 
   useEffect(() => {
     fetchMarathons();
@@ -441,7 +444,7 @@ export default function OffersGrid() {
               <button
                 onClick={() => handleCardAction(currentCard)}
                 disabled={purchaseLoading === currentCard.id}
-                className="w-full bg-gradient-to-r text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-2xl"
+                className="w-full bg-gradient-to-r text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-2xl mb-3"
                 style={{
                   backgroundImage: `linear-gradient(to right, ${currentCard.gradient.from}, ${currentCard.gradient.to})`
                 }}
@@ -455,6 +458,20 @@ export default function OffersGrid() {
                       : 'Присоединиться бесплатно'
                 }
               </button>
+
+              {/* Кнопка "О марафоне" для марафонов */}
+              {currentCard.type === 'marathon' && currentCard.marathonData && !currentCard.isEnrolled && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedMarathon(currentCard.marathonData);
+                    setShowModal(true);
+                  }}
+                  className="w-full bg-white border-2 border-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-xl transition-all duration-300 hover:border-purple-500 hover:text-purple-600 hover:bg-purple-50"
+                >
+                  📖 О марафоне
+                </button>
+              )}
 
               {currentCard.price !== null && (
                 <p className="text-xs text-gray-500 text-center mt-3">
@@ -515,6 +532,71 @@ export default function OffersGrid() {
           </div>
         )}
       </div>
+
+      {/* Модальное окно с описанием марафона */}
+      {showModal && selectedMarathon && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowModal(false)}
+        >
+          <div 
+            className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Заголовок */}
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-cyan-500 text-white p-6 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold">{selectedMarathon.title}</h2>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-all"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="mt-2 flex items-center gap-4 text-sm text-blue-100">
+                <span>📅 {selectedMarathon.numberOfDays} дней</span>
+                <span>💰 {selectedMarathon.isPaid ? `${selectedMarathon.cost} ₽` : 'Бесплатно'}</span>
+              </div>
+            </div>
+
+            {/* Контент */}
+            <div className="p-6">
+              {selectedMarathon.courseDescription ? (
+                <div 
+                  className="prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ __html: selectedMarathon.courseDescription }}
+                  style={{
+                    fontSize: '15px',
+                    lineHeight: '1.7',
+                    color: '#374151'
+                  }}
+                />
+              ) : (
+                <div className="text-gray-600 text-center py-8">
+                  <p className="mb-4">Описание марафона скоро появится</p>
+                  <p className="text-sm text-gray-500">Следите за обновлениями!</p>
+                </div>
+              )}
+
+              {/* Кнопка действия */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <button
+                  onClick={() => {
+                    setShowModal(false);
+                    handleMarathonAction(selectedMarathon);
+                  }}
+                  className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl"
+                >
+                  {selectedMarathon.isPaid ? `Оплатить ${selectedMarathon.cost} ₽` : 'Присоединиться бесплатно'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

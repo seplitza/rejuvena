@@ -19,8 +19,19 @@ const storage = multer.diskStorage({
     cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
+    // Сохраняем оригинальное имя файла с кириллицей
+    let filename = file.originalname;
+    const filePath = path.join(uploadsDir, filename);
+    
+    // Если файл с таким именем уже существует, добавляем timestamp
+    if (fs.existsSync(filePath)) {
+      const ext = path.extname(filename);
+      const nameWithoutExt = path.basename(filename, ext);
+      const timestamp = Date.now();
+      filename = `${nameWithoutExt}-${timestamp}${ext}`;
+    }
+    
+    cb(null, filename);
   }
 });
 
@@ -97,6 +108,54 @@ router.post('/upload-url', authMiddleware, async (req: AuthRequest, res: Respons
   } catch (error) {
     console.error('Upload URL error:', error);
     res.status(500).json({ message: 'Upload from URL failed' });
+  }
+});
+
+// Get all media files
+router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const files = fs.readdirSync(uploadsDir);
+    
+    const fileList = files
+      .filter(filename => {
+        // Exclude hidden files and directories
+        return !filename.startsWith('.') && fs.statSync(path.join(uploadsDir, filename)).isFile();
+      })
+      .map(filename => {
+        const filePath = path.join(uploadsDir, filename);
+        const stats = fs.statSync(filePath);
+        const ext = path.extname(filename).toLowerCase();
+        
+        const imageExts = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+        const videoExts = ['.mp4', '.mov', '.avi', '.webm'];
+        
+        let type: 'image' | 'video' = 'image';
+        let mimeType = 'application/octet-stream';
+        
+        if (imageExts.includes(ext)) {
+          type = 'image';
+          mimeType = `image/${ext.slice(1)}`;
+        } else if (videoExts.includes(ext)) {
+          type = 'video';
+          mimeType = `video/${ext.slice(1)}`;
+        }
+        
+        return {
+          _id: filename, // Using filename as ID for simplicity
+          url: `/uploads/${filename}`,
+          filename,
+          type,
+          mimeType,
+          size: stats.size,
+          createdAt: stats.birthtime
+        };
+      })
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()); // Newest first
+    
+    res.json({ files: fileList });
+  } catch (error) {
+    console.error('Get files error:', error);
+    res.status(500).json({ message: 'Failed to get files' });
   }
 });
 
