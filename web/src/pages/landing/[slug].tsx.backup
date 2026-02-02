@@ -46,14 +46,14 @@ interface Landing {
     };
   };
   benefitsSection?: {
-    benefits: Array<{
+    items: Array<{
       icon: string;
       title: string;
       description: string;
     }>;
   };
   testimonialsSection?: {
-    testimonials: Array<{
+    items: Array<{
       name: string;
       photo?: string;
       text: string;
@@ -72,21 +72,15 @@ interface Landing {
   conversions: number;
 }
 
-interface LandingPageProps {
-  landing?: Landing | null;
-  error?: string;
-}
-
-const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: errorProp }) => {
+const LandingPage: React.FC = () => {
   const router = useRouter();
   const { slug } = router.query;
-  const [landing, setLanding] = useState<Landing | null>(landingProp || null);
-  const [loading, setLoading] = useState(!landingProp);
-  const [error, setError] = useState<string | null>(errorProp || null);
+  const [landing, setLanding] = useState<Landing | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Если данные уже получены через SSG, не делаем fetch
-    if (landingProp || !slug) return;
+    if (!slug) return;
 
     const fetchLanding = async () => {
       try {
@@ -105,7 +99,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
     };
 
     fetchLanding();
-  }, [slug, landingProp]);
+  }, [slug]);
 
   const trackConversion = async () => {
     if (!slug) return;
@@ -263,7 +257,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
         )}
 
         {/* Benefits Section */}
-        {landing.benefitsSection && landing.benefitsSection.benefits && landing.benefitsSection.benefits.length > 0 && (
+        {landing.benefitsSection && landing.benefitsSection.items.length > 0 && (
           <section className="py-20 px-4">
             <div className="max-w-6xl mx-auto">
               <h2 className="text-4xl font-bold text-center mb-12 text-gray-800">
@@ -271,7 +265,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
               </h2>
 
               <div className="grid md:grid-cols-3 gap-8">
-                {landing.benefitsSection.benefits.map((benefit, idx) => (
+                {landing.benefitsSection.items.map((benefit, idx) => (
                   <div key={idx} className="text-center p-6">
                     <div className="text-5xl mb-4">{benefit.icon}</div>
                     <h3 className="text-xl font-bold mb-3 text-gray-800">{benefit.title}</h3>
@@ -284,7 +278,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
         )}
 
         {/* Testimonials Section */}
-        {landing.testimonialsSection && landing.testimonialsSection.testimonials && landing.testimonialsSection.testimonials.length > 0 && (
+        {landing.testimonialsSection && landing.testimonialsSection.items.length > 0 && (
           <section className="py-20 px-4 bg-gray-50">
             <div className="max-w-6xl mx-auto">
               <h2 className="text-4xl font-bold text-center mb-12 text-gray-800">
@@ -292,7 +286,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
               </h2>
 
               <div className="grid md:grid-cols-2 gap-8">
-                {landing.testimonialsSection.testimonials.map((testimonial, idx) => (
+                {landing.testimonialsSection.items.map((testimonial, idx) => (
                   <div key={idx} className="bg-white rounded-xl shadow-md p-6">
                     <div className="flex items-center gap-4 mb-4">
                       {testimonial.photo ? (
@@ -377,40 +371,8 @@ export async function getStaticPaths() {
   }
 }
 
-export async function getStaticProps({ params }: { params: { slug: string } }) {
-  try {
-    const axios = require('axios');
-    const API_URL = 'https://api-rejuvena.duckdns.org';
-    
-    console.log(`[Build] Fetching landing: ${params.slug}`);
-    
-    const response = await axios.get(`${API_URL}/api/landings/public/${params.slug}`, {
-      timeout: 10000,
-    });
-    
-    if (!response.data.success || !response.data.landing) {
-      return {
-        props: {
-          landing: null,
-          error: 'Страница не найдена',
-        },
-      };
-    }
-    
-    console.log(`[Build] Successfully fetched landing: ${params.slug}`);
-    
-    return {
-      props: {
-        landing: response.data.landing,
-      },
-    };
-  } catch (error: any) {
-    console.error(`[Build] Error fetching landing ${params.slug}:`, error.message);
-    return {
-      props: {
-        landing: null,
-        error: 'Ошибка загрузки страницы',
-      },
-    };
-  }
+export async function getStaticProps() {
+  return {
+    props: {},
+  };
 }
