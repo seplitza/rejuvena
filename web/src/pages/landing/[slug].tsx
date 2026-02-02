@@ -3,74 +3,13 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import axios from 'axios';
 import { API_BASE_URL } from '../../config/api';
-
-interface Landing {
-  _id: string;
-  slug: string;
-  title: string;
-  metaDescription: string;
-  ogImage?: string;
-  heroSection: {
-    title: string;
-    subtitle: string;
-    ctaButton: {
-      text: string;
-      link: string;
-    };
-  };
-  marathonsSection?: {
-    sectionTitle: string;
-    basic?: {
-      marathonId: string;
-      title: string;
-      startDate: string;
-      price: number;
-      duration: string;
-      features: string[];
-      ctaButton: {
-        text: string;
-        link: string;
-      };
-    };
-    advanced?: {
-      marathonId: string;
-      title: string;
-      startDate: string;
-      price: number;
-      duration: string;
-      features: string[];
-      ctaButton: {
-        text: string;
-        link: string;
-      };
-    };
-  };
-  benefitsSection?: {
-    benefits: Array<{
-      icon: string;
-      title: string;
-      description: string;
-    }>;
-  };
-  testimonialsSection?: {
-    testimonials: Array<{
-      name: string;
-      photo?: string;
-      text: string;
-      rating: number;
-    }>;
-  };
-  ctaSection?: {
-    title: string;
-    subtitle: string;
-    ctaButton: {
-      text: string;
-      link: string;
-    };
-  };
-  views: number;
-  conversions: number;
-}
+import { Landing } from '../../types/landing';
+import FeaturesSection from '../../components/landing/FeaturesSection';
+import ProblemsSection from '../../components/landing/ProblemsSection';
+import AboutSection from '../../components/landing/AboutSection';
+import StepsSection from '../../components/landing/StepsSection';
+import ProcessSection from '../../components/landing/ProcessSection';
+import StatsSection from '../../components/landing/StatsSection';
 
 interface LandingPageProps {
   landing?: Landing | null;
@@ -178,6 +117,24 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
             </button>
           </div>
         </section>
+
+        {/* Features Section - Что такое система */}
+        {landing.featuresSection && <FeaturesSection section={landing.featuresSection} />}
+
+        {/* Problems Section - Сеплица стирает возрастные признаки */}
+        {landing.problemsSection && <ProblemsSection section={landing.problemsSection} />}
+
+        {/* About Section - Обо мне */}
+        {landing.aboutSection && <AboutSection section={landing.aboutSection} />}
+
+        {/* Steps Section - 4 ступени системы */}
+        {landing.stepsSection && <StepsSection section={landing.stepsSection} />}
+
+        {/* Process Section - Как проходит программа */}
+        {landing.processSection && <ProcessSection section={landing.processSection} />}
+
+        {/* Stats Section - Результаты клиентов */}
+        {landing.statsSection && <StatsSection section={landing.statsSection} />}
 
         {/* Marathons Section */}
         {landing.marathonsSection && (
