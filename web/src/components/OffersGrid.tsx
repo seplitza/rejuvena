@@ -187,6 +187,7 @@ export default function OffersGrid() {
       { title: 'Доступ на 1 месяц', description: '30 дней автоматического доступа' },
       { title: 'Все категории упражнений', description: '100+ видео, лицо, шея, тело + другое' }
     ],
+    marathonData: undefined,
     isEnrolled: false,
     enrollmentStatus: undefined
   };

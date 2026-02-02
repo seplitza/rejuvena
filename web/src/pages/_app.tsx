@@ -32,9 +32,10 @@ function App({ Component, pageProps }: AppProps) {
         
         try {
           // Загружаем данные пользователя
-          const response = await request(endpoints.get_user_profile);
-          if (response.success && response.user) {
-            dispatch(setUser(response.user));
+          const response = await request.get(endpoints.get_user_profile);
+          const data: any = response.data;
+          if (data.success && data.user) {
+            dispatch(setUser(data.user));
             console.log('✅ Token and user profile restored from localStorage');
           }
         } catch (error) {
