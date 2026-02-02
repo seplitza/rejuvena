@@ -15,6 +15,7 @@ const getOldApiUrl = (): string => {
 };
 
 export const API_URL = getOldApiUrl(); // Unified backend for everything
+export const API_BASE_URL = API_URL; // Alias for consistency
 
 export const API_ENDPOINTS = {
   exercises: {
