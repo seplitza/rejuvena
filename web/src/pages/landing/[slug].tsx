@@ -85,7 +85,7 @@ const LandingPage: React.FC = () => {
     const fetchLanding = async () => {
       try {
         setLoading(true);
-        const response = await axios.get<{ success: boolean; landing: Landing }>(`${API_BASE_URL}/api/landings/public/${slug}`);
+        const response = await axios.get<{ success: boolean; landing: Landing }>(`${API_BASE_URL}/api/landings/public/public/${slug}`);
         
         if (response.data.success) {
           setLanding(response.data.landing);
@@ -104,7 +104,7 @@ const LandingPage: React.FC = () => {
   const trackConversion = async () => {
     if (!slug) return;
     try {
-      await axios.post(`${API_BASE_URL}/api/landings/public/${slug}/conversion`);
+      await axios.post(`${API_BASE_URL}/api/landings/public/public/${slug}/conversion`);
     } catch (err) {
       console.error('Error tracking conversion:', err);
     }
@@ -343,14 +343,32 @@ const LandingPage: React.FC = () => {
 
 export default LandingPage;
 
-// GitHub Pages требует getStaticPaths для динамических маршрутов
+// GitHub Pages требует предварительную генерацию всех путей  
 export async function getStaticPaths() {
-  // Все лендинги рендерятся на клиенте через API
-  // Для работы на GitHub Pages используем 404 fallback
-  return {
-    paths: [],
-    fallback: true, // Отображать загрузку пока данные подгружаются
-  };
+  try {
+    const axios = require('axios');
+    const API_URL = 'https://api-rejuvena.duckdns.org';
+    
+    const response = await axios.get(`${API_URL}/api/landings/public`, {
+    });
+    
+    const paths = response.data.landings?.map((landing: any) => ({
+      params: { slug: landing.slug }
+    })) || [];
+    
+    console.log(`[Build] Generated ${paths.length} landing pages`);
+    
+    return {
+      paths,
+      fallback: 'blocking',
+    };
+  } catch (error) {
+    console.error('[Build] Error fetching landings:', error);
+    return {
+      paths: [],
+      fallback: 'blocking',
+    };
+  }
 }
 
 export async function getStaticProps() {
