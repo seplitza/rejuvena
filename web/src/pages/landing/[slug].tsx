@@ -85,7 +85,7 @@ const LandingPage: React.FC = () => {
     const fetchLanding = async () => {
       try {
         setLoading(true);
-        const response = await axios.get<{ success: boolean; landing: Landing }>(`${API_BASE_URL}/api/landings/public/public/${slug}`);
+        const response = await axios.get<{ success: boolean; landing: Landing }>(`${API_BASE_URL}/api/landings/public/${slug}`);
         
         if (response.data.success) {
           setLanding(response.data.landing);
@@ -104,7 +104,7 @@ const LandingPage: React.FC = () => {
   const trackConversion = async () => {
     if (!slug) return;
     try {
-      await axios.post(`${API_BASE_URL}/api/landings/public/public/${slug}/conversion`);
+      await axios.post(`${API_BASE_URL}/api/landings/public/${slug}/conversion`);
     } catch (err) {
       console.error('Error tracking conversion:', err);
     }
