@@ -5,7 +5,16 @@ interface AboutSectionProps {
   section: IAboutSection;
 }
 
+const API_BASE_URL = 'http://37.252.20.170:9527';
+
 const AboutSection: React.FC<AboutSectionProps> = ({ section }) => {
+  // Формируем полный URL для фото
+  const photoUrl = section.photo
+    ? section.photo.startsWith('http')
+      ? section.photo
+      : `${API_BASE_URL}${section.photo}`
+    : null;
+
   return (
     <section className="py-20 px-4 bg-white">
       <div className="max-w-6xl mx-auto">
@@ -15,9 +24,9 @@ const AboutSection: React.FC<AboutSectionProps> = ({ section }) => {
 
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
-            {section.photo && (
+            {photoUrl && (
               <img
-                src={section.photo}
+                src={photoUrl}
                 alt={section.name}
                 className="w-full rounded-2xl shadow-xl"
               />
