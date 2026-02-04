@@ -122,6 +122,24 @@ export interface Landing {
       rating: number;
     }>;
   };
+  resultsGallerySection?: {
+    sectionTitle: string;
+    description?: string;
+    images: Array<{
+      url: string;
+      caption?: string;
+      order: number;
+    }>;
+  };
+  testimonialsGallerySection?: {
+    sectionTitle: string;
+    description?: string;
+    images: Array<{
+      url: string;
+      caption?: string;
+      order: number;
+    }>;
+  };
   ctaSection?: {
     title: string;
     subtitle: string;

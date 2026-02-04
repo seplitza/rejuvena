@@ -10,6 +10,8 @@ import AboutSection from '../../components/landing/AboutSection';
 import StepsSection from '../../components/landing/StepsSection';
 import ProcessSection from '../../components/landing/ProcessSection';
 import StatsSection from '../../components/landing/StatsSection';
+import ResultsGallerySection from '../../components/landing/ResultsGallerySection';
+import TestimonialsGallerySection from '../../components/landing/TestimonialsGallerySection';
 
 interface LandingPageProps {
   landing?: Landing | null;
@@ -135,6 +137,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
 
         {/* Stats Section - Результаты клиентов */}
         {landing.statsSection && <StatsSection section={landing.statsSection} />}
+
+        {/* Results Gallery Section - Галерея результатов */}
+        {landing.resultsGallerySection && <ResultsGallerySection section={landing.resultsGallerySection} />}
+
+        {/* Testimonials Gallery Section - Галерея отзывов */}
+        {landing.testimonialsGallerySection && <TestimonialsGallerySection section={landing.testimonialsGallerySection} />}
 
         {/* Marathons Section */}
         {landing.marathonsSection && (
