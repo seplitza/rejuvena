@@ -360,7 +360,6 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
       props: {
         landing: response.data.landing,
       },
-      revalidate: 60, // Обновлять страницу каждые 60 секунд
     };
   } catch (error: any) {
     console.error(`[Build] Error fetching landing ${params.slug}:`, error.message);
@@ -369,7 +368,6 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
         landing: null,
         error: 'Ошибка загрузки страницы',
       },
-      revalidate: 60,
     };
   }
 }
