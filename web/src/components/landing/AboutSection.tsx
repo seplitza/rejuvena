@@ -5,7 +5,7 @@ interface AboutSectionProps {
   section: IAboutSection;
 }
 
-const API_BASE_URL = 'http://37.252.20.170:9527';
+const API_BASE_URL = 'https://api-rejuvena.duckdns.org';
 
 const AboutSection: React.FC<AboutSectionProps> = ({ section }) => {
   // Формируем полный URL для фото
