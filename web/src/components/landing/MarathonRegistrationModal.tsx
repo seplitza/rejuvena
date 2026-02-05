@@ -36,7 +36,12 @@ const MarathonRegistrationModal: React.FC<MarathonRegistrationModalProps> = ({
 
     try {
       // 1. Регистрация пользователя
-      const registerResponse = await axios.post(`${API_BASE_URL}/api/auth/register-and-pay`, {
+      const registerResponse = await axios.post<{
+        success: boolean;
+        token?: string;
+        password?: string;
+        error?: string;
+      }>(`${API_BASE_URL}/api/auth/register-and-pay`, {
         email: email.toLowerCase().trim()
       });
 
@@ -45,12 +50,11 @@ const MarathonRegistrationModal: React.FC<MarathonRegistrationModalProps> = ({
       }
 
       const { token, password } = registerResponse.data;
-      
-      // Сохраняем токен
-      localStorage.setItem('auth_token', token);
-
-      // 2. Создаем платеж
-      const paymentResponse = await axios.post(
+      <{
+        success: boolean;
+        paymentUrl?: string;
+        error?: string;
+      }>(
         `${API_BASE_URL}/api/payment/create`,
         {
           marathonId,
@@ -61,6 +65,11 @@ const MarathonRegistrationModal: React.FC<MarathonRegistrationModalProps> = ({
         {
           headers: {
             Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!paymentResponse.data.success || !paymentResponse.data.paymentUrlken}`
           }
         }
       );

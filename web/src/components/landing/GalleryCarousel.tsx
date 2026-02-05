@@ -64,11 +64,11 @@ const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
         
         {/* Основное изображение (центр) */}
         <div className="relative flex-1 max-w-2xl">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl shadow-2xl">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl shadow-2xl bg-gray-100">
             <img
               src={getImageUrl(sortedImages[currentIndex].url)}
               alt={sortedImages[currentIndex].caption || `Фото ${currentIndex + 1}`}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
             
             {/* Подпись к фото */}
@@ -132,13 +132,7 @@ const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
           <div className="absolute inset-0 bg-black bg-opacity-20"></div>
         </button>
       </div>
-      
-      {/* Счетчик фотографий */}
-      <div className="text-center mt-12 text-gray-600">
-        {currentIndex + 1} / {sortedImages.length}
-      </div>
-    </div>
-  );
+
 };
 
 export default GalleryCarousel;
