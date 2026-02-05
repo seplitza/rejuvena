@@ -12,6 +12,7 @@ import ProcessSection from '../../components/landing/ProcessSection';
 import StatsSection from '../../components/landing/StatsSection';
 import ResultsGallerySection from '../../components/landing/ResultsGallerySection';
 import TestimonialsGallerySection from '../../components/landing/TestimonialsGallerySection';
+import MarathonRegistrationModal from '../../components/landing/MarathonRegistrationModal';
 
 interface LandingPageProps {
   landing?: Landing | null;
@@ -24,6 +25,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
   const [landing, setLanding] = useState<Landing | null>(landingProp || null);
   const [loading, setLoading] = useState(!landingProp);
   const [error, setError] = useState<string | null>(errorProp || null);
+  const [registrationModal, setRegistrationModal] = useState<{
+    isOpen: boolean;
+    marathonId: string;
+    marathonTitle: string;
+    marathonPrice: number;
+    isAdvanced: boolean;
+  } | null>(null);
 
   useEffect(() => {
     // Если данные уже получены через SSG, не делаем fetch
@@ -60,6 +68,49 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
   const handleCtaClick = (link: string) => {
     trackConversion();
     router.push(link);
+  };
+
+  const handleMarathonClick = async (marathonId: string, marathonTitle: string, marathonPrice: number, isAdvanced: boolean = false) => {
+    trackConversion();
+    const token = localStorage.getItem('auth_token');
+
+    if (token) {
+      // Пользователь авторизован - сразу создаем платеж
+      try {
+        const response = await axios.post(
+          `${API_BASE_URL}/api/payment/create`,
+          {
+            marathonId,
+            marathonName: marathonTitle,
+            type: 'marathon',
+            planType: 'marathon'
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        if (response.data.success && response.data.paymentUrl) {
+          window.location.href = response.data.paymentUrl;
+        } else {
+          alert('Ошибка создания платежа');
+        }
+      } catch (err) {
+        console.error('Payment error:', err);
+        alert('Ошибка при создании платежа');
+      }
+    } else {
+      // Пользователь не авторизован - показываем модалку регистрации
+      setRegistrationModal({
+        isOpen: true,
+        marathonId,
+        marathonTitle,
+        marathonPrice,
+        isAdvanced
+      });
+    }
   };
 
   if (loading) {
@@ -178,7 +229,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
                     </ul>
 
                     <button
-                      onClick={() => handleCtaClick(landing.marathonsSection!.basic!.ctaButton.link)}
+                      onClick={() => handleMarathonClick(
+                        landing.marathonsSection!.basic!.marathonId,
+                        landing.marathonsSection!.basic!.title,
+                        landing.marathonsSection!.basic!.price,
+                        false
+                      )}
                       className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
                     >
                       {landing.marathonsSection.basic.ctaButton.text}
@@ -215,7 +271,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
                     </ul>
 
                     <button
-                      onClick={() => handleCtaClick(landing.marathonsSection!.advanced!.ctaButton.link)}
+                      onClick={() => handleMarathonClick(
+                        landing.marathonsSection!.advanced!.marathonId,
+                        landing.marathonsSection!.advanced!.title,
+                        landing.marathonsSection!.advanced!.price,
+                        true
+                      )}
                       className="w-full py-3 bg-white text-purple-600 rounded-lg font-semibold hover:shadow-lg transition"
                     >
                       {landing.marathonsSection.advanced.ctaButton.text}
@@ -308,6 +369,18 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
           </section>
         )}
       </main>
+
+      {/* Модалка регистрации для марафонов */}
+      {registrationModal && (
+        <MarathonRegistrationModal
+          isOpen={registrationModal.isOpen}
+          onClose={() => setRegistrationModal(null)}
+          marathonId={registrationModal.marathonId}
+          marathonTitle={registrationModal.marathonTitle}
+          marathonPrice={registrationModal.marathonPrice}
+          isAdvanced={registrationModal.isAdvanced}
+        />
+      )}
     </>
   );
 };
