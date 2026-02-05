@@ -50,7 +50,9 @@ const MarathonRegistrationModal: React.FC<MarathonRegistrationModalProps> = ({
       }
 
       const { token, password } = registerResponse.data;
-      <{
+
+      // 2. Создание платежа
+      const paymentResponse = await axios.post<{
         success: boolean;
         paymentUrl?: string;
         error?: string;
@@ -69,12 +71,7 @@ const MarathonRegistrationModal: React.FC<MarathonRegistrationModalProps> = ({
         }
       );
 
-      if (!paymentResponse.data.success || !paymentResponse.data.paymentUrlken}`
-          }
-        }
-      );
-
-      if (!paymentResponse.data.success) {
+      if (!paymentResponse.data.success || !paymentResponse.data.paymentUrl) {
         throw new Error('Ошибка создания платежа');
       }
 

@@ -76,24 +76,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
 
     if (token) {
       // Пользователь авторизован - сразу создаем платеж
-      try {
-        const response = await axios.post<{
-          success: boolean;
-          paymentUrl?: string;
-          error?: string;
-        }>(
-          `${API_BASE_URL}/api/payment/create`,
-          {
-            marathonId,
-            marathonName: marathonTitle,
-            type: 'marathon',
-            planType: 'marathon'
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }
         );
 
         if (response.data.success && response.data.paymentUrl) {

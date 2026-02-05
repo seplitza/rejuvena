@@ -132,7 +132,8 @@ const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
           <div className="absolute inset-0 bg-black bg-opacity-20"></div>
         </button>
       </div>
-
+    </div>
+  );
 };
 
 export default GalleryCarousel;
