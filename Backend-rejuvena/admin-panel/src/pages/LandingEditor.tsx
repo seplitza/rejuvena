@@ -135,6 +135,58 @@ const LandingEditor: React.FC = () => {
       const response = await api.get(`/landings/admin/${id}`);
       if (response.data.success) {
         const landing = response.data.landing;
+        console.log('📥 Loaded landing:', landing);
+        console.log('📥 Marathon IDs:', {
+          basic: landing.marathonsSection?.basic?.marathonId || landing.marathonsSection?.basic?._id,
+          advanced: landing.marathonsSection?.advanced?.marathonId || landing.marathonsSection?.advanced?._id,
+          basicType: typeof (landing.marathonsSection?.basic?.marathonId || landing.marathonsSection?.basic?._id),
+          advancedType: typeof (landing.marathonsSection?.advanced?.marathonId || landing.marathonsSection?.advanced?._id)
+        });
+        
+        // Backend возвращает populated объекты марафонов, берем _id и конвертируем в строку
+        const basicMarathonObj = landing.marathonsSection?.basic;
+        const advancedMarathonObj = landing.marathonsSection?.advanced;
+        
+        // Извлекаем _id из объекта если это объект, иначе используем как есть
+        let basicMarathonId = '';
+        let advancedMarathonId = '';
+        
+        if (basicMarathonObj) {
+          console.log('🔍 basicMarathonObj type:', typeof basicMarathonObj, basicMarathonObj);
+          if (typeof basicMarathonObj === 'string') {
+            basicMarathonId = basicMarathonObj;
+          } else if (basicMarathonObj.marathonId) {
+            // Backend populate заполняет поле marathonId внутри basic
+            const marathonIdObj = basicMarathonObj.marathonId;
+            if (typeof marathonIdObj === 'string') {
+              basicMarathonId = marathonIdObj;
+            } else if (marathonIdObj._id) {
+              basicMarathonId = `${marathonIdObj._id}`;
+            }
+            console.log('🔍 Extracted from marathonId:', basicMarathonId);
+          } else if (basicMarathonObj._id) {
+            // Fallback - если структура другая
+            basicMarathonId = `${basicMarathonObj._id}`;
+          }
+        }
+        
+        if (advancedMarathonObj) {
+          if (typeof advancedMarathonObj === 'string') {
+            advancedMarathonId = advancedMarathonObj;
+          } else if (advancedMarathonObj.marathonId) {
+            const marathonIdObj = advancedMarathonObj.marathonId;
+            if (typeof marathonIdObj === 'string') {
+              advancedMarathonId = marathonIdObj;
+            } else if (marathonIdObj._id) {
+              advancedMarathonId = `${marathonIdObj._id}`;
+            }
+          } else if (advancedMarathonObj._id) {
+            advancedMarathonId = `${advancedMarathonObj._id}`;
+          }
+        }
+        
+        console.log('📥 Converted IDs:', { basicMarathonId, advancedMarathonId });
+        
         setFormData({
           slug: landing.slug,
           title: landing.title,
@@ -144,13 +196,13 @@ const LandingEditor: React.FC = () => {
           heroCtaText: landing.heroSection.ctaButton.text,
           heroCtaLink: landing.heroSection.ctaButton.link,
           marathonsSectionTitle: landing.marathonsSection?.sectionTitle || 'Выберите свой уровень',
-          basicMarathonId: landing.marathonsSection?.basic?.marathonId || '',
+          basicMarathonId: basicMarathonId,
           basicTitle: landing.marathonsSection?.basic?.title || '',
           basicStartDate: landing.marathonsSection?.basic?.startDate || '',
           basicPrice: landing.marathonsSection?.basic?.price || 0,
           basicDuration: landing.marathonsSection?.basic?.duration || '',
           basicFeatures: landing.marathonsSection?.basic?.features || [],
-          advancedMarathonId: landing.marathonsSection?.advanced?.marathonId || '',
+          advancedMarathonId: advancedMarathonId,
           advancedTitle: landing.marathonsSection?.advanced?.title || '',
           advancedStartDate: landing.marathonsSection?.advanced?.startDate || '',
           advancedPrice: landing.marathonsSection?.advanced?.price || 0,
@@ -306,39 +358,52 @@ const LandingEditor: React.FC = () => {
         },
         marathonsSection: {
           sectionTitle: formData.marathonsSectionTitle,
-          basic: formData.basicMarathonId ? {
-            marathonId: formData.basicMarathonId,
-            title: formData.basicTitle,
-            startDate: formData.basicStartDate,
-            price: formData.basicPrice,
-            duration: formData.basicDuration,
-            features: formData.basicFeatures,
-            ctaButton: {
-              text: 'Начать обучение',
-              link: '/marathons'
+          ...(formData.basicMarathonId && formData.basicMarathonId.trim() !== '' ? {
+            basic: {
+              marathonId: formData.basicMarathonId,
+              title: formData.basicTitle,
+              startDate: formData.basicStartDate,
+              price: formData.basicPrice,
+              duration: formData.basicDuration,
+              features: formData.basicFeatures,
+              ctaButton: {
+                text: 'Начать обучение',
+                link: '/marathons'
+              }
             }
-          } : undefined,
-          advanced: formData.advancedMarathonId ? {
-            marathonId: formData.advancedMarathonId,
-            title: formData.advancedTitle,
-            startDate: formData.advancedStartDate,
-            price: formData.advancedPrice,
-            duration: formData.advancedDuration,
-            features: formData.advancedFeatures,
-            ctaButton: {
-              text: 'Перейти на PRO',
-              link: '/marathons'
+          } : {}),
+          ...(formData.advancedMarathonId && formData.advancedMarathonId.trim() !== '' ? {
+            advanced: {
+              marathonId: formData.advancedMarathonId,
+              title: formData.advancedTitle,
+              startDate: formData.advancedStartDate,
+              price: formData.advancedPrice,
+              duration: formData.advancedDuration,
+              features: formData.advancedFeatures,
+              ctaButton: {
+                text: 'Перейти на PRO',
+                link: '/marathons'
+              }
             }
-          } : undefined
+          } : {})
         },
         isPublished: formData.isPublished
       };
 
       // Add visible sections (including duplicates)
       const visibleSections = sections.filter(s => s.isVisible && !s.isRequired);
+      console.log('💾 Saving sections:', visibleSections.map(s => s.id));
+      console.log('💾 Section data keys:', Object.keys(sectionData));
+      
       visibleSections.forEach(section => {
         const baseType = section.id.split('-copy-')[0] as string;
         const sectionKey = section.id; // Используем полный ID (features или features-copy-123)
+        
+        console.log(`💾 Processing section ${sectionKey}:`, {
+          hasData: !!sectionData[sectionKey],
+          hasBaseData: !!sectionData[baseType],
+          data: sectionData[sectionKey] || sectionData[baseType]
+        });
         
         // Проверяем есть ли данные для этой секции (по полному ID)
         if (sectionData[sectionKey]) {
@@ -358,6 +423,13 @@ const LandingEditor: React.FC = () => {
         }
       });
 
+      console.log('📤 Sending data:', {
+        marathonsSection: landingData.marathonsSection,
+        allKeys: Object.keys(landingData),
+        customFields: Object.keys(landingData).filter(k => /Section_\d+$/.test(k)),
+        landingDataSample: landingData
+      });
+      
       let response;
       if (id && id !== 'new') {
         response = await api.put(`/landings/${id}`, landingData);

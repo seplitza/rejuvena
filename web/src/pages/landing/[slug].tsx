@@ -70,6 +70,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
     router.push(link);
   };
 
+  // Helper для извлечения ID из populated marathonId
+  const extractMarathonId = (marathonIdField: any): string => {
+    if (!marathonIdField) return '';
+    if (typeof marathonIdField === 'string') return marathonIdField;
+    if (marathonIdField._id) return String(marathonIdField._id);
+    return '';
+  };
+
   const handleMarathonClick = async (marathonId: string, marathonTitle: string, marathonPrice: number, isAdvanced: boolean = false) => {
     trackConversion();
     const token = localStorage.getItem('auth_token');
@@ -234,7 +242,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
 
                     <button
                       onClick={() => handleMarathonClick(
-                        landing.marathonsSection!.basic!.marathonId,
+                        extractMarathonId(landing.marathonsSection!.basic!.marathonId),
                         landing.marathonsSection!.basic!.title,
                         landing.marathonsSection!.basic!.price,
                         false
@@ -276,7 +284,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
 
                     <button
                       onClick={() => handleMarathonClick(
-                        landing.marathonsSection!.advanced!.marathonId,
+                        extractMarathonId(landing.marathonsSection!.advanced!.marathonId),
                         landing.marathonsSection!.advanced!.title,
                         landing.marathonsSection!.advanced!.price,
                         true
