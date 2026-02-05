@@ -146,7 +146,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
 
         {/* Marathons Section */}
         {landing.marathonsSection && (
-          <section className="py-20 px-4 bg-gray-50">
+          <section id="marathon" className="py-20 px-4 bg-gray-50">
             <div className="max-w-6xl mx-auto">
               <h2 className="text-4xl font-bold text-center mb-12 text-gray-800">
                 {landing.marathonsSection.sectionTitle}
@@ -250,7 +250,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
 
         {/* Testimonials Section */}
         {landing.testimonialsSection && landing.testimonialsSection.testimonials && landing.testimonialsSection.testimonials.length > 0 && (
-          <section className="py-20 px-4 bg-gray-50">
+          <section id="marathon" className="py-20 px-4 bg-gray-50">
             <div className="max-w-6xl mx-auto">
               <h2 className="text-4xl font-bold text-center mb-12 text-gray-800">
                 Отзывы наших клиентов
