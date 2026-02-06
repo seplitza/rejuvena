@@ -126,6 +126,33 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
     return '';
   };
 
+  // Функция для форматирования subtitle с буллетами
+  const formatSubtitle = (text: string) => {
+    // Проверяем, есть ли в тексте дефисы в начале строк
+    if (!text.includes('\n-') && !text.startsWith('-')) {
+      return <p className="text-xl md:text-2xl mb-8 opacity-90 leading-relaxed">{text}</p>;
+    }
+
+    // Разбиваем на строки и фильтруем пустые
+    const lines = text.split('\n').filter(line => line.trim());
+    
+    return (
+      <div className="text-xl md:text-2xl mb-8 opacity-90">
+        <ul className="space-y-3 text-left max-w-3xl mx-auto">
+          {lines.map((line, index) => {
+            const cleanLine = line.trim().replace(/^-\s*/, '');
+            return (
+              <li key={index} className="flex items-start gap-3">
+                <span className="text-2xl mt-1">•</span>
+                <span className="leading-relaxed">{cleanLine}</span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    );
+  };
+
   const handleMarathonClick = async (marathonId: string, marathonTitle: string, marathonPrice: number, isAdvanced: boolean = false) => {
     trackConversion();
     const token = localStorage.getItem('auth_token');
@@ -219,9 +246,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
             <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
               {landing.heroSection.title}
             </h1>
-            <p className="text-xl md:text-2xl mb-8 opacity-90 leading-relaxed">
-              {landing.heroSection.subtitle}
-            </p>
+            {formatSubtitle(landing.heroSection.subtitle)}
             <button
               onClick={() => handleCtaClick(landing.heroSection.ctaButton.link)}
               className="px-8 py-4 bg-white text-purple-600 rounded-full font-bold text-lg hover:shadow-2xl transform hover:scale-105 transition-all"

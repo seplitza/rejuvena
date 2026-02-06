@@ -1,0 +1,94 @@
+
+> rejuvena-web@1.2.0 build
+> next build
+
+  ▲ Next.js 14.2.33
+  - Environments: .env.production
+
+   Linting and checking validity of types ...
+ ⨯ ESLint: Plugin "react-hooks" was conflicted between ".eslintrc.json » eslint-config-next/core-web-vitals » /Users/alexeipinaev/Documents/Rejuvena/web/node_modules/eslint-config-next/index.js » plugin:react-hooks/recommended" and "../.eslintrc.js » @react-native-community/eslint-config".
+   Creating an optimized production build ...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ ⚠ Compiled with warnings
+
+./node_modules/face-api.js/build/es6/env/createFileSystem.js
+Module not found: Can't resolve 'fs' in '/Users/alexeipinaev/Documents/Rejuvena/web/node_modules/face-api.js/build/es6/env'
+
+Import trace for requested module:
+./node_modules/face-api.js/build/es6/env/createFileSystem.js
+./node_modules/face-api.js/build/es6/env/index.js
+./node_modules/face-api.js/build/es6/index.js
+
+ ✓ Compiled successfully
+   Collecting page data ...
+/!\ You are using legacy implementation. Please update your code: use createWrapper() and wrapper.useWrappedStore().
+/!\ You are using legacy implementation. Please update your code: use createWrapper() and wrapper.useWrappedStore().
+/!\ You are using legacy implementation. Please update your code: use createWrapper() and wrapper.useWrappedStore().
+/!\ You are using legacy implementation. Please update your code: use createWrapper() and wrapper.useWrappedStore().
+/!\ You are using legacy implementation. Please update your code: use createWrapper() and wrapper.useWrappedStore().
+/!\ You are using legacy implementation. Please update your code: use createWrapper() and wrapper.useWrappedStore().
+/!\ You are using legacy implementation. Please update your code: use createWrapper() and wrapper.useWrappedStore().
+[Build] Generated 1 landing pages
+   Generating static pages (0/29) ...
+   Generating static pages (7/29) 
+   Generating static pages (14/29) 
+   Generating static pages (21/29) 
+[Build] Fetching landing: omolodis-stage-7-2280
+[Build] Successfully fetched landing: omolodis-stage-7-2280
+ ✓ Generating static pages (29/29)
+   Finalizing page optimization ...
+   Collecting build traces ...
+ ⚠ Statically exporting a Next.js application via `next export` disables API routes and middleware.
+This command is meant for static-only hosts, and is not necessary to make your application static.
+Pages in your application without server-side data dependencies will be automatically statically exported by `next build`, including pages powered by `getStaticProps`.
+Learn more: https://nextjs.org/docs/messages/api-routes-static-export
+/!\ You are using legacy implementation. Please update your code: use createWrapper() and wrapper.useWrappedStore().
+/!\ You are using legacy implementation. Please update your code: use createWrapper() and wrapper.useWrappedStore().
+/!\ You are using legacy implementation. Please update your code: use createWrapper() and wrapper.useWrappedStore().
+/!\ You are using legacy implementation. Please update your code: use createWrapper() and wrapper.useWrappedStore().
+/!\ You are using legacy implementation. Please update your code: use createWrapper() and wrapper.useWrappedStore().
+/!\ You are using legacy implementation. Please update your code: use createWrapper() and wrapper.useWrappedStore().
+/!\ You are using legacy implementation. Please update your code: use createWrapper() and wrapper.useWrappedStore().
+
+Route (pages)                                              Size     First Load JS
+┌ ○ /                                                      2.56 kB         130 kB
+├   /_app                                                  0 B             125 kB
+├ ○ /404                                                   180 B           125 kB
+├ ƒ /api/estimate-age                                      0 B             125 kB
+├ ○ /auth/forgot-password                                  4.76 kB         132 kB
+├ ○ /auth/login                                            2.64 kB         130 kB
+├ ○ /auth/signup                                           2.81 kB         131 kB
+├ ○ /courses                                               11.2 kB         136 kB
+├ ○ /courses/[courseId]/day/[dayId]                        19.1 kB         153 kB
+├ ○ /courses/[courseId]/day/[dayId]/exercise/[exerciseId]  4.9 kB          134 kB
+├ ○ /courses/[courseId]/start                              5.52 kB         135 kB
+├ ○ /dashboard                                             3.49 kB         139 kB
+├ ○ /debug                                                 1.6 kB          127 kB
+├ ○ /exercise_template                                     3.41 kB         133 kB
+├ ○ /exercise/[exerciseId]                                 4.15 kB         132 kB
+├ ○ /exercises                                             5.4 kB          142 kB
+├ ○ /generate-link                                         2.8 kB          128 kB
+├ ○ /guest                                                 1.23 kB         136 kB
+├ ○ /index_old                                             3.63 kB         131 kB
+├ ● /landing/[slug] (801 ms)                               6.89 kB         132 kB
+├   └ /landing/omolodis-stage-7-2280 (801 ms)
+├ ○ /marathons                                             3.05 kB         128 kB
+├ ○ /marathons/[id]                                        5.24 kB         130 kB
+├ ○ /marathons/[id]/day/[dayNumber]                        2.73 kB         128 kB
+├ ○ /marathons/[id]/start                                  2.26 kB         130 kB
+├ ○ /notification-consent                                  3.13 kB         128 kB
+├ ○ /payment/fail                                          2.14 kB         130 kB
+├ ○ /payment/success                                       3.43 kB         131 kB
+├ ○ /photo-diary                                           165 kB          291 kB
+├ ○ /profile/settings                                      4.23 kB         132 kB
+└ ○ /test-user                                             2.81 kB         128 kB
++ First Load JS shared by all                              134 kB
+  ├ chunks/framework-64ad27b21261a9ce.js                   44.8 kB
+  ├ chunks/main-1518b43533e4ce0d.js                        34.1 kB
+  ├ chunks/pages/_app-2aa4e65973cd75a2.js                  44.5 kB
+  └ other shared chunks (total)                            10.6 kB
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses getStaticProps)
+ƒ  (Dynamic)  server-rendered on demand
+
