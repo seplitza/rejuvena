@@ -75,22 +75,7 @@ const MarathonDetailsModal: React.FC<MarathonDetailsModalProps> = ({
           {description && (
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-3">Что включено:</h3>
-              <p className="text-gray-700 whitespace-pre-line">{description}</p>
-            </div>
-          )}
-
-          {/* Фичи (если есть) */}
-          {features && features.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-3">Особенности:</h3>
-              <ul className="space-y-2">
-                {features.map((feature, idx) => (
-                  <li key={idx} className="flex items-start gap-3">
-                    <span className="text-green-500 text-xl">✓</span>
-                    <span className="text-gray-700">{feature}</span>
-                  </li>
-                ))}
-              </ul>
+              <div className="text-gray-700" dangerouslySetInnerHTML={{ __html: description }} />
             </div>
           )}
 
@@ -104,21 +89,6 @@ const MarathonDetailsModal: React.FC<MarathonDetailsModalProps> = ({
           >
             Оплатить {price}₽
           </button>
-
-          {/* Ссылка на поддержку */}
-          <div className="mt-4 text-center text-sm text-gray-600">
-            <p className="mb-2">
-              У тех кто проходил Марафон Сеплица ранее скидка 50%
-            </p>
-            <a 
-              href="https://t.me/seplitza_support" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-purple-600 hover:text-purple-700 underline"
-            >
-              Обратитесь в поддержку
-            </a>
-          </div>
         </div>
       </div>
     </div>

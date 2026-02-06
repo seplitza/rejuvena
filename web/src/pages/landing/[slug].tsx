@@ -306,10 +306,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
                   <MarathonPricingCard
                     title={landing.marathonsSection.advanced.title}
                     duration={landing.marathonsSection.advanced.duration}
-                    tenure={
-                      ((landing.marathonsSection.advanced as any).marathonId?.tenure || 0) + 
-                      ((landing.marathonsSection.basic as any).marathonId?.numberOfDays || 14)
-                    }
+                    tenure={(landing.marathonsSection.advanced as any).marathonId?.tenure}
                     price={landing.marathonsSection.advanced.price}
                     oldPrice={landing.marathonsSection.advanced.oldPrice}
                     features={landing.marathonsSection.advanced.features}
@@ -328,7 +325,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
                       description: (landing.marathonsSection!.advanced as any).marathonId?.courseDescription || '',
                       price: landing.marathonsSection!.advanced!.price,
                       oldPrice: landing.marathonsSection!.advanced!.oldPrice,
-                      tenure: ((landing.marathonsSection!.advanced as any).marathonId?.tenure || 0) + ((landing.marathonsSection!.basic as any).marathonId?.numberOfDays || 14),
+                      tenure: (landing.marathonsSection!.advanced as any).marathonId?.tenure || 51,
                       features: landing.marathonsSection!.advanced!.features,
                       onPayment: () => handleMarathonClick(
                         extractMarathonId(landing.marathonsSection!.advanced!.marathonId),
