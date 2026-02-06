@@ -29,10 +29,15 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build and Export
-        run: npm run export
+      - name: Build
+        run: npm run build
         env:
-          NEXT_PUBLIC_API_URL: http://37.252.20.170:9527
+          NEXT_PUBLIC_API_URL: https://api-rejuvena.duckdns.org
+
+      - name: Create .nojekyll and 404 page
+        run: |
+          touch out/.nojekyll
+          cp public/404.html out/404.html 2>/dev/null || true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
