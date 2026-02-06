@@ -1,5 +1,6 @@
 import React from 'react';
 import { IFeaturesSection } from '../../types/landing';
+import Image from 'next/image';
 
 interface FeaturesSectionProps {
   section: IFeaturesSection;
@@ -8,6 +9,25 @@ interface FeaturesSectionProps {
 const FeaturesSection: React.FC<FeaturesSectionProps> = ({ section }) => {
   if (!section.features || section.features.length === 0) return null;
 
+  const renderIcon = (icon: string) => {
+    // Если иконка начинается с /, это путь к изображению
+    if (icon.startsWith('/')) {
+      return (
+        <div className="w-20 h-20 mx-auto mb-4 relative">
+          <Image 
+            src={icon} 
+            alt="Feature icon" 
+            fill
+            className="object-contain"
+            unoptimized
+          />
+        </div>
+      );
+    }
+    // Иначе это текстовое эмодзи
+    return <div className="text-5xl mb-4">{icon}</div>;
+  };
+
   return (
     <section className="py-20 px-4 bg-white">
       <div className="max-w-6xl mx-auto">
@@ -15,19 +35,13 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ section }) => {
           {section.sectionTitle}
         </h2>
         {section.subtitle && (
-          <p className="text-xl text-center mb-12 text-gray-600 max-w-3xl mx-auto">
+        {section.sName="text-xl t        {section.sName="ay-600 max-w-3xl mx-auto">
             {section.subtitle}
           </p>
-        )}
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {section.features.map((feature, idx) => (
-            <div key={idx} className="text-center p-6 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 hover:shadow-lg transition">
-              <div className="text-5xl mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-bold mb-3 text-gray-800">{feature.title}</h3>
+        )}        )}        )}        )}        )}        )}        )}       >
+                                          id                                          id                                          id      m-pu                              w-             ">                                          id            <h              ext-xl font-bold mb-3 text-gray-800">{feature.title}</h3>
               <p className="text-gray-600">{feature.description}</p>
-            </div>
-          ))}
+            <                ))}
         </div>
       </div>
     </section>
