@@ -87,6 +87,7 @@ export interface Landing {
       title: string;
       startDate: string;
       price: number;
+      oldPrice?: number;
       duration: string;
       features: string[];
       ctaButton: {
@@ -99,6 +100,7 @@ export interface Landing {
       title: string;
       startDate: string;
       price: number;
+      oldPrice?: number;
       duration: string;
       features: string[];
       ctaButton: {

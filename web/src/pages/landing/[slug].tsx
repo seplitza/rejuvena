@@ -13,6 +13,8 @@ import StatsSection from '../../components/landing/StatsSection';
 import ResultsGallerySection from '../../components/landing/ResultsGallerySection';
 import TestimonialsGallerySection from '../../components/landing/TestimonialsGallerySection';
 import MarathonRegistrationModal from '../../components/landing/MarathonRegistrationModal';
+import MarathonDetailsModal from '../../components/landing/MarathonDetailsModal';
+import MarathonPricingCard from '../../components/landing/MarathonPricingCard';
 
 interface LandingPageProps {
   landing?: Landing | null;
@@ -31,6 +33,19 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
     marathonTitle: string;
     marathonPrice: number;
     isAdvanced: boolean;
+  } | null>(null);
+  
+  const [spotsLeft, setSpotsLeft] = useState(9);
+  const [detailsModal, setDetailsModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    marathonTitle: string;
+    description: string;
+    price: number;
+    oldPrice?: number;
+    tenure: number;
+    features: string[];
+    onPayment: () => void;
   } | null>(null);
 
   useEffect(() => {
@@ -55,6 +70,39 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
 
     fetchLanding();
   }, [slug, landingProp]);
+
+  // Счетчик оставшихся мест (имитация)
+  useEffect(() => {
+    if (!slug) return;
+    
+    const key = `landing_spots_${slug}`;
+    const savedSpots = localStorage.getItem(key);
+    const savedTimestamp = localStorage.getItem(`${key}_timestamp`);
+    
+    if (savedSpots && savedTimestamp) {
+      const elapsed = Date.now() - parseInt(savedTimestamp);
+      const visits = Math.floor(elapsed / 10000); // Каждые 10 секунд - новый визит
+      const currentSpots = Math.max(1, parseInt(savedSpots) - visits);
+      setSpotsLeft(currentSpots);
+    } else {
+      // Первый визит - 9 мест
+      localStorage.setItem(key, '9');
+      localStorage.setItem(`${key}_timestamp`, Date.now().toString());
+      setSpotsLeft(9);
+    }
+    
+    // Через 10 секунд уменьшаем на 1
+    const timer = setTimeout(() => {
+      setSpotsLeft(prev => {
+        const newValue = Math.max(1, prev - 1);
+        localStorage.setItem(key, newValue.toString());
+        localStorage.setItem(`${key}_timestamp`, Date.now().toString());
+        return newValue;
+      });
+    }, 10000);
+    
+    return () => clearTimeout(timer);
+  }, [slug]);
 
   const trackConversion = async () => {
     if (!slug) return;
@@ -218,82 +266,79 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
               <div className="grid md:grid-cols-2 gap-8">
                 {/* Basic Marathon */}
                 {landing.marathonsSection.basic && (
-                  <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-blue-200 hover:border-blue-400 transition">
-                    <div className="text-center mb-6">
-                      <h3 className="text-2xl font-bold text-blue-600 mb-2">
-                        {landing.marathonsSection.basic.title}
-                      </h3>
-                      <p className="text-gray-600">{landing.marathonsSection.basic.duration}</p>
-                      <div className="mt-4">
-                        <span className="text-4xl font-bold text-gray-800">
-                          {landing.marathonsSection.basic.price}₽
-                        </span>
-                      </div>
-                    </div>
-
-                    <ul className="space-y-3 mb-8">
-                      {landing.marathonsSection.basic.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-3">
-                          <span className="text-green-500 text-xl">✓</span>
-                          <span className="text-gray-700">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    <button
-                      onClick={() => handleMarathonClick(
+                  <MarathonPricingCard
+                    title={landing.marathonsSection.basic.title}
+                    duration={landing.marathonsSection.basic.duration}
+                    tenure={(landing.marathonsSection.basic as any).marathonId?.tenure || (landing.marathonsSection.basic as any).marathonId?.numberOfDays}
+                    price={landing.marathonsSection.basic.price}
+                    oldPrice={landing.marathonsSection.basic.oldPrice}
+                    features={landing.marathonsSection.basic.features}
+                    isAdvanced={false}
+                    spotsLeft={spotsLeft}
+                    onPaymentClick={() => handleMarathonClick(
+                      extractMarathonId(landing.marathonsSection!.basic!.marathonId),
+                      landing.marathonsSection!.basic!.title,
+                      landing.marathonsSection!.basic!.price,
+                      false
+                    )}
+                    onDetailsClick={() => setDetailsModal({
+                      isOpen: true,
+                      title: landing.marathonsSection!.basic!.title,
+                      marathonTitle: (landing.marathonsSection!.basic as any).marathonId?.title || 'Rejuvena',
+                      description: (landing.marathonsSection!.basic as any).marathonId?.courseDescription || '',
+                      price: landing.marathonsSection!.basic!.price,
+                      oldPrice: landing.marathonsSection!.basic!.oldPrice,
+                      tenure: (landing.marathonsSection!.basic as any).marathonId?.tenure || 44,
+                      features: landing.marathonsSection!.basic!.features,
+                      onPayment: () => handleMarathonClick(
                         extractMarathonId(landing.marathonsSection!.basic!.marathonId),
                         landing.marathonsSection!.basic!.title,
                         landing.marathonsSection!.basic!.price,
                         false
-                      )}
-                      className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-                    >
-                      {landing.marathonsSection.basic.ctaButton.text}
-                    </button>
-                  </div>
+                      )
+                    })}
+                    buttonText={landing.marathonsSection.basic.ctaButton.text}
+                  />
                 )}
 
                 {/* Advanced Marathon */}
                 {landing.marathonsSection.advanced && (
-                  <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl shadow-xl p-8 text-white transform md:scale-105 relative">
-                    <div className="absolute -top-4 right-4 bg-yellow-400 text-purple-900 px-4 py-1 rounded-full text-sm font-bold">
-                      Популярный
-                    </div>
-                    
-                    <div className="text-center mb-6">
-                      <h3 className="text-2xl font-bold mb-2">
-                        {landing.marathonsSection.advanced.title}
-                      </h3>
-                      <p className="opacity-90">{landing.marathonsSection.advanced.duration}</p>
-                      <div className="mt-4">
-                        <span className="text-4xl font-bold">
-                          {landing.marathonsSection.advanced.price}₽
-                        </span>
-                      </div>
-                    </div>
-
-                    <ul className="space-y-3 mb-8">
-                      {landing.marathonsSection.advanced.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-3">
-                          <span className="text-yellow-300 text-xl">✓</span>
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    <button
-                      onClick={() => handleMarathonClick(
+                  <MarathonPricingCard
+                    title={landing.marathonsSection.advanced.title}
+                    duration={landing.marathonsSection.advanced.duration}
+                    tenure={
+                      ((landing.marathonsSection.advanced as any).marathonId?.tenure || 0) + 
+                      ((landing.marathonsSection.basic as any).marathonId?.numberOfDays || 14)
+                    }
+                    price={landing.marathonsSection.advanced.price}
+                    oldPrice={landing.marathonsSection.advanced.oldPrice}
+                    features={landing.marathonsSection.advanced.features}
+                    isAdvanced={true}
+                    spotsLeft={spotsLeft}
+                    onPaymentClick={() => handleMarathonClick(
+                      extractMarathonId(landing.marathonsSection!.advanced!.marathonId),
+                      landing.marathonsSection!.advanced!.title,
+                      landing.marathonsSection!.advanced!.price,
+                      true
+                    )}
+                    onDetailsClick={() => setDetailsModal({
+                      isOpen: true,
+                      title: landing.marathonsSection!.advanced!.title,
+                      marathonTitle: (landing.marathonsSection!.advanced as any).marathonId?.title || 'Rejuvena PRO',
+                      description: (landing.marathonsSection!.advanced as any).marathonId?.courseDescription || '',
+                      price: landing.marathonsSection!.advanced!.price,
+                      oldPrice: landing.marathonsSection!.advanced!.oldPrice,
+                      tenure: ((landing.marathonsSection!.advanced as any).marathonId?.tenure || 0) + ((landing.marathonsSection!.basic as any).marathonId?.numberOfDays || 14),
+                      features: landing.marathonsSection!.advanced!.features,
+                      onPayment: () => handleMarathonClick(
                         extractMarathonId(landing.marathonsSection!.advanced!.marathonId),
                         landing.marathonsSection!.advanced!.title,
                         landing.marathonsSection!.advanced!.price,
                         true
-                      )}
-                      className="w-full py-3 bg-white text-purple-600 rounded-lg font-semibold hover:shadow-lg transition"
-                    >
-                      {landing.marathonsSection.advanced.ctaButton.text}
-                    </button>
-                  </div>
+                      )
+                    })}
+                    buttonText={landing.marathonsSection.advanced.ctaButton.text}
+                  />
                 )}
               </div>
             </div>
@@ -391,6 +436,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
           marathonTitle={registrationModal.marathonTitle}
           marathonPrice={registrationModal.marathonPrice}
           isAdvanced={registrationModal.isAdvanced}
+        />
+      )}
+      
+      {detailsModal && (
+        <MarathonDetailsModal
+          isOpen={detailsModal.isOpen}
+          onClose={() => setDetailsModal(null)}
+          title={detailsModal.title}
+          marathonTitle={detailsModal.marathonTitle}
+          description={detailsModal.description}
+          price={detailsModal.price}
+          oldPrice={detailsModal.oldPrice}
+          tenure={detailsModal.tenure}
+          features={detailsModal.features}
+          onPayment={detailsModal.onPayment}
         />
       )}
     </>
