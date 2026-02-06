@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main
+      - main  # Change to your default branch if different
   workflow_dispatch:
 
 permissions:
@@ -18,6 +18,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./web
     
     steps:
       - name: Checkout
@@ -29,13 +32,13 @@ jobs:
           node-version: '18'
       
       - name: Install dependencies
-        run: cd web && npm install
+        run: npm install
       
       - name: Build
-        run: cd web && npm run build
+        run: npm run build
       
       - name: Create .nojekyll file
-        run: cd web && touch out/.nojekyll
+        run: touch ./out/.nojekyll
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
