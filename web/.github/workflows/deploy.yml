@@ -7,43 +7,47 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
+      
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-
+      
       - name: Install dependencies
-        run: npm install
-
-      - name: Build
-        run: npm run build
+        run: npm ci
+      
+      - name: Build and Export
+        run: npm run export
         env:
           NEXT_PUBLIC_API_URL: https://api-rejuvena.duckdns.org
-
-      - name: Create .nojekyll and 404 page
-        run: |
-          touch out/.nojekyll
-          cp public/404.html out/404.html 2>/dev/null || true
-
+      
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./out
 
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
