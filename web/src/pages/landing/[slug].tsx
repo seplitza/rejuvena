@@ -483,30 +483,12 @@ export default LandingPage;
 
 // GitHub Pages требует предварительную генерацию всех путей  
 export async function getStaticPaths() {
-  try {
-    const axios = require('axios');
-    const API_URL = 'https://api-rejuvena.duckdns.org';
-    
-    const response = await axios.get(`${API_URL}/api/landings/public`, {
-    });
-    
-    const paths = response.data.landings?.map((landing: any) => ({
-      params: { slug: landing.slug }
-    })) || [];
-    
-    console.log(`[Build] Generated ${paths.length} landing pages`);
-    
-    return {
-      paths,
-      fallback: 'blocking',
-    };
-  } catch (error) {
-    console.error('[Build] Error fetching landings:', error);
-    return {
-      paths: [],
-      fallback: 'blocking',
-    };
-  }
+  // Временно возвращаем пустой массив для билда
+  // В продакшене используется fallback: 'blocking' для динамической генерации
+  return {
+    paths: [],
+    fallback: 'blocking',
+  };
 }
 
 export async function getStaticProps({ params }: { params: { slug: string } }) {

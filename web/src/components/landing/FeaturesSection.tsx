@@ -35,13 +35,18 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ section }) => {
           {section.sectionTitle}
         </h2>
         {section.subtitle && (
-        {section.sName="text-xl t        {section.sName="ay-600 max-w-3xl mx-auto">
+          <p className="text-xl text-center mb-12 text-gray-600 max-w-3xl mx-auto">
             {section.subtitle}
           </p>
-        )}        )}        )}        )}        )}        )}        )}       >
-                                          id                                          id                                          id      m-pu                              w-             ">                                          id            <h              ext-xl font-bold mb-3 text-gray-800">{feature.title}</h3>
+        )}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {section.features.map((feature, index) => (
+            <div key={index} className="text-center p-6 rounded-lg hover:shadow-lg transition-shadow">
+              {feature.icon && renderIcon(feature.icon)}
+              <h3 className="text-xl font-bold mb-3 text-gray-800">{feature.title}</h3>
               <p className="text-gray-600">{feature.description}</p>
-            <                ))}
+            </div>
+          ))}
         </div>
       </div>
     </section>
