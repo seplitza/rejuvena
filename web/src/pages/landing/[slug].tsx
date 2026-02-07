@@ -483,12 +483,31 @@ export default LandingPage;
 
 // GitHub Pages требует предварительную генерацию всех путей  
 export async function getStaticPaths() {
-  // Временно возвращаем пустой массив для билда
-  // В продакшене используется fallback: 'blocking' для динамической генерации
-  return {
-    paths: [],
-    fallback: 'blocking',
-  };
+  try {
+    const axios = require('axios');
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527';
+    
+    const response = await axios.get(`${API_URL}/api/landings/public`, {
+      timeout: 30000,
+    });
+    
+    const paths = response.data.landings?.map((landing: any) => ({
+      params: { slug: landing.slug }
+    })) || [];
+    
+    console.log(`[Build] Generated ${paths.length} landing pages`);
+    
+    return {
+      paths,
+      fallback: false, // false для static export
+    };
+  } catch (error) {
+    console.error('[Build] Error fetching landings:', error);
+    return {
+      paths: [],
+      fallback: false,
+    };
+  }
 }
 
 export async function getStaticProps({ params }: { params: { slug: string } }) {

@@ -33,6 +33,8 @@ jobs:
       
       - name: Build
         run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://37.252.20.170:9527
       
       - name: Create .nojekyll file
         run: touch ./out/.nojekyll
