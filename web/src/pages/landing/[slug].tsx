@@ -443,7 +443,22 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
                 {landing.detailModals.slice(0, 3).map((modal, idx) => (
                   <div key={idx} className="text-center">
                     <button
-                      onClick={() => setOpenDetailModal(idx)}
+                      onClick={() => {
+                        // Если есть linkUrl - редирект, иначе открываем модалку
+                        if (modal.linkUrl) {
+                          let url = modal.linkUrl;
+                          // Добавляем basePath если это относительный путь
+                          if (!url.startsWith('/') && !url.startsWith('#') && !url.startsWith('http')) {
+                            url = '/' + url;
+                          }
+                          if (url.startsWith('/') && !url.startsWith('//') && !url.startsWith('/rejuvena')) {
+                            url = '/rejuvena' + url;
+                          }
+                          router.push(url);
+                        } else {
+                          setOpenDetailModal(idx);
+                        }
+                      }}
                       className="px-6 py-3 bg-white text-purple-600 border-2 border-purple-600 rounded-lg hover:bg-purple-50 transition font-semibold"
                     >
                       Подробнее о "{modal.title}"
