@@ -4,9 +4,10 @@ import Image from 'next/image';
 
 interface FeaturesSectionProps {
   section: IFeaturesSection;
+  onCardClick?: (modalId: number) => void;
 }
 
-const FeaturesSection: React.FC<FeaturesSectionProps> = ({ section }) => {
+const FeaturesSection: React.FC<FeaturesSectionProps> = ({ section, onCardClick }) => {
   if (!section.features || section.features.length === 0) return null;
 
   const renderIcon = (icon: string) => {
@@ -41,10 +42,21 @@ const FeaturesSection: React.FC<FeaturesSectionProps> = ({ section }) => {
         )}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {section.features.map((feature, index) => (
-            <div key={index} className="text-center p-6 rounded-lg hover:shadow-lg transition-shadow">
+            <div 
+              key={index} 
+              className={`text-center p-6 rounded-lg transition-all ${
+                feature.modalId !== undefined 
+                  ? 'hover:shadow-xl hover:scale-105 cursor-pointer' 
+                  : 'hover:shadow-lg'
+              }`}
+              onClick={() => feature.modalId !== undefined && onCardClick?.(feature.modalId)}
+            >
               {feature.icon && renderIcon(feature.icon)}
               <h3 className="text-xl font-bold mb-3 text-gray-800">{feature.title}</h3>
               <p className="text-gray-600">{feature.description}</p>
+              {feature.modalId !== undefined && (
+                <p className="text-purple-600 text-sm mt-3 font-semibold">Подробнее →</p>
+              )}
             </div>
           ))}
         </div>

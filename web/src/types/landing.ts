@@ -5,6 +5,7 @@ export interface IFeaturesSection {
     icon: string;
     title: string;
     description: string;
+    modalId?: number;
   }>;
 }
 
@@ -15,6 +16,7 @@ export interface IProblemsSection {
     number: string;
     title: string;
     description: string;
+    modalId?: number;
   }>;
 }
 
@@ -28,6 +30,7 @@ export interface IAboutSection {
     icon: string;
     title: string;
     description: string;
+    modalId?: number;
   }>;
 }
 
@@ -38,6 +41,7 @@ export interface IStepsSection {
     image?: string;
     title: string;
     description: string;
+    modalId?: number;
   }>;
 }
 
@@ -49,6 +53,7 @@ export interface IProcessSection {
     title: string;
     description: string;
     duration?: string;
+    modalId?: number;
   }>;
 }
 
@@ -58,6 +63,7 @@ export interface IStatsSection {
     value: string;
     label: string;
     description: string;
+    modalId?: number;
   }>;
 }
 

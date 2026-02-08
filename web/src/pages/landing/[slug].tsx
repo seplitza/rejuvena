@@ -263,10 +263,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
         </section>
 
         {/* Features Section - Что такое система */}
-        {landing.featuresSection && <FeaturesSection section={landing.featuresSection} />}
+        {landing.featuresSection && <FeaturesSection section={landing.featuresSection} onCardClick={setOpenDetailModal} />}
 
         {/* Problems Section - Сеплица стирает возрастные признаки */}
-        {landing.problemsSection && <ProblemsSection section={landing.problemsSection} />}
+        {landing.problemsSection && <ProblemsSection section={landing.problemsSection} onCardClick={setOpenDetailModal} />}
 
         {/* About Section - Обо мне */}
         {landing.aboutSection && <AboutSection section={landing.aboutSection} />}
@@ -288,7 +288,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
 
         {/* Marathons Section */}
         {landing.marathonsSection && (
-          <section id="marathon" className="py-20 px-4 bg-gray-50">
+          <section id="marathons" className="py-20 px-4 bg-gray-50">
             <div className="max-w-6xl mx-auto">
               <h2 className="text-4xl font-bold text-center mb-12 text-gray-800">
                 {landing.marathonsSection.sectionTitle}
