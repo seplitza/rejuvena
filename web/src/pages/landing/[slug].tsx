@@ -15,6 +15,9 @@ import TestimonialsGallerySection from '../../components/landing/TestimonialsGal
 import MarathonRegistrationModal from '../../components/landing/MarathonRegistrationModal';
 import MarathonDetailsModal from '../../components/landing/MarathonDetailsModal';
 import MarathonPricingCard from '../../components/landing/MarathonPricingCard';
+import DetailModal from '../../components/landing/DetailModal';
+import ScrollButton from '../../components/landing/ScrollButton';
+import VideoCarousel from '../../components/landing/VideoCarousel';
 
 interface LandingPageProps {
   landing?: Landing | null;
@@ -47,6 +50,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
     features: string[];
     onPayment: () => void;
   } | null>(null);
+  
+  // Состояния для новых интерактивных элементов
+  const [openDetailModal, setOpenDetailModal] = useState<number | null>(null);
 
   useEffect(() => {
     // Если данные уже получены через SSG, не делаем fetch
@@ -428,6 +434,71 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
           </section>
         )}
 
+        {/* Интерактивные элементы: Модальные окна "Подробнее" */}
+        {landing.detailModals && landing.detailModals.length > 0 && (
+          <section className="py-20 px-4 bg-gray-50">
+            <div className="max-w-6xl mx-auto">
+              <div className="grid md:grid-cols-3 gap-6">
+                {landing.detailModals.slice(0, 3).map((modal, idx) => (
+                  <div key={idx} className="text-center">
+                    <button
+                      onClick={() => setOpenDetailModal(idx)}
+                      className="px-6 py-3 bg-white text-purple-600 border-2 border-purple-600 rounded-lg hover:bg-purple-50 transition font-semibold"
+                    >
+                      Подробнее о "{modal.title}"
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Интерактивные элементы: Кнопки записи на марафон */}
+        {landing.enrollButtons && landing.enrollButtons.length > 0 && (
+          <section className="py-16 px-4">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex flex-wrap justify-center gap-6">
+                {landing.enrollButtons.slice(0, 3).map((button, idx) => (
+                  <ScrollButton
+                    key={idx}
+                    text={button.text}
+                    targetId={button.targetId}
+                    variant="primary"
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Интерактивные элементы: Кнопки оплаты */}
+        {landing.paymentButtons && landing.paymentButtons.length > 0 && (
+          <section className="py-16 px-4 bg-gradient-to-r from-purple-50 to-pink-50">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex flex-wrap justify-center gap-6">
+                {landing.paymentButtons.slice(0, 2).map((button, idx) => (
+                  <ScrollButton
+                    key={idx}
+                    text={button.text}
+                    targetId={button.targetId}
+                    variant="secondary"
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Интерактивные элементы: Видео блоки */}
+        {landing.videoBlocks && landing.videoBlocks.length > 0 && (
+          <section className="py-20 px-4">
+            <div className="max-w-6xl mx-auto">
+              <VideoCarousel videos={landing.videoBlocks.slice(0, 2)} />
+            </div>
+          </section>
+        )}
+
         {/* CTA Section */}
         {landing.ctaSection && (
           <section className="py-20 px-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
@@ -475,6 +546,19 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
           onPayment={detailsModal.onPayment}
         />
       )}
+      
+      {/* Модальные окна "Подробнее" */}
+      {landing && landing.detailModals && landing.detailModals.map((modal, idx) => (
+        <DetailModal
+          key={idx}
+          isOpen={openDetailModal === idx}
+          onClose={() => setOpenDetailModal(null)}
+          title={modal.title}
+          content={modal.content}
+          linkText={modal.linkText}
+          linkUrl={modal.linkUrl}
+        />
+      ))}
     </>
   );
 };

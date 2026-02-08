@@ -151,6 +151,29 @@ export interface Landing {
       link: string;
     };
   };
+  
+  // Интерактивные элементы
+  detailModals?: Array<{
+    title: string;
+    content: string;
+    linkText?: string;
+    linkUrl?: string;
+  }>;
+  enrollButtons?: Array<{
+    text: string;
+    targetId: string;
+  }>;
+  paymentButtons?: Array<{
+    text: string;
+    targetId: string;
+  }>;
+  videoBlocks?: Array<{
+    title?: string;
+    videoUrl: string;
+    poster?: string;
+    order: number;
+  }>;
+  
   views: number;
   conversions: number;
 }
