@@ -65,12 +65,28 @@ const DetailModal: React.FC<DetailModalProps> = ({
         </div>
         
         <div className="px-6 py-6">
-          <div 
-            className="prose prose-lg max-w-none"
-            dangerouslySetInnerHTML={{ __html: content }}
-          />
+          {content && content.replace(/<[^>]*>/g, '').trim() ? (
+            <div 
+              className="prose prose-lg max-w-none"
+              dangerouslySetInnerHTML={{ __html: content }}
+            />
+          ) : linkText && linkUrl ? (
+            <div className="text-center py-8">
+              <p className="text-gray-600 mb-6">Перейдите по ссылке для получения подробной информации:</p>
+              <a
+                href={linkUrl.startsWith('/') || linkUrl.startsWith('#') ? linkUrl : `/${linkUrl}`}
+                target={linkUrl.startsWith('http') ? '_blank' : undefined}
+                rel={linkUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
+                className="inline-block px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-lg font-semibold rounded-lg hover:shadow-lg transition"
+              >
+                {linkText}
+              </a>
+            </div>
+          ) : (
+            <p className="text-gray-500 italic">Контент отсутствует</p>
+          )}
           
-          {linkText && linkUrl && (
+          {content && content.replace(/<[^>]*>/g, '').trim() && linkText && linkUrl && (
             <div className="mt-6">
               <a
                 href={linkUrl.startsWith('/') || linkUrl.startsWith('#') ? linkUrl : `/${linkUrl}`}
