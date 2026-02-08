@@ -73,7 +73,7 @@ const DetailModal: React.FC<DetailModalProps> = ({
           {linkText && linkUrl && (
             <div className="mt-6">
               <a
-                href={linkUrl}
+                href={linkUrl.startsWith('/') || linkUrl.startsWith('#') ? linkUrl : `/${linkUrl}`}
                 target={linkUrl.startsWith('http') ? '_blank' : undefined}
                 rel={linkUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
                 className="inline-block px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:shadow-lg transition"
