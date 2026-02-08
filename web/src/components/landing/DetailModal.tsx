@@ -1,4 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { API_BASE_URL } from '../../config/api';
 
 interface DetailModalProps {
   isOpen: boolean;
@@ -17,6 +19,49 @@ const DetailModal: React.FC<DetailModalProps> = ({
   linkText,
   linkUrl
 }) => {
+  const [loadedContent, setLoadedContent] = useState<string>('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Загрузка контента через API если linkUrl начинается с api://marathon/
+  useEffect(() => {
+    if (!isOpen || !linkUrl || !linkUrl.startsWith('api://marathon/')) {
+      setLoadedContent('');
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    const fetchContent = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Формат: api://marathon/{marathonId}/welcome
+        const match = linkUrl.match(/^api:\/\/marathon\/([^/]+)\/welcome$/);
+        if (!match) {
+          setError('Неверный формат API URL');
+          return;
+        }
+        
+        const marathonId = match[1];
+        const response = await axios.get<{ success: boolean; welcomeMessage: string }>(
+          `${API_BASE_URL}/api/marathons/${marathonId}/welcome`
+        );
+        
+        if (response.data.success) {
+          setLoadedContent(response.data.welcomeMessage);
+        }
+      } catch (err: any) {
+        console.error('Error loading content:', err);
+        setError('Не удалось загрузить контент');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContent();
+  }, [isOpen, linkUrl]);
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -65,12 +110,24 @@ const DetailModal: React.FC<DetailModalProps> = ({
         </div>
         
         <div className="px-6 py-6">
-          {content && content.replace(/<[^>]*>/g, '').trim() ? (
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+              <p className="mt-4 text-gray-600">Загрузка...</p>
+            </div>
+          ) : error ? (
+            <p className="text-red-500 italic">{error}</p>
+          ) : loadedContent ? (
+            <div 
+              className="prose prose-lg max-w-none"
+              dangerouslySetInnerHTML={{ __html: loadedContent }}
+            />
+          ) : content && content.replace(/<[^>]*>/g, '').trim() ? (
             <div 
               className="prose prose-lg max-w-none"
               dangerouslySetInnerHTML={{ __html: content }}
             />
-          ) : linkText && linkUrl ? (
+          ) : linkText && linkUrl && !linkUrl.startsWith('api://') ? (
             <div className="text-center py-8">
               <p className="text-gray-600 mb-6">Перейдите по ссылке для получения подробной информации:</p>
               <a
@@ -86,7 +143,7 @@ const DetailModal: React.FC<DetailModalProps> = ({
             <p className="text-gray-500 italic">Контент отсутствует</p>
           )}
           
-          {content && content.replace(/<[^>]*>/g, '').trim() && linkText && linkUrl && (
+          {!loading && !loadedContent && content && content.replace(/<[^>]*>/g, '').trim() && linkText && linkUrl && !linkUrl.startsWith('api://') && (
             <div className="mt-6">
               <a
                 href={linkUrl.startsWith('/') || linkUrl.startsWith('#') ? linkUrl : `/${linkUrl}`}
