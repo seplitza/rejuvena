@@ -47,6 +47,8 @@ const parseMarkdownToHTML = (text: string): string => {
 
 export default function TipTapEditor({ content, onChange }: TipTapEditorProps) {
   const [uploading, setUploading] = useState(false);
+  const [showHTML, setShowHTML] = useState(false);
+  const [htmlContent, setHtmlContent] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
@@ -169,9 +171,26 @@ export default function TipTapEditor({ content, onChange }: TipTapEditorProps) {
   };
 
   const addLink = () => {
-    const url = prompt('Введите URL ссылки:');
+    const url = prompt('Введите URL ссылки (например: #reason-posture для якоря):');
     if (url) {
-      editor.chain().focus().setLink({ href: url }).run();
+      const { from, to } = editor.state.selection;
+      const selectedText = editor.state.doc.textBetween(from, to, '');
+      
+      if (selectedText) {
+        // Если есть выделенный текст - просто добавляем ссылку
+        editor.chain().focus().setLink({ href: url }).run();
+      } else {
+        // Если текст не выделен - вставляем URL как текст ссылки
+        const linkText = url.startsWith('#') 
+          ? url.substring(1).replace(/-/g, ' ') // Для якорей убираем # и заменяем - на пробелы
+          : url; // Для обычных URL используем сам URL
+        
+        editor
+          .chain()
+          .focus()
+          .insertContent(`<a href="${url}">${linkText}</a> `)
+          .run();
+      }
     }
   };
 
@@ -329,6 +348,34 @@ export default function TipTapEditor({ content, onChange }: TipTapEditorProps) {
         >
           🔗 Link
         </button>
+        
+        {/* HTML Mode Toggle Button */}
+        <button
+          onClick={() => {
+            if (!showHTML) {
+              // Переключаемся в HTML режим - сохраняем текущий HTML
+              setHtmlContent(editor?.getHTML() || '');
+            } else {
+              // Возвращаемся в визуальный режим - применяем изменения
+              editor?.commands.setContent(htmlContent);
+              onChange(htmlContent);
+            }
+            setShowHTML(!showHTML);
+          }}
+          style={{
+            padding: '6px 12px',
+            border: '1px solid #D1D5DB',
+            background: showHTML ? '#10B981' : 'white',
+            color: showHTML ? 'white' : '#374151',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: showHTML ? 'bold' : 'normal',
+            marginLeft: '8px'
+          }}
+        >
+          {showHTML ? '✅ Применить HTML' : '</> HTML'}
+        </button>
       </div>
 
       {/* Подсказка о Markdown */}
@@ -344,16 +391,53 @@ export default function TipTapEditor({ content, onChange }: TipTapEditorProps) {
       </div>
 
       {/* Editor */}
-      <div style={{
-        border: '1px solid #E5E7EB',
-        borderTop: 'none',
-        borderRadius: '0 0 8px 8px',
-        padding: '16px',
-        minHeight: '300px',
-        background: 'white'
-      }}>
-        <EditorContent editor={editor} />
-      </div>
+      {!showHTML ? (
+        <div style={{
+          border: '1px solid #E5E7EB',
+          borderTop: 'none',
+          borderRadius: '0 0 8px 8px',
+          padding: '16px',
+          minHeight: '300px',
+          background: 'white'
+        }}>
+          <EditorContent editor={editor} />
+        </div>
+      ) : (
+        <div style={{
+          border: '1px solid #E5E7EB',
+          borderTop: 'none',
+          borderRadius: '0 0 8px 8px',
+          background: 'white'
+        }}>
+          <textarea
+            value={htmlContent}
+            onChange={(e) => setHtmlContent(e.target.value)}
+            style={{
+              width: '100%',
+              minHeight: '400px',
+              padding: '16px',
+              fontFamily: 'Monaco, Consolas, "Courier New", monospace',
+              fontSize: '13px',
+              lineHeight: '1.6',
+              border: 'none',
+              outline: 'none',
+              resize: 'vertical',
+              background: '#1e1e1e',
+              color: '#d4d4d4'
+            }}
+            placeholder="Вставьте HTML код здесь..."
+          />
+          <div style={{
+            padding: '12px',
+            background: '#FEF3C7',
+            borderTop: '1px solid #FCD34D',
+            fontSize: '12px',
+            color: '#92400E'
+          }}>
+            ⚠️ <strong>Внимание:</strong> Будьте аккуратны с HTML кодом. Убедитесь что все теги закрыты правильно.
+          </div>
+        </div>
+      )}
       
       <style>{`
         .ProseMirror {

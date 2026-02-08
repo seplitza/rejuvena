@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
 
 interface DetailModalProps {
   isOpen: boolean;
@@ -66,9 +65,10 @@ const DetailModal: React.FC<DetailModalProps> = ({
         </div>
         
         <div className="px-6 py-6">
-          <div className="prose prose-lg max-w-none">
-            <ReactMarkdown>{content}</ReactMarkdown>
-          </div>
+          <div 
+            className="prose prose-lg max-w-none"
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
           
           {linkText && linkUrl && (
             <div className="mt-6">
