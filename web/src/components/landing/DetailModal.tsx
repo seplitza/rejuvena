@@ -36,8 +36,10 @@ const DetailModal: React.FC<DetailModalProps> = ({
       setLoading(true);
       setError(null);
       try {
-        // Формат: api://marathon/{marathonId}/welcome
-        const match = linkUrl.match(/^api:\/\/marathon\/([^/]+)\/welcome$/);
+        // Формат: api://marathon/{marathonId}/welcome или api://marathon/{marathonId}/welcome#anchor
+        // Убираем якорь (hash) перед парсингом
+        const urlWithoutHash = linkUrl.split('#')[0];
+        const match = urlWithoutHash.match(/^api:\/\/marathon\/([^/]+)\/welcome$/);
         if (!match) {
           setError('Неверный формат API URL');
           return;
@@ -50,6 +52,17 @@ const DetailModal: React.FC<DetailModalProps> = ({
         
         if (response.data.success) {
           setLoadedContent(response.data.welcomeMessage);
+          
+          // Если есть якорь - скроллим к нему после загрузки контента
+          const hash = linkUrl.split('#')[1];
+          if (hash) {
+            setTimeout(() => {
+              const element = document.getElementById(hash);
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }, 100);
+          }
         }
       } catch (err: any) {
         console.error('Error loading content:', err);
