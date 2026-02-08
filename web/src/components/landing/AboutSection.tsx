@@ -9,7 +9,6 @@ const API_BASE_URL = 'https://api-rejuvena.duckdns.org';
 
 const AboutSection: React.FC<AboutSectionProps> = ({ section }) => {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
-  const [isClicking, setIsClicking] = useState(false);
 
   // Формируем полный URL для фото
   const photoUrl = section.photo
@@ -18,24 +17,20 @@ const AboutSection: React.FC<AboutSectionProps> = ({ section }) => {
       : `${API_BASE_URL}${section.photo}`
     : null;
 
-  // Отслеживаем скролл для сброса фото (но не сразу после клика)
+  // Автоматический сброс через 30 секунд
   React.useEffect(() => {
-    const handleScroll = () => {
-      if (selectedPhoto && !isClicking) {
+    if (selectedPhoto) {
+      const timer = setTimeout(() => {
         setSelectedPhoto(null);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [selectedPhoto, isClicking]);
+      }, 30000); // 30 секунд
+      
+      return () => clearTimeout(timer);
+    }
+  }, [selectedPhoto]);
 
   // Обработчик клика по миниатюре
   const handleThumbnailClick = (url: string) => {
-    setIsClicking(true);
     setSelectedPhoto(url);
-    // Сниерез 300мс
-    setTimeout(() => setIsClicking(false), 300);
   };
 
   // Формируем URLs для галереи
