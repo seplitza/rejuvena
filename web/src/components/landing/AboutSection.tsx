@@ -17,12 +17,24 @@ const AboutSection: React.FC<AboutSectionProps> = ({ section }) => {
       : `${API_BASE_URL}${section.photo}`
     : null;
 
+  // Отслеживаем скролл для сброса фото
+  React.useEffect(() => {
+    const handleScroll = () => {
+      if (selectedPhoto) {
+        setSelectedPhoto(null);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [selectedPhoto]);
+
   // Формируем URLs для галереи
   const galleryUrls = section.gallery?.map(photo =>
     photo.startsWith('http') ? photo : `${API_BASE_URL}${photo}`
   ) || [];
 
-  return (
+  return (selectedPhoto || 
     <section className="py-20 px-4 bg-white">
       <div className="max-w-6xl mx-auto">
         <h2 className="text-4xl font-bold text-center mb-12 text-gray-800">
@@ -83,7 +95,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ section }) => {
             {photoUrl && (
               <div className="float-left mr-8 mb-6" style={{ width: '420px' }}>
                 <img
-                  src={photoUrl}
+                  src={selectedPhoto || photoUrl}
                   alt={section.name}
                   className="w-full rounded-2xl shadow-xl"
                 />
@@ -131,26 +143,6 @@ const AboutSection: React.FC<AboutSectionProps> = ({ section }) => {
           </div>
         </div>
       </div>
-
-      {/* Модальное окно для просмотра фото */}
-      {selectedPhoto && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedPhoto(null)}
-        >
-          <img
-            src={selectedPhoto}
-            alt="Full size"
-            className="max-w-full max-h-full object-contain rounded-lg"
-          />
-          <button
-            className="absolute top-4 right-4 text-white text-4xl hover:text-gray-300"
-            onClick={() => setSelectedPhoto(null)}
-          >
-            ×
-          </button>
-        </div>
-      )}
     </section>
   );
 };
