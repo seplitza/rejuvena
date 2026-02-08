@@ -43,7 +43,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ section }) => {
     photo.startsWith('http') ? photo : `${API_BASE_URL}${photo}`
   ) || [];
 
-  return (selectedPhoto || 
+  return (
     <section className="py-20 px-4 bg-white">
       <div className="max-w-6xl mx-auto">
         <h2 className="text-4xl font-bold text-center mb-12 text-gray-800">
@@ -55,7 +55,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ section }) => {
           <div>
             {photoUrl && (
               <img
-                src={photoUrl}
+                src={selectedPhoto || photoUrl}
                 alt={section.name}
                 className="w-full rounded-2xl shadow-xl"
               />
