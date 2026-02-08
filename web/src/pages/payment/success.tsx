@@ -16,6 +16,7 @@ export default function PaymentSuccess() {
   
   const [status, setStatus] = useState<'checking' | 'processing' | 'succeeded' | 'failed' | 'error'>('checking');
   const [payment, setPayment] = useState<any>(null);
+  const [marathon, setMarathon] = useState<any>(null);
 
   // Обновляем данные пользователя после успешной оплаты
   const refreshUserData = async () => {
@@ -77,6 +78,21 @@ export default function PaymentSuccess() {
         if (data.success && data.payment) {
           setPayment(data.payment);
           setStatus(data.payment.status);
+          
+          // Если это марафон - загружаем его данные для получения telegramGroupUrl
+          if ((data.payment.metadata?.type === 'marathon' || data.payment.metadata?.planType === 'marathon') && data.payment.metadata?.marathonId) {
+            try {
+              const marathonResponse = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527'}/api/marathons/${data.payment.metadata.marathonId}`
+              );
+              if (marathonResponse.ok) {
+                const marathonData = await marathonResponse.json();
+                setMarathon(marathonData);
+              }
+            } catch (error) {
+              console.error('Error loading marathon:', error);
+            }
+          }
           
           // Если платеж успешен - обновляем данные пользователя
           if (data.payment.status === 'succeeded') {
@@ -231,6 +247,27 @@ export default function PaymentSuccess() {
                   ? 'Перейти в марафон' 
                   : 'Перейти к упражнениям'}
               </Link>
+
+              {/* Ссылка на Telegram группу (только для марафонов) */}
+              {(payment?.metadata?.type === 'marathon' || payment?.metadata?.planType === 'marathon') && marathon?.telegramGroupUrl && (
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl">📱</span>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-blue-900 mb-2">Присоединяйтесь к группе марафона в Telegram</h3>
+                      <p className="text-sm text-blue-800 mb-3">Там выходят прямые эфиры с автором</p>
+                      <a
+                        href={marathon.telegramGroupUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+                      >
+                        Открыть группу →
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
               
               {(payment?.metadata?.type === 'marathon' || payment?.metadata?.planType === 'marathon') && (
                 <p className="mt-3 text-center text-sm text-gray-600">
