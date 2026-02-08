@@ -9,6 +9,7 @@ const API_BASE_URL = 'https://api-rejuvena.duckdns.org';
 
 const AboutSection: React.FC<AboutSectionProps> = ({ section }) => {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [isClicking, setIsClicking] = useState(false);
 
   // Формируем полный URL для фото
   const photoUrl = section.photo
@@ -17,17 +18,25 @@ const AboutSection: React.FC<AboutSectionProps> = ({ section }) => {
       : `${API_BASE_URL}${section.photo}`
     : null;
 
-  // Отслеживаем скролл для сброса фото
+  // Отслеживаем скролл для сброса фото (но не сразу после клика)
   React.useEffect(() => {
     const handleScroll = () => {
-      if (selectedPhoto) {
+      if (selectedPhoto && !isClicking) {
         setSelectedPhoto(null);
       }
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [selectedPhoto]);
+  }, [selectedPhoto, isClicking]);
+
+  // Обработчик клика по миниатюре
+  const handleThumbnailClick = (url: string) => {
+    setIsClicking(true);
+    setSelectedPhoto(url);
+    // Сниерез 300мс
+    setTimeout(() => setIsClicking(false), 300);
+  };
 
   // Формируем URLs для галереи
   const galleryUrls = section.gallery?.map(photo =>
@@ -61,7 +70,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ section }) => {
                     src={url}
                     alt={`Gallery ${idx + 1}`}
                     className="w-full aspect-square object-cover rounded-lg shadow cursor-pointer hover:opacity-80 transition"
-                    onClick={() => setSelectedPhoto(url)}
+                    onClick={() => handleThumbnailClick(url)}
                   />
                 ))}
               </div>
@@ -109,7 +118,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ section }) => {
                         src={url}
                         alt={`Gallery ${idx + 1}`}
                         className="w-full aspect-square object-cover rounded-lg shadow cursor-pointer hover:opacity-80 transition"
-                        onClick={() => setSelectedPhoto(url)}
+                        onClick={() => handleThumbnailClick(url)}
                       />
                     ))}
                   </div>
