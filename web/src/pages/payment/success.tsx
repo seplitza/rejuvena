@@ -89,13 +89,32 @@ export default function PaymentSuccess() {
           setStatus(data.payment.status);
           
           // Если это марафон - загружаем его данные для получения telegramGroupUrl
-          if ((data.payment.metadata?.type === 'marathon' || data.payment.metadata?.planType === 'marathon') && data.payment.metadata?.marathonId) {
+          if (data.payment.metadata?.type === 'marathon' || data.payment.metadata?.planType === 'marathon') {
             try {
-              const marathonResponse = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527'}/api/marathons/${data.payment.metadata.marathonId}`
-              );
-              if (marathonResponse.ok) {
-                const marathonData = await marathonResponse.json();
+              let marathonData = null;
+              
+              // Пытаемся загрузить по marathonId (новые платежи)
+              if (data.payment.metadata?.marathonId) {
+                const marathonResponse = await fetch(
+                  `${process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527'}/api/marathons/${data.payment.metadata.marathonId}`
+                );
+                if (marathonResponse.ok) {
+                  marathonData = await marathonResponse.json();
+                }
+              }
+              
+              // Fallback: ищем по названию из metadata (старые платежи)
+              if (!marathonData && data.payment.metadata?.marathonName) {
+                const allMarathonsResponse = await fetch(
+                  `${process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527'}/api/marathons`
+                );
+                if (allMarathonsResponse.ok) {
+                  const marathons = await allMarathonsResponse.json();
+                  marathonData = marathons.find((m: any) => m.title === data.payment.metadata.marathonName);
+                }
+              }
+              
+              if (marathonData) {
                 setMarathon(marathonData);
               }
             } catch (error) {
@@ -347,6 +366,19 @@ export default function PaymentSuccess() {
               <p className="text-gray-600 mb-6 text-center">
                 Пожалуйста, проверьте историю платежей в личном кабинете или обратитесь в поддержку.
               </p>
+
+              <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h3 className="font-semibold text-blue-900 mb-2">📞 Техническая поддержка</h3>
+                <p className="text-sm text-blue-800 mb-3">Если возникли проблемы с приложением, обратитесь в поддержку:</p>
+                <a
+                  href="https://t.me/seplitza_support"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+                >
+                  Открыть поддержку →
+                </a>
+              </div>
 
               <Link 
                 href="/"
