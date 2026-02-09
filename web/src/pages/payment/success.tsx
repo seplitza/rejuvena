@@ -60,12 +60,14 @@ export default function PaymentSuccess() {
         const token = localStorage.getItem('auth_token');
         
         if (!token) {
+          console.error('No auth token found');
           setStatus('error');
           return;
         }
 
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527';
         const response = await fetch(
-          `https://api-rejuvena.duckdns.org/api/payment/status/${orderId}`,
+          `${apiUrl}/api/payment/status/${orderId}`,
           {
             headers: {
               'Authorization': `Bearer ${token}`
@@ -74,6 +76,13 @@ export default function PaymentSuccess() {
         );
         
         const data = await response.json();
+        console.log('Payment status response:', data);
+        
+        if (!response.ok) {
+          console.error('API error:', response.status, data);
+          setStatus('error');
+          return;
+        }
         
         if (data.success && data.payment) {
           setPayment(data.payment);
