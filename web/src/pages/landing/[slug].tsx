@@ -12,6 +12,7 @@ import ProcessSection from '../../components/landing/ProcessSection';
 import StatsSection from '../../components/landing/StatsSection';
 import ResultsGallerySection from '../../components/landing/ResultsGallerySection';
 import TestimonialsGallerySection from '../../components/landing/TestimonialsGallerySection';
+import InteractiveElements from '../../components/landing/InteractiveElements';
 import MarathonRegistrationModal from '../../components/landing/MarathonRegistrationModal';
 import MarathonDetailsModal from '../../components/landing/MarathonDetailsModal';
 import MarathonPricingCard from '../../components/landing/MarathonPricingCard';
@@ -262,32 +263,113 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
           </div>
         </section>
 
+        {/* Интерактивные элементы после Hero */}
+        <InteractiveElements
+          position="hero"
+          detailModals={landing.detailModals}
+          enrollButtons={landing.enrollButtons}
+          paymentButtons={landing.paymentButtons}
+          videoBlocks={landing.videoBlocks}
+          onDetailModalClick={setOpenDetailModal}
+        />
+
         {/* Features Section - Что такое система */}
         {landing.featuresSection && <FeaturesSection section={landing.featuresSection} onCardClick={setOpenDetailModal} />}
+        
+        {/* Интерактивные элементы после Features */}
+        <InteractiveElements
+          position="features"
+          detailModals={landing.detailModals}
+          enrollButtons={landing.enrollButtons}
+          paymentButtons={landing.paymentButtons}
+          videoBlocks={landing.videoBlocks}
+          onDetailModalClick={setOpenDetailModal}
+        />
 
         {/* Problems Section - Сеплица стирает возрастные признаки */}
         {landing.problemsSection && <ProblemsSection section={landing.problemsSection} onCardClick={setOpenDetailModal} />}
 
+        {/* Интерактивные элементы после Problems */}
+        <InteractiveElements
+          position="problems"
+          detailModals={landing.detailModals}
+          enrollButtons={landing.enrollButtons}
+          paymentButtons={landing.paymentButtons}
+          videoBlocks={landing.videoBlocks}
+          onDetailModalClick={setOpenDetailModal}
+        />
+        
         {/* About Section - Обо мне */}
         {landing.aboutSection && <AboutSection section={landing.aboutSection} />}
+        
+        {/* Интерактивные элементы после About */}
+        <InteractiveElements
+          position="about"
+          detailModals={landing.detailModals}
+          enrollButtons={landing.enrollButtons}
+          paymentButtons={landing.paymentButtons}
+          videoBlocks={landing.videoBlocks}
+          onDetailModalClick={setOpenDetailModal}
+        />
 
-        {/* Steps Section - 4 ступени системы */}
-        {landing.stepsSection && <StepsSection section={landing.stepsSection} />}
-
+        {/* Интерактивные элементы после Steps */}
+        <InteractiveElements
+          position="steps"
+          detailModals={landing.detailModals}
+          enrollButtons={landing.enrollButtons}
+          paymentButtons={landing.paymentButtons}
+          videoBlocks={landing.videoBlocks}
+          onDetailModalClick={setOpenDetailModal}
+        />
+        
         {/* Process Section - Как проходит программа */}
         {landing.processSection && <ProcessSection section={landing.processSection} />}
-
+        
+        {/* Интерактивные элементы после Process */}
+        <InteractiveElements
+          position="process"
+          detailModals={landing.detailModals}
+          enrollButtons={landing.enrollButtons}
+          paymentButtons={landing.paymentButtons}
+          videoBlocks={landing.videoBlocks}
+          onDetailModalClick={setOpenDetailModal}
+        />
+        
         {/* Stats Section - Результаты клиентов */}
         {landing.statsSection && <StatsSection section={landing.statsSection} />}
+        
+        {/* Интерактивные элементы после Stats */}
+        <InteractiveElements
+          position="stats"
+          detailModals={landing.detailModals}
+          enrollButtons={landing.enrollButtons}
+          paymentButtons={landing.paymentButtons}
+          videoBlocks={landing.videoBlocks}
+          onDetailModalClick={setOpenDetailModal}
+        />
 
-        {/* Results Gallery Section - Галерея результатов */}
-        {landing.resultsGallerySection && <ResultsGallerySection section={landing.resultsGallerySection} />}
-
+        {/* Интерактивные элементы после ResultsGallery */}
+        <InteractiveElements
+          position="resultsGallery"
+          detailModals={landing.detailModals}
+          enrollButtons={landing.enrollButtons}
+          paymentButtons={landing.paymentButtons}
+          videoBlocks={landing.videoBlocks}
+          onDetailModalClick={setOpenDetailModal}
+        />
+        
         {/* Testimonials Gallery Section - Галерея отзывов */}
         {landing.testimonialsGallerySection && <TestimonialsGallerySection section={landing.testimonialsGallerySection} />}
-
-        {/* Marathons Section */}
-        {landing.marathonsSection && (
+        
+        {/* Интерактивные элементы после TestimonialsGallery */}
+        <InteractiveElements
+          position="testimonialsGallery"
+          detailModals={landing.detailModals}
+          enrollButtons={landing.enrollButtons}
+          paymentButtons={landing.paymentButtons}
+          videoBlocks={landing.videoBlocks}
+          onDetailModalClick={setOpenDetailModal}
+        />
           <section id="marathons" className="py-20 px-4 bg-gray-50">
             <div id="tarify"></div>
             <div className="max-w-6xl mx-auto">
@@ -431,71 +513,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
                   </div>
                 ))}
               </div>
-            </div>
-          </section>
-        )}
-
-        {/* Интерактивные элементы: Модальные окна "Подробнее" */}
-        {landing.detailModals && landing.detailModals.length > 0 && (
-          <section className="py-20 px-4 bg-gray-50">
-            <div className="max-w-6xl mx-auto">
-              <div className="grid md:grid-cols-3 gap-6">
-                {landing.detailModals.map((modal, idx) => (
-                  <div key={idx} className="text-center">
-                    <button
-                      onClick={() => setOpenDetailModal(idx)}
-                      className="px-6 py-3 bg-white text-purple-600 border-2 border-purple-600 rounded-lg hover:bg-purple-50 transition font-semibold"
-                    >
-                      Подробнее о "{modal.title}"
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Интерактивные элементы: Кнопки записи на марафон */}
-        {landing.enrollButtons && landing.enrollButtons.length > 0 && (
-          <section className="py-16 px-4">
-            <div className="max-w-4xl mx-auto">
-              <div className="flex flex-wrap justify-center gap-6">
-                {landing.enrollButtons.map((button, idx) => (
-                  <ScrollButton
-                    key={idx}
-                    text={button.text}
-                    targetId={button.targetId}
-                    variant="primary"
-                  />
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Интерактивные элементы: Кнопки оплаты */}
-        {landing.paymentButtons && landing.paymentButtons.length > 0 && (
-          <section className="py-16 px-4 bg-gradient-to-r from-purple-50 to-pink-50">
-            <div className="max-w-4xl mx-auto">
-              <div className="flex flex-wrap justify-center gap-6">
-                {landing.paymentButtons.map((button, idx) => (
-                  <ScrollButton
-                    key={idx}
-                    text={button.text}
-                    targetId={button.targetId}
-                    variant="secondary"
-                  />
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Интерактивные элементы: Видео блоки */}
-        {landing.videoBlocks && landing.videoBlocks.length > 0 && (
-          <section className="py-20 px-4">
-            <div className="max-w-6xl mx-auto">
-              <VideoCarousel videos={landing.videoBlocks} />
             </div>
           </section>
         )}
