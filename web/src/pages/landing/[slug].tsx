@@ -370,6 +370,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
           videoBlocks={landing.videoBlocks}
           onDetailModalClick={setOpenDetailModal}
         />
+        
+        {landing.marathonsSection && (
           <section id="marathons" className="py-20 px-4 bg-gray-50">
             <div id="tarify"></div>
             <div className="max-w-6xl mx-auto">

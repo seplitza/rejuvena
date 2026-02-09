@@ -128,7 +128,7 @@ const daySlice = createSlice({
     },
     
     // Clear state
-    clearDayData(state) {
+    clearDayData() {
       return initialState;
     },
   },
