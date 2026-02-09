@@ -440,7 +440,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
           <section className="py-20 px-4 bg-gray-50">
             <div className="max-w-6xl mx-auto">
               <div className="grid md:grid-cols-3 gap-6">
-                {landing.detailModals.slice(0, 3).map((modal, idx) => (
+                {landing.detailModals.map((modal, idx) => (
                   <div key={idx} className="text-center">
                     <button
                       onClick={() => setOpenDetailModal(idx)}
@@ -460,7 +460,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
           <section className="py-16 px-4">
             <div className="max-w-4xl mx-auto">
               <div className="flex flex-wrap justify-center gap-6">
-                {landing.enrollButtons.slice(0, 3).map((button, idx) => (
+                {landing.enrollButtons.map((button, idx) => (
                   <ScrollButton
                     key={idx}
                     text={button.text}
@@ -478,7 +478,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
           <section className="py-16 px-4 bg-gradient-to-r from-purple-50 to-pink-50">
             <div className="max-w-4xl mx-auto">
               <div className="flex flex-wrap justify-center gap-6">
-                {landing.paymentButtons.slice(0, 2).map((button, idx) => (
+                {landing.paymentButtons.map((button, idx) => (
                   <ScrollButton
                     key={idx}
                     text={button.text}
@@ -495,7 +495,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
         {landing.videoBlocks && landing.videoBlocks.length > 0 && (
           <section className="py-20 px-4">
             <div className="max-w-6xl mx-auto">
-              <VideoCarousel videos={landing.videoBlocks.slice(0, 2)} />
+              <VideoCarousel videos={landing.videoBlocks} />
             </div>
           </section>
         )}

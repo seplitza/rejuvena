@@ -23,6 +23,7 @@ const VideoCarousel: React.FC<VideoCarouselProps> = ({ videos }) => {
   // Определяем тип видео
   const isYouTube = currentVideo.videoUrl.includes('youtube.com') || currentVideo.videoUrl.includes('youtu.be');
   const isVimeo = currentVideo.videoUrl.includes('vimeo.com');
+  const isVK = currentVideo.videoUrl.includes('vk.com') || currentVideo.videoUrl.includes('vkvideo.ru');
   
   // Конвертируем URL в embed формат
   const getEmbedUrl = (url: string): string => {
@@ -33,6 +34,25 @@ const VideoCarousel: React.FC<VideoCarouselProps> = ({ videos }) => {
     if (isVimeo) {
       const videoId = url.match(/vimeo\.com\/(\d+)/)?.[1];
       return videoId ? `https://player.vimeo.com/video/${videoId}` : url;
+    }
+    if (isVK) {
+      // VK видео форматы:
+      // https://vk.com/video-XXXX_YYYY
+      // https://vk.com/video_ext.php?oid=-XXXX&id=YYYY (уже embed)
+      // https://vkvideo.ru/video_ext.php?oid=-XXXX&id=YYYY (уже embed)
+      
+      if (url.includes('video_ext.php')) {
+        // Уже в формате embed
+        return url;
+      }
+      
+      // Парсим video-XXXX_YYYY формат
+      const match = url.match(/video(-?\d+)_(\d+)/);
+      if (match) {
+        const oid = match[1];
+        const id = match[2];
+        return `https://vk.com/video_ext.php?oid=${oid}&id=${id}&hd=2`;
+      }
     }
     return url;
   };
@@ -52,7 +72,7 @@ const VideoCarousel: React.FC<VideoCarouselProps> = ({ videos }) => {
       )}
       
       <div className="relative bg-black rounded-xl overflow-hidden shadow-2xl aspect-video">
-        {isYouTube || isVimeo ? (
+        {isYouTube || isVimeo || isVK ? (
           <iframe
             src={getEmbedUrl(currentVideo.videoUrl)}
             title={currentVideo.title || `Видео ${currentIndex + 1}`}
