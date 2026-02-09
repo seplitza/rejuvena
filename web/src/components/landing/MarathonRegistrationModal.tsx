@@ -20,6 +20,9 @@ const MarathonRegistrationModal: React.FC<MarathonRegistrationModalProps> = ({
   isAdvanced = false
 }) => {
   const [email, setEmail] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [telegramNick, setTelegramNick] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -42,7 +45,10 @@ const MarathonRegistrationModal: React.FC<MarathonRegistrationModalProps> = ({
         password?: string;
         error?: string;
       }>(`${API_BASE_URL}/api/auth/register-and-pay`, {
-        email: email.toLowerCase().trim()
+        email: email.toLowerCase().trim(),
+        firstName: firstName.trim() || undefined,
+        lastName: lastName.trim() || undefined,
+        telegramNick: telegramNick.trim() || undefined
       });
 
       if (!registerResponse.data.success) {
@@ -124,7 +130,49 @@ const MarathonRegistrationModal: React.FC<MarathonRegistrationModalProps> = ({
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
             <p className="text-xs text-gray-500 mt-1">
-              Отправим туда чек и проведем короткую регистрацию. Сразу перейдем к оплате.
+              Получите детали в ваш емейл и инфо-бот Сеплица
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Имя <span className="text-gray-400">(опционально)</span>
+            </label>
+            <input
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              placeholder="Иван"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Фамилия <span className="text-gray-400">(опционально)</span>
+            </label>
+            <input
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              placeholder="Петров"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Telegram ник <span className="text-orange-600 font-semibold">(ВАЖНО, можно позже)</span>
+            </label>
+            <input
+              type="text"
+              value={telegramNick}
+              onChange={(e) => setTelegramNick(e.target.value)}
+              placeholder="@username"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Для связи и получения уведомлений в Telegram
             </p>
           </div>
 
