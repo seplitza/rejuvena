@@ -29,13 +29,13 @@ interface PhotoDiaryData {
   commentAfter: string;
 }
 
-const photoTypes: Array<{ id: keyof PhotoSet; label: string }> = [
-  { id: 'front', label: 'Вид спереди' },
-  { id: 'left34', label: '3/4 слева' },
-  { id: 'leftProfile', label: 'Профиль слева' },
-  { id: 'right34', label: '3/4 справа' },
-  { id: 'rightProfile', label: 'Профиль справа' },
-  { id: 'closeup', label: 'твоё\nпроблемное\nместо\nкрупный план' },
+const photoTypes: Array<{ id: keyof PhotoSet; label: string; example: string }> = [
+  { id: 'front', label: 'Вид спереди', example: 'https://api-rejuvena.duckdns.org/uploads/вид спереди.png' },
+  { id: 'left34', label: '3/4 слева', example: 'https://api-rejuvena.duckdns.org/uploads/3_4 слева.png' },
+  { id: 'leftProfile', label: 'Профиль слева', example: 'https://api-rejuvena.duckdns.org/uploads/профиль слева.png' },
+  { id: 'right34', label: '3/4 справа', example: 'https://api-rejuvena.duckdns.org/uploads/3_4 справа.png' },
+  { id: 'rightProfile', label: 'Профиль справа', example: 'https://api-rejuvena.duckdns.org/uploads/профиль справа.png' },
+  { id: 'closeup', label: 'твоё\nпроблемное\nместо\nкрупный план', example: 'https://api-rejuvena.duckdns.org/uploads/вид сзади.png' },
 ];
 
 const PhotoDiaryPage: React.FC = () => {
@@ -1251,9 +1251,11 @@ const PhotoDiaryPage: React.FC = () => {
               <div key={photoType.id} className="grid grid-cols-3 gap-4">
                 <div className="flex flex-col items-center">
                   <div className="w-full aspect-square bg-gray-200 rounded-lg overflow-hidden border-2 border-gray-300 mb-2">
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                      <span className="text-gray-400 text-sm">Пример</span>
-                    </div>
+                    <img 
+                      src={photoType.example} 
+                      alt={`Пример ${photoType.label}`}
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                   <p className="text-sm font-medium text-blue-800 text-center whitespace-pre-line">
                     {photoType.label}
