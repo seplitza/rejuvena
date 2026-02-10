@@ -31,11 +31,11 @@ interface PhotoDiaryData {
 
 const photoTypes: Array<{ id: keyof PhotoSet; label: string; example: string }> = [
   { id: 'front', label: 'Вид спереди', example: 'https://api-rejuvena.duckdns.org/uploads/example-front.png' },
-  { id: 'left34', label: '3/4 слева', example: 'https://api-rejuvena.duckdns.org/uploads/example-left34.png' },
+  { id: 'left34', label: '3/4 слева', example: 'https://api-rejuvena.duckdns.org/uploads/example-right-profile.png' },
   { id: 'leftProfile', label: 'Профиль слева', example: 'https://api-rejuvena.duckdns.org/uploads/example-left-profile.png' },
   { id: 'right34', label: '3/4 справа', example: 'https://api-rejuvena.duckdns.org/uploads/example-right34.png' },
-  { id: 'rightProfile', label: 'Профиль справа', example: 'https://api-rejuvena.duckdns.org/uploads/example-right-profile.png' },
-  { id: 'closeup', label: 'твоё\nпроблемное\nместо\nкрупный план', example: 'https://api-rejuvena.duckdns.org/uploads/example-closeup.png' },
+  { id: 'rightProfile', label: 'Профиль справа', example: 'https://api-rejuvena.duckdns.org/uploads/example-closeup.png' },
+  { id: 'closeup', label: 'твоё\nпроблемное\nместо\nкрупный план', example: 'https://api-rejuvena.duckdns.org/uploads/example-left34.png' },
 ];
 
 const PhotoDiaryPage: React.FC = () => {
