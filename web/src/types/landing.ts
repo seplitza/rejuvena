@@ -164,24 +164,24 @@ export interface Landing {
     content: string;
     linkText?: string;
     linkUrl?: string;
-    position?: string;
+    position: string;
   }>;
   enrollButtons?: Array<{
     text: string;
     targetId: string;
-    position?: string;
+    position: string;
   }>;
   paymentButtons?: Array<{
     text: string;
     targetId: string;
-    position?: string;
+    position: string;
   }>;
   videoBlocks?: Array<{
     title?: string;
     videoUrl: string;
     poster?: string;
     order: number;
-    position?: string;
+    position: string;
   }>;
   
   views: number;
