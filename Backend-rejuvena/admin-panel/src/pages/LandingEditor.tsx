@@ -116,7 +116,8 @@ const LandingEditor: React.FC = () => {
     paymentButtons: [] as Array<{ text: string; targetId: string; position?: string }>,
     videoBlocks: [] as Array<{ title?: string; videoUrl: string; poster?: string; order: number; position?: string }>,
     
-    isPublished: false
+    isPublished: false,
+    showStartDateBlock: true // По умолчанию показываем анимированный блок с датой старта
   });
 
   useEffect(() => {
@@ -225,7 +226,8 @@ const LandingEditor: React.FC = () => {
           paymentButtons: landing.paymentButtons || [],
           videoBlocks: landing.videoBlocks || [],
           
-          isPublished: landing.isPublished
+          isPublished: landing.isPublished,
+          showStartDateBlock: landing.showStartDateBlock !== undefined ? landing.showStartDateBlock : true
         });
 
         // Load section data (including copies)
@@ -413,7 +415,8 @@ const LandingEditor: React.FC = () => {
         ...(formData.paymentButtons.length > 0 && { paymentButtons: formData.paymentButtons }),
         ...(formData.videoBlocks.length > 0 && { videoBlocks: formData.videoBlocks }),
         
-        isPublished: formData.isPublished
+        isPublished: formData.isPublished,
+        showStartDateBlock: formData.showStartDateBlock
       };
 
       // Add visible sections (including duplicates)
@@ -916,6 +919,28 @@ const LandingEditor: React.FC = () => {
                   </button>
                 </div>
                 <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Показать после секции:</label>
+                    <select
+                      value={modal.position || 'hero'}
+                      onChange={(e) => {
+                        const newModals = [...formData.detailModals];
+                        newModals[index].position = e.target.value;
+                        setFormData({...formData, detailModals: newModals});
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    >
+                      <option value="hero">После Hero (первый экран)</option>
+                      <option value="features">После "Что такое система"</option>
+                      <option value="problems">После "Проблемы которые решаем"</option>
+                      <option value="about">После "Об авторе"</option>
+                      <option value="steps">После "Ступени системы"</option>
+                      <option value="process">После "Как проходит программа"</option>
+                      <option value="stats">После "Результаты клиентов"</option>
+                      <option value="resultsGallery">После "Галерея результатов"</option>
+                      <option value="testimonialsGallery">После "Галерея отзывов"</option>
+                    </select>
+                  </div>
                   <input
                     type="text"
                     placeholder="Заголовок модального окна"
@@ -969,7 +994,7 @@ const LandingEditor: React.FC = () => {
               type="button"
               onClick={() => setFormData({
                 ...formData,
-                detailModals: [...formData.detailModals, { title: '', content: '' }]
+                detailModals: [...formData.detailModals, { title: '', content: '', position: 'hero' }]
               })}
               className="text-purple-600 hover:text-purple-700 text-sm font-medium"
             >
@@ -1030,14 +1055,37 @@ const LandingEditor: React.FC = () => {
                     Удалить
                   </button>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <input
-                    type="text"
-                    placeholder="Текст кнопки"
-                    value={button.text}
-                    onChange={(e) => {
-                      const newButtons = [...formData.enrollButtons];
-                      newButtons[index].text = e.target.value;
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Показать после секции:</label>
+                    <select
+                      value={button.position || 'hero'}
+                      onChange={(e) => {
+                        const newButtons = [...formData.enrollButtons];
+                        newButtons[index].position = e.target.value;
+                        setFormData({...formData, enrollButtons: newButtons});
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    >
+                      <option value="hero">После Hero (первый экран)</option>
+                      <option value="features">После "Что такое система"</option>
+                      <option value="problems">После "Проблемы которые решаем"</option>
+                      <option value="about">После "Об авторе"</option>
+                      <option value="steps">После "Ступени системы"</option>
+                      <option value="process">После "Как проходит программа"</option>
+                      <option value="stats">После "Результаты клиентов"</option>
+                      <option value="resultsGallery">После "Галерея результатов"</option>
+                      <option value="testimonialsGallery">После "Галерея отзывов"</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <input
+                      type="text"
+                      placeholder="Текст кнопки"
+                      value={button.text}
+                      onChange={(e) => {
+                        const newButtons = [...formData.enrollButtons];
+                        newButtons[index].text = e.target.value;
                       setFormData({...formData, enrollButtons: newButtons});
                     }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
@@ -1055,12 +1103,13 @@ const LandingEditor: React.FC = () => {
                   />
                 </div>
               </div>
+            </div>
             ))}
             <button
               type="button"
               onClick={() => setFormData({
                 ...formData,
-                enrollButtons: [...formData.enrollButtons, { text: 'Записаться на марафон', targetId: 'marathons' }]
+                enrollButtons: [...formData.enrollButtons, { text: 'Записаться на марафон', targetId: 'marathons', position: 'hero' }]
               })}
               className="text-purple-600 hover:text-purple-700 text-sm font-medium"
             >
@@ -1121,14 +1170,37 @@ const LandingEditor: React.FC = () => {
                     Удалить
                   </button>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <input
-                    type="text"
-                    placeholder="Текст кнопки"
-                    value={button.text}
-                    onChange={(e) => {
-                      const newButtons = [...formData.paymentButtons];
-                      newButtons[index].text = e.target.value;
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Показать после секции:</label>
+                    <select
+                      value={button.position || 'hero'}
+                      onChange={(e) => {
+                        const newButtons = [...formData.paymentButtons];
+                        newButtons[index].position = e.target.value;
+                        setFormData({...formData, paymentButtons: newButtons});
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    >
+                      <option value="hero">После Hero (первый экран)</option>
+                      <option value="features">После "Что такое система"</option>
+                      <option value="problems">После "Проблемы которые решаем"</option>
+                      <option value="about">После "Об авторе"</option>
+                      <option value="steps">После "Ступени системы"</option>
+                      <option value="process">После "Как проходит программа"</option>
+                      <option value="stats">После "Результаты клиентов"</option>
+                      <option value="resultsGallery">После "Галерея результатов"</option>
+                      <option value="testimonialsGallery">После "Галерея отзывов"</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <input
+                      type="text"
+                      placeholder="Текст кнопки"
+                      value={button.text}
+                      onChange={(e) => {
+                        const newButtons = [...formData.paymentButtons];
+                        newButtons[index].text = e.target.value;
                       setFormData({...formData, paymentButtons: newButtons});
                     }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
@@ -1146,12 +1218,13 @@ const LandingEditor: React.FC = () => {
                   />
                 </div>
               </div>
+            </div>
             ))}
             <button
               type="button"
               onClick={() => setFormData({
                 ...formData,
-                paymentButtons: [...formData.paymentButtons, { text: 'Оплатить сейчас', targetId: 'marathons' }]
+                paymentButtons: [...formData.paymentButtons, { text: 'Оплатить сейчас', targetId: 'marathons', position: 'hero' }]
               })}
               className="text-purple-600 hover:text-purple-700 text-sm font-medium"
             >
@@ -1245,7 +1318,7 @@ const LandingEditor: React.FC = () => {
 
         {/* Actions */}
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 mb-4">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
@@ -1257,6 +1330,21 @@ const LandingEditor: React.FC = () => {
                 Опубликовать сразу
               </span>
             </label>
+            
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.showStartDateBlock}
+                onChange={(e) => setFormData({...formData, showStartDateBlock: e.target.checked})}
+                className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
+              />
+              <span className="text-sm font-medium text-gray-700">
+                🚀 Показывать анимированный блок "Старт марафона" с обратным отсчетом
+              </span>
+            </label>
+          </div>
+          
+          <div className="flex items-center justify-between">
 
             <div className="flex gap-4">
               <button

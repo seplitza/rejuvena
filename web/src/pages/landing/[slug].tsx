@@ -19,6 +19,7 @@ import MarathonPricingCard from '../../components/landing/MarathonPricingCard';
 import DetailModal from '../../components/landing/DetailModal';
 import ScrollButton from '../../components/landing/ScrollButton';
 import VideoCarousel from '../../components/landing/VideoCarousel';
+import AnimatedStartDate from '../../components/landing/AnimatedStartDate';
 
 interface LandingPageProps {
   landing?: Landing | null;
@@ -262,6 +263,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
             </button>
           </div>
         </section>
+
+        {/* Animated Start Date Block - показывается если включен */}
+        {landing.showStartDateBlock && landing.marathonsSection?.basic?.startDate && (
+          <AnimatedStartDate 
+            startDate={new Date(landing.marathonsSection.basic.startDate)}
+            title="СТАРТ МАРАФОНА"
+          />
+        )}
 
         {/* Интерактивные элементы после Hero */}
         <InteractiveElements

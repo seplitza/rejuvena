@@ -184,6 +184,8 @@ export interface Landing {
     position: string;
   }>;
   
+  showStartDateBlock?: boolean; // Показывать ли анимированный блок с датой старта марафона
+  
   views: number;
   conversions: number;
 }

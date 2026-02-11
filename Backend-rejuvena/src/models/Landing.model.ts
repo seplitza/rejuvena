@@ -214,6 +214,7 @@ export interface ILanding extends Document {
   // Статус публикации
   isPublished: boolean;
   publishedAt?: Date;
+  showStartDateBlock?: boolean; // Показывать анимированный блок с датой старта
   
   // Аналитика
   views: number;
@@ -430,24 +431,28 @@ const LandingSchema = new Schema<ILanding>({
     title: { type: String, required: true },
     content: { type: String, default: '' },
     linkText: String,
-    linkUrl: String
+    linkUrl: String,
+    position: { type: String, default: 'hero' }
   }],
   
   enrollButtons: [{
     text: { type: String, required: true },
-    targetId: { type: String, required: true }
+    targetId: { type: String, required: true },
+    position: { type: String, default: 'hero' }
   }],
   
   paymentButtons: [{
     text: { type: String, required: true },
-    targetId: { type: String, required: true }
+    targetId: { type: String, required: true },
+    position: { type: String, default: 'hero' }
   }],
   
   videoBlocks: [{
     title: String,
     videoUrl: { type: String, required: true },
     poster: String,
-    order: { type: Number, default: 0 }
+    order: { type: Number, default: 0 },
+    position: { type: String, default: 'hero' }
   }],
   
   // Публикация
@@ -457,6 +462,10 @@ const LandingSchema = new Schema<ILanding>({
   },
   publishedAt: {
     type: Date
+  },
+  showStartDateBlock: {
+    type: Boolean,
+    default: true // По умолчанию показываем блок
   },
   
   // Аналитика
