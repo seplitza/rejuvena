@@ -49,7 +49,7 @@ const AnimatedStartDate: React.FC<AnimatedStartDateProps> = ({
   };
 
   return (
-    <div className="relative py-20 px-4 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 overflow-hidden">
+    <div className="relative py-20 px-4 overflow-hidden">
       {/* Animated background particles */}
       <div className="absolute inset-0 overflow-hidden">
         {[...Array(20)].map((_, i) => (
