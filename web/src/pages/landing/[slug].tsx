@@ -380,6 +380,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
           onDetailModalClick={setOpenDetailModal}
         />
         
+        {/* Видео блоки перед тарифами */}
+        {landing.videoBlocks && landing.videoBlocks.length > 0 && (
+          <div className="py-12 bg-white">
+            <VideoCarousel videos={landing.videoBlocks} />
+          </div>
+        )}
+        
         {landing.marathonsSection && (
           <section id="marathons" className="py-20 px-4 bg-gray-50">
             <div id="tarify"></div>

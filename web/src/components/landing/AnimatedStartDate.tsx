@@ -68,10 +68,10 @@ const AnimatedStartDate: React.FC<AnimatedStartDateProps> = ({
 
       <div className="max-w-6xl mx-auto relative z-10">
         {/* Animated title - elements fly in from sides */}
-        <div className="mb-8 overflow-hidden">
-          <div className="flex flex-wrap justify-center items-center gap-3 md:gap-4">
+        <div className="mb-8 overflow-hidden text-center">
+          <div className="inline-block">
             {title.split(' ').map((word, wordIndex) => (
-              <div key={wordIndex} className="flex gap-1">
+              <div key={wordIndex} className="inline-block" style={{ marginRight: wordIndex < title.split(' ').length - 1 ? '0.75rem' : '0' }}>
                 {word.split('').map((letter, letterIndex) => (
                   <span
                     key={letterIndex}
