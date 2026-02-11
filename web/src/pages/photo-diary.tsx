@@ -30,12 +30,12 @@ interface PhotoDiaryData {
 }
 
 const photoTypes: Array<{ id: keyof PhotoSet; label: string; example: string }> = [
-  { id: 'front', label: 'Вид спереди', example: 'https://api-rejuvena.duckdns.org/uploads/example-front.png' },
-  { id: 'left34', label: '3/4 слева', example: 'https://api-rejuvena.duckdns.org/uploads/example-left34.png' },
-  { id: 'leftProfile', label: 'Профиль слева', example: 'https://api-rejuvena.duckdns.org/uploads/example-left-profile.png' },
-  { id: 'right34', label: '3/4 справа', example: 'https://api-rejuvena.duckdns.org/uploads/example-right34.png' },
-  { id: 'rightProfile', label: 'Профиль справа', example: 'https://api-rejuvena.duckdns.org/uploads/example-right-profile.png' },
-  { id: 'closeup', label: 'твоё\nпроблемное\nместо\nкрупный план', example: 'https://api-rejuvena.duckdns.org/uploads/example-closeup.png' },
+  { id: 'front', label: 'Вид спереди', example: 'https://api-rejuvena.duckdns.org/uploads/example-front.png?v=2' },
+  { id: 'left34', label: '3/4 слева', example: 'https://api-rejuvena.duckdns.org/uploads/example-left34.png?v=2' },
+  { id: 'leftProfile', label: 'Профиль слева', example: 'https://api-rejuvena.duckdns.org/uploads/example-left-profile.png?v=2' },
+  { id: 'right34', label: '3/4 справа', example: 'https://api-rejuvena.duckdns.org/uploads/example-right34.png?v=2' },
+  { id: 'rightProfile', label: 'Профиль справа', example: 'https://api-rejuvena.duckdns.org/uploads/example-right-profile.png?v=2' },
+  { id: 'closeup', label: 'твоё\nпроблемное\nместо\nкрупный план', example: 'https://api-rejuvena.duckdns.org/uploads/example-closeup.png?v=2' },
 ];
 
 const PhotoDiaryPage: React.FC = () => {
@@ -1121,7 +1121,7 @@ const PhotoDiaryPage: React.FC = () => {
         </div>
       )}
       
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-gray-50">
         <header className="bg-white border-b">
           <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
             <button
