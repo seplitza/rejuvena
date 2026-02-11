@@ -266,10 +266,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
 
         {/* Animated Start Date Block - показывается если включен */}
         {landing.showStartDateBlock && landing.marathonsSection?.basic?.startDate && (
-          <AnimatedStartDate 
-            startDate={new Date(landing.marathonsSection.basic.startDate)}
-            title="СТАРТ МАРАФОНА"
-          />
+          <div className="bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500">
+            <AnimatedStartDate 
+              startDate={new Date(landing.marathonsSection.basic.startDate)}
+              title="СТАРТ МАРАФОНА"
+            />
+          </div>
         )}
 
         {/* Интерактивные элементы после Hero */}
