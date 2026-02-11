@@ -357,7 +357,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
           onDetailModalClick={setOpenDetailModal}
         />
 
-        {/* Интерактивные элементы после ResultsGallery */}
+        {/* Results Gallery Section - Галерея результатов */}
+        {landing.resultsGallerySection && <ResultsGallerySection section={landing.resultsGallerySection} />}
+
+        {/* Интерактивные элементы после ResultsGallery */}}
         <InteractiveElements
           position="resultsGallery"
           detailModals={landing.detailModals}
@@ -473,6 +476,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
             </div>
           </section>
         )}
+
+        {/* Интерактивные элементы после Тарифов/Марафонов */}
+        <InteractiveElements
+          position="marathons"
+          detailModals={landing.detailModals}
+          enrollButtons={landing.enrollButtons}
+          paymentButtons={landing.paymentButtons}
+          videoBlocks={[]}
+          onDetailModalClick={setOpenDetailModal}
+        />
 
         {/* Benefits Section */}
         {landing.benefitsSection && landing.benefitsSection.benefits && landing.benefitsSection.benefits.length > 0 && (
