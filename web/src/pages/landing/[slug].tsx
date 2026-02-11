@@ -360,7 +360,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
         {/* Results Gallery Section - Галерея результатов */}
         {landing.resultsGallerySection && <ResultsGallerySection section={landing.resultsGallerySection} />}
 
-        {/* Интерактивные элементы после ResultsGallery */}}
+        {/* Интерактивные элементы после ResultsGallery */}
         <InteractiveElements
           position="resultsGallery"
           detailModals={landing.detailModals}
