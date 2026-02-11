@@ -76,11 +76,10 @@ const AnimatedStartDate: React.FC<AnimatedStartDateProps> = ({
                   <span
                     key={letterIndex}
                     className={`text-4xl md:text-6xl lg:text-7xl font-black text-white drop-shadow-2xl inline-block ${
-                      mounted ? 'animate-slide-in-letter' : 'opacity-0'
+                      mounted ? (wordIndex % 2 === 0 ? 'animate-slide-in-left' : 'animate-slide-in-right') : 'opacity-0'
                     }`}
                     style={{
-                      animationDelay: `${(wordIndex * 10 + letterIndex) * 50}ms`,
-                      animationDirection: wordIndex % 2 === 0 ? 'normal' : 'reverse'
+                      animationDelay: `${(wordIndex * 10 + letterIndex) * 50}ms`
                     }}
                   >
                     {letter}
@@ -136,9 +135,11 @@ const AnimatedStartDate: React.FC<AnimatedStartDateProps> = ({
           className={`text-center mt-10 ${mounted ? 'animate-fade-in-up' : 'opacity-0'}`}
           style={{ animationDelay: '1600ms' }}
         >
-          <p className="text-xl md:text-2xl text-white font-semibold animate-pulse">
-            🚀 Успей записаться до старта!
-          </p>
+          <a href="#marathons" className="inline-block">
+            <p className="text-xl md:text-2xl text-white font-semibold animate-pulse hover:scale-105 transition-transform">
+              🚀 Успей записаться до старта!
+            </p>
+          </a>
         </div>
       </div>
 
@@ -187,12 +188,12 @@ const AnimatedStartDate: React.FC<AnimatedStartDateProps> = ({
           animation: float infinite ease-in-out;
         }
 
-        .animate-slide-in-letter {
+        .animate-slide-in-left {
           animation: slide-in-left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
 
-        [style*="animation-direction: reverse"] .animate-slide-in-letter {
-          animation-name: slide-in-right;
+        .animate-slide-in-right {
+          animation: slide-in-right 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
 
         .animate-fade-in-up {

@@ -278,7 +278,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
           detailModals={landing.detailModals}
           enrollButtons={landing.enrollButtons}
           paymentButtons={landing.paymentButtons}
-          videoBlocks={landing.videoBlocks}
+          videoBlocks={[]}
           onDetailModalClick={setOpenDetailModal}
         />
 
@@ -291,7 +291,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
           detailModals={landing.detailModals}
           enrollButtons={landing.enrollButtons}
           paymentButtons={landing.paymentButtons}
-          videoBlocks={landing.videoBlocks}
+          videoBlocks={[]}
           onDetailModalClick={setOpenDetailModal}
         />
 
@@ -304,7 +304,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
           detailModals={landing.detailModals}
           enrollButtons={landing.enrollButtons}
           paymentButtons={landing.paymentButtons}
-          videoBlocks={landing.videoBlocks}
+          videoBlocks={[]}
           onDetailModalClick={setOpenDetailModal}
         />
         
@@ -317,7 +317,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
           detailModals={landing.detailModals}
           enrollButtons={landing.enrollButtons}
           paymentButtons={landing.paymentButtons}
-          videoBlocks={landing.videoBlocks}
+          videoBlocks={[]}
           onDetailModalClick={setOpenDetailModal}
         />
 
@@ -327,7 +327,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
           detailModals={landing.detailModals}
           enrollButtons={landing.enrollButtons}
           paymentButtons={landing.paymentButtons}
-          videoBlocks={landing.videoBlocks}
+          videoBlocks={[]}
           onDetailModalClick={setOpenDetailModal}
         />
         
@@ -340,7 +340,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
           detailModals={landing.detailModals}
           enrollButtons={landing.enrollButtons}
           paymentButtons={landing.paymentButtons}
-          videoBlocks={landing.videoBlocks}
+          videoBlocks={[]}
           onDetailModalClick={setOpenDetailModal}
         />
         
@@ -353,7 +353,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
           detailModals={landing.detailModals}
           enrollButtons={landing.enrollButtons}
           paymentButtons={landing.paymentButtons}
-          videoBlocks={landing.videoBlocks}
+          videoBlocks={[]}
           onDetailModalClick={setOpenDetailModal}
         />
 
@@ -363,7 +363,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
           detailModals={landing.detailModals}
           enrollButtons={landing.enrollButtons}
           paymentButtons={landing.paymentButtons}
-          videoBlocks={landing.videoBlocks}
+          videoBlocks={[]}
           onDetailModalClick={setOpenDetailModal}
         />
         
@@ -376,7 +376,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
           detailModals={landing.detailModals}
           enrollButtons={landing.enrollButtons}
           paymentButtons={landing.paymentButtons}
-          videoBlocks={landing.videoBlocks}
+          videoBlocks={[]}
           onDetailModalClick={setOpenDetailModal}
         />
         
