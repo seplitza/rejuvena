@@ -57,8 +57,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
   const [openDetailModal, setOpenDetailModal] = useState<number | null>(null);
 
   useEffect(() => {
-    // Если данные уже получены через SSG, не делаем fetch
-    if (!slug) return;
+    // Если данные уже получены через SSG (static export), не делаем fetch
+    if (!slug || landingProp) return;
 
     const fetchLanding = async () => {
       try {
