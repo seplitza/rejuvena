@@ -45,12 +45,20 @@ type MarathonData = {
   [key: string]: any;
 };
 
+// Тип для статуса платежа
+type PaymentStatus = 'checking' | 'processing' | 'succeeded' | 'failed' | 'error';
+
+// Helper функция для проверки валидности статуса
+const isValidPaymentStatus = (status: string): status is PaymentStatus => {
+  return ['checking', 'processing', 'succeeded', 'failed', 'error'].includes(status);
+};
+
 export default function PaymentSuccess() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { orderId } = router.query;
   
-  const [status, setStatus] = useState<'checking' | 'processing' | 'succeeded' | 'failed' | 'error'>('checking');
+  const [status, setStatus] = useState<PaymentStatus>('checking');
   const [payment, setPayment] = useState<any>(null);
   const [marathon, setMarathon] = useState<any>(null);
 
@@ -106,7 +114,7 @@ export default function PaymentSuccess() {
           
           if (response.ok && data.success && data.payment) {
             setPayment(data.payment);
-            setStatus(data.payment.status);
+            setStatus(isValidPaymentStatus(data.payment.status) ? data.payment.status : 'error');
             
             // Если есть токен и платеж успешен - обновляем данные пользователя
             if (token && data.payment.status === 'succeeded') {
@@ -159,7 +167,7 @@ export default function PaymentSuccess() {
             
             if (response.ok && data.success && data.payment) {
               setPayment(data.payment);
-              setStatus(data.payment.status);
+              setStatus(isValidPaymentStatus(data.payment.status) ? data.payment.status : 'error');
               
               if (data.payment.status === 'succeeded') {
                 await refreshUserData();
