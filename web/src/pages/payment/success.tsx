@@ -133,7 +133,7 @@ export default function PaymentSuccess() {
                   }
                 }
                 
-                if (!marathonData && data.payment.metadata?.marathonName) {
+                if (!marathonData && data && data.payment && data.payment.metadata?.marathonName) {
                   const allMarathonsResponse = await fetch(`${apiUrl}/api/marathons`);
                   if (allMarathonsResponse.ok) {
                     const marathons = await allMarathonsResponse.json() as MarathonData[];
@@ -185,7 +185,7 @@ export default function PaymentSuccess() {
                     }
                   }
                   
-                  if (!marathonData && data.payment.metadata?.marathonName) {
+                  if (!marathonData && data && data.payment && data.payment.metadata?.marathonName) {
                     const allMarathonsResponse = await fetch(`${apiUrl}/api/marathons`);
                     if (allMarathonsResponse.ok) {
                       const marathons = await allMarathonsResponse.json() as MarathonData[];
