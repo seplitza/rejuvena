@@ -1,7 +1,6 @@
 /**
  * Marathon Day Page
- * Displays detailed view of a single marathon day with exercises  
- * Based on courses/[courseId]/day/[dayId].tsx from old app
+ * Displays detailed view of a single marathon day with exercises
  */
 
 import { useEffect } from 'react';
@@ -21,7 +20,7 @@ import DaysList from '@/components/day/DaysList';
 
 export default function MarathonDayPage() {
   const router = useRouter();
-  const { id, dayNumber } = router.query;
+  const { courseId, dayId } = router.query;
   const dispatch = useAppDispatch();
 
   const currentDay = useAppSelector(selectCurrentDay);
@@ -31,10 +30,10 @@ export default function MarathonDayPage() {
 
   // Fetch day data
   useEffect(() => {
-    if (id && dayNumber && typeof id === 'string' && typeof dayNumber === 'string') {
+    if (courseId && dayId && typeof courseId === 'string' && typeof dayId === 'string') {
       dispatch(getDayExercise({
-        marathonId: id,
-        dayId: dayNumber,
+        marathonId: courseId,
+        dayId: dayId,
       }));
     }
 
@@ -42,7 +41,7 @@ export default function MarathonDayPage() {
     return () => {
       dispatch(clearDayData());
     };
-  }, [id, dayNumber, dispatch]);
+  }, [courseId, dayId, dispatch]);
 
   if (loading) {
     return (
@@ -56,29 +55,29 @@ export default function MarathonDayPage() {
   }
   
   if (error) {
-    // Check if error is enrollment not found - means user doesn't own this marathon
-    const isNotEnrolled = error.includes('Not enrolled') || error.includes('403') || error.includes('enrollment');
+    // Check if error is "Order not found" - means user doesn't own this course
+    const isOrderNotFound = error.includes('Order not found') || error.includes('400');
     
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50">
         <div className="text-center max-w-md mx-auto px-4">
-          <div className="text-6xl mb-4">{isNotEnrolled ? '🔒' : '😞'}</div>
+          <div className="text-6xl mb-4">{isOrderNotFound ? '🔒' : '😞'}</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            {isNotEnrolled ? 'Марафон недоступен' : 'Ошибка загрузки'}
+            {isOrderNotFound ? 'Курс недоступен' : 'Ошибка загрузки'}
           </h2>
           <p className="text-gray-600 mb-6">
-            {isNotEnrolled
-              ? 'Вы не записаны на этот марафон. Вернитесь на страницу марафонов и запишитесь, чтобы получить доступ к содержимому.'
+            {isOrderNotFound 
+              ? 'Этот курс доступен только после покупки. Вернитесь на страницу курсов и приобретите курс, чтобы получить доступ к его содержимому.'
               : error}
           </p>
           <div className="flex gap-3 justify-center">
             <button
-              onClick={() => router.push('/marathons')}
+              onClick={() => router.push('/courses')}
               className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
             >
-              {isNotEnrolled ? 'К марафонам' : 'Вернуться'}
+              {isOrderNotFound ? 'К курсам' : 'Вернуться'}
             </button>
-            {isNotEnrolled && (
+            {isOrderNotFound && (
               <button
                 onClick={() => router.back()}
                 className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
@@ -110,9 +109,9 @@ export default function MarathonDayPage() {
         <DayPlan />
 
         {/* Days List - показываем все пройденные дни со звездами */}
-        {id && typeof id === 'string' && marathonDay?.id && (
+        {courseId && typeof courseId === 'string' && marathonDay?.id && (
           <DaysList 
-            marathonId={id} 
+            marathonId={courseId} 
             currentDayId={marathonDay.id}
           />
         )}

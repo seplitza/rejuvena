@@ -197,7 +197,9 @@ export default function MarathonDetailPage() {
   };
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
     return new Intl.DateTimeFormat('ru-RU', {
       day: 'numeric',
       month: 'long',

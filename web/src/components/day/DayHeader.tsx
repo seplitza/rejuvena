@@ -6,9 +6,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAppSelector } from '@/store/hooks';
-import { selectMarathonDay, selectDayTitle } from '@/store/modules/day/selectors';
+import { selectMarathonDay, selectDayTitle, selectCurrentMarathon } from '@/store/modules/day/selectors';
 import { selectUserProfile } from '@/store/modules/auth/selectors';
-import { selectUserOrders } from '@/store/modules/courses/selectors';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import Image from 'next/image';
@@ -17,17 +16,13 @@ import NavigationMenu from '@/components/common/NavigationMenu';
 export default function DayHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter();
-  const { courseId } = router.query;
   
   const marathonDay = useAppSelector(selectMarathonDay);
   const dayTitle = useAppSelector(selectDayTitle);
   const userProfile = useAppSelector(selectUserProfile);
-  const userOrders = useAppSelector(selectUserOrders);
+  const currentMarathon = useAppSelector(selectCurrentMarathon);
 
-  // Find current course from orders
-  const currentCourse = userOrders.find(order => order.id === courseId || order.marathonId === courseId);
-
-  if (!marathonDay || !currentCourse) {
+  if (!marathonDay || !currentMarathon) {
     return null;
   }
 
@@ -63,11 +58,11 @@ export default function DayHeader() {
               </button>
 
               {/* Course Icon + Name */}
-              {currentCourse.imagePath && (
+              {currentMarathon.imagePath && (
                 <div className="relative w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-white/10">
                   <Image
-                    src={currentCourse.imagePath}
-                    alt={currentCourse.title}
+                    src={currentMarathon.imagePath}
+                    alt={currentMarathon.title}
                     fill
                     className="object-cover"
                   />
@@ -75,7 +70,7 @@ export default function DayHeader() {
               )}
 
               <div className="flex-1 min-w-0">
-                <h1 className="text-base font-bold truncate">{currentCourse.title}</h1>
+                <h1 className="text-base font-bold truncate">{currentMarathon.title}</h1>
               </div>
             </div>
 

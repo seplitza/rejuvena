@@ -87,10 +87,11 @@ export default function ExerciseItem({
         {/* Exercise Name */}
         <button
           onClick={onToggle}
-          className="flex-1 text-left min-w-0 cursor-pointer"
+          disabled={blockExercise}
+          className={`flex-1 text-left min-w-0 ${blockExercise ? 'cursor-not-allowed' : 'cursor-pointer'}`}
         >
           <p className={`text-sm font-medium ${getTextColor()} truncate`}>
-            {exerciseName}
+            <span className="font-bold">{exerciseName}</span> {marathonExerciseName}
           </p>
         </button>
 
@@ -104,9 +105,10 @@ export default function ExerciseItem({
         {/* Expand/Collapse Icon */}
         <button
           onClick={onToggle}
+          disabled={blockExercise}
           className={`flex-shrink-0 text-gray-400 transition-transform ${
             isActive ? 'rotate-180' : ''
-          } hover:text-gray-600`}
+          } ${blockExercise ? 'cursor-not-allowed' : 'hover:text-gray-600'}`}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -115,38 +117,12 @@ export default function ExerciseItem({
       </div>
 
       {/* Expanded Details */}
-      {isActive && (
+      {isActive && !blockExercise && (
         <div className="px-3 pb-3 border-t border-gray-200">
           <div className="pt-3 space-y-3">
             {/* Short Description */}
             {exercise.description && (
-              <p className="text-sm text-gray-600 line-clamp-3">
-                {(() => {
-                  let text = exercise.description
-                    .replace(/<[^>]*>/g, '')
-                    .replace(/&nbsp;/g, ' ')
-                    .replace(/&quot;/g, '"')
-                    .replace(/&amp;/g, '&')
-                    .replace(/&lt;/g, '<')
-                    .replace(/&gt;/g, '>')
-                    .trim();
-                  
-                  // Split into lines
-                  const lines = text.split('\n').map(line => line.trim()).filter(line => line);
-                  
-                  // Remove first line if it's just the exercise name or a header
-                  if (lines.length > 1 && lines[0].length < 100) {
-                    // Check if first line matches exercise name or is a short header
-                    const firstLine = lines[0].toLowerCase();
-                    const exerciseLower = exerciseName.toLowerCase();
-                    if (firstLine === exerciseLower || firstLine.includes(exerciseLower) && firstLine.length < 80) {
-                      lines.shift();
-                    }
-                  }
-                  
-                  return lines.join(' ');
-                })()}
-              </p>
+              <p className="text-sm text-gray-600 line-clamp-3">{exercise.description}</p>
             )}
 
             {/* Exercise Info */}

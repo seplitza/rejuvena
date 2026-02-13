@@ -61,9 +61,18 @@ export interface MarathonData {
   };
 }
 
+export interface CurrentMarathon {
+  _id: string;
+  title: string;
+  imagePath?: string;
+  numberOfDays: number;
+  startDate: string;
+}
+
 export interface DayState {
   currentDay: DayExerciseResponse | null;
   marathonData: MarathonData | null;
+  currentMarathon: CurrentMarathon | null;
   loading: boolean;
   error: string | null;
   // Track exercise status changes
@@ -76,6 +85,7 @@ export interface DayState {
 const initialState: DayState = {
   currentDay: null,
   marathonData: null,
+  currentMarathon: null,
   loading: false,
   error: null,
   changingStatusRequests: {},
@@ -104,6 +114,11 @@ const daySlice = createSlice({
     getDayExerciseFailure(state, action: PayloadAction<string>) {
       state.loading = false;
       state.error = action.payload;
+    },
+    
+    // Set current marathon info
+    setCurrentMarathon(state, action: PayloadAction<CurrentMarathon>) {
+      state.currentMarathon = action.payload;
     },
     
     // Set marathon data (from startmarathon API)
@@ -142,6 +157,7 @@ export const {
   getDayExerciseRequest,
   getDayExerciseSuccess,
   getDayExerciseFailure,
+  setCurrentMarathon,
   addChangingStatusRequest,
   removeChangingStatusRequest,
   updateExerciseStatus,

@@ -56,3 +56,7 @@ export const selectMarathonData = createSelector(
   selectDayState,
   (state) => state.marathonData
 );
+export const selectCurrentMarathon = createSelector(
+  selectDayState,
+  (state) => state.currentMarathon
+);

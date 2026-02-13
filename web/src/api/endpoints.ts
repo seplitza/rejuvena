@@ -67,6 +67,10 @@ export const get_marathons_guest_user = '/marathon/GetMarathonsGuestUser';
 export const get_demo_course_list = '/marathon/GetDemoCourseList';
 export const get_course_plan = '/marathon/getcourseplan';
 export const create_order = '/Order/CreateOrder';
+
+// New Marathon API
+export const get_marathon_day = (marathonId: string, dayNumber: string) => `/api/marathons/${marathonId}/day/${dayNumber}`;
+
 // Payment
 export const payment_create = '/api/payment/create';
 export const payment_history = '/api/payment/history';
