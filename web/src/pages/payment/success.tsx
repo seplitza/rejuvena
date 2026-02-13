@@ -135,9 +135,12 @@ export default function PaymentSuccess() {
                 
                 if (!marathonData && data && data.payment && data.payment.metadata?.marathonName) {
                   const allMarathonsResponse = await fetch(`${apiUrl}/api/marathons`);
-                  if (allMarathonsResponse.ok) {
+                  if (allMarathonsResponse.ok && data && data.payment && data.payment.metadata) {
                     const marathons = await allMarathonsResponse.json() as MarathonData[];
-                    marathonData = marathons.find((m) => m.title === data.payment.metadata!.marathonName) || null;
+                    const marathonName = data.payment.metadata.marathonName;
+                    if (marathonName) {
+                      marathonData = marathons.find((m) => m.title === marathonName) || null;
+                    }
                   }
                 }
                 
@@ -187,9 +190,12 @@ export default function PaymentSuccess() {
                   
                   if (!marathonData && data && data.payment && data.payment.metadata?.marathonName) {
                     const allMarathonsResponse = await fetch(`${apiUrl}/api/marathons`);
-                    if (allMarathonsResponse.ok) {
+                    if (allMarathonsResponse.ok && data && data.payment && data.payment.metadata) {
                       const marathons = await allMarathonsResponse.json() as MarathonData[];
-                      marathonData = marathons.find((m) => m.title === data.payment.metadata!.marathonName) || null;
+                      const marathonName = data.payment.metadata.marathonName;
+                      if (marathonName) {
+                        marathonData = marathons.find((m) => m.title === marathonName) || null;
+                      }
                     }
                   }
                   
