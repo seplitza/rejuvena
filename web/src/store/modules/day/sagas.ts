@@ -3,7 +3,7 @@
  * Side effects for API calls
  */
 
-import { call, put, takeLatest } from 'redux-saga/effects';
+import { call, put, takeLatest, all } from 'redux-saga/effects';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { request } from '../../../api/request';
 import * as endpoints from '../../../api/endpoints';
@@ -87,7 +87,7 @@ function* getDayExerciseSaga(
     
     // Load marathon info, all days, and progress in parallel
     try {
-      const [marathonResponse, daysResponse, progressResponse] = yield Promise.all([
+      const [marathonResponse, daysResponse, progressResponse] = yield all([
         call(request.get, `/api/marathons/${marathonId}`, {}),
         call(request.get, `/api/marathons/${marathonId}/days`, {}),
         call(request.get, `/api/marathons/${marathonId}/progress`, {}),
