@@ -166,6 +166,8 @@ router.get('/:id/days', async (req: Request, res: Response) => {
 
     const days = await MarathonDay.find({ marathonId: id })
       .populate('exercises', 'title description isPremium carouselMedia')
+      .populate('exerciseGroups.categoryId', 'name slug icon order')
+      .populate('exerciseGroups.exerciseIds', 'title description isPremium carouselMedia')
       .sort({ order: 1 });
 
     return res.status(200).json({
@@ -221,7 +223,10 @@ router.get('/:id/day/:dayNumber', authMiddleware, async (req: AuthRequest, res: 
     const day = await MarathonDay.findOne({
       marathonId: id,
       dayNumber: Number(dayNumber)
-    }).populate('exercises');
+    })
+      .populate('exercises')
+      .populate('exerciseGroups.categoryId', 'name slug icon order')
+      .populate('exerciseGroups.exerciseIds', 'title description isPremium carouselMedia');
 
     if (!day) {
       return res.status(404).json({ error: 'Day not found' });
@@ -604,9 +609,46 @@ router.post('/admin/:id/days', authMiddleware, async (req: AuthRequest, res: Res
       return res.status(404).json({ error: 'Marathon not found' });
     }
 
+    // Если создается не первый день - копируем предыдущий
+    let finalExerciseGroups = dayData.exerciseGroups || [];
+    let newExerciseIds: any[] = [];
+
+    if (dayData.dayNumber && dayData.dayNumber > 1) {
+      const previousDay = await MarathonDay.findOne({
+        marathonId: id,
+        dayNumber: dayData.dayNumber - 1
+      });
+
+      if (previousDay) {
+        // Если exerciseGroups пустой в запросе - копируем из предыдущего дня
+        if (!dayData.exerciseGroups || dayData.exerciseGroups.length === 0) {
+          finalExerciseGroups = previousDay.exerciseGroups.map(group => ({
+            categoryId: group.categoryId,
+            exerciseIds: [...group.exerciseIds]
+          }));
+          
+          // При первом копировании новых упражнений нет (все скопированы)
+          newExerciseIds = [];
+        } else {
+          // Если exerciseGroups уже заполнен - вычисляем новые упражнения
+          const previousExerciseIds = new Set(
+            previousDay.exerciseGroups.flatMap(g => g.exerciseIds.map(id => id.toString()))
+          );
+
+          const currentExerciseIds = dayData.exerciseGroups.flatMap((g: any) => 
+            g.exerciseIds.map((id: any) => id.toString())
+          );
+
+          newExerciseIds = currentExerciseIds.filter((id: string) => !previousExerciseIds.has(id));
+        }
+      }
+    }
+
     const day = await MarathonDay.create({
       marathonId: id,
-      ...dayData
+      ...dayData,
+      exerciseGroups: finalExerciseGroups,
+      newExerciseIds
     });
 
     return res.status(201).json({
@@ -635,11 +677,35 @@ router.put('/admin/:id/days/:dayId', authMiddleware, async (req: AuthRequest, re
     const { dayId } = req.params;
     const updateData = req.body;
 
-    const day = await MarathonDay.findByIdAndUpdate(dayId, updateData, { new: true });
-
-    if (!day) {
+    const currentDay = await MarathonDay.findById(dayId);
+    if (!currentDay) {
       return res.status(404).json({ error: 'Day not found' });
     }
+
+    // Пересчитываем новые упражнения при обновлении (только для дней > 1)
+    if (currentDay.dayNumber > 1 && updateData.exerciseGroups) {
+      const previousDay = await MarathonDay.findOne({
+        marathonId: currentDay.marathonId,
+        dayNumber: currentDay.dayNumber - 1
+      });
+
+      if (previousDay) {
+        const previousExerciseIds = new Set(
+          previousDay.exerciseGroups.flatMap(g => g.exerciseIds.map(id => id.toString()))
+        );
+
+        const currentExerciseIds = updateData.exerciseGroups.flatMap((g: any) => 
+          g.exerciseIds.map((id: any) => id.toString())
+        );
+
+        updateData.newExerciseIds = currentExerciseIds.filter((id: string) => !previousExerciseIds.has(id));
+      }
+    } else if (currentDay.dayNumber === 1) {
+      // Первый день - всегда пустой массив новых упражнений
+      updateData.newExerciseIds = [];
+    }
+
+    const day = await MarathonDay.findByIdAndUpdate(dayId, updateData, { new: true });
 
     return res.status(200).json({
       success: true,

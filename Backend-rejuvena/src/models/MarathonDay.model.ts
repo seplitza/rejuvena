@@ -1,15 +1,38 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+export interface IExerciseGroup {
+  categoryId: mongoose.Types.ObjectId;
+  categoryName?: string; // Для удобства, заполняется при заполнении
+  exerciseIds: mongoose.Types.ObjectId[];
+}
+
 export interface IMarathonDay extends Document {
   marathonId: mongoose.Types.ObjectId;
   dayNumber: number;
   dayType: 'learning' | 'practice';
-  description: string;
-  exercises: mongoose.Types.ObjectId[];
+  description: string; // Rich text content from TipTap
+  exerciseGroups: IExerciseGroup[]; // Упражнения, сгруппированные по категориям
+  exercises: mongoose.Types.ObjectId[]; // Для обратной совместимости (deprecated)
+  newExerciseIds: mongoose.Types.ObjectId[]; // Новые упражнения в этом дне (подсветка зеленым)
   order: number;
   createdAt: Date;
   updatedAt: Date;
 }
+
+const ExerciseGroupSchema = new Schema<IExerciseGroup>({
+  categoryId: {
+    type: Schema.Types.ObjectId,
+    ref: 'ExerciseCategory',
+    required: true
+  },
+  categoryName: {
+    type: String
+  },
+  exerciseIds: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Exercise'
+  }]
+}, { _id: false });
 
 const MarathonDaySchema = new Schema<IMarathonDay>(
   {
@@ -34,7 +57,15 @@ const MarathonDaySchema = new Schema<IMarathonDay>(
       type: String,
       default: ''
     },
+    exerciseGroups: {
+      type: [ExerciseGroupSchema],
+      default: []
+    },
     exercises: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Exercise'
+    }],
+    newExerciseIds: [{
       type: Schema.Types.ObjectId,
       ref: 'Exercise'
     }],

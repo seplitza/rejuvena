@@ -58,77 +58,116 @@ export default function PaymentSuccess() {
     const checkStatus = async () => {
       try {
         const token = localStorage.getItem('auth_token');
-        
-        if (!token) {
-          console.error('No auth token found');
-          setStatus('error');
-          return;
-        }
-
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527';
-        const response = await fetch(
-          `${apiUrl}/api/payment/status/${orderId}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
+        
+        let response;
+        let data;
+        
+        // Сначала пробуем публичный endpoint (не требует авторизации)
+        try {
+          response = await fetch(`${apiUrl}/api/payment/status-public/${orderId}`);
+          data = await response.json();
+          
+          if (response.ok && data.success && data.payment) {
+            setPayment(data.payment);
+            setStatus(data.payment.status);
+            
+            // Если есть токен и платеж успешен - обновляем данные пользователя
+            if (token && data.payment.status === 'succeeded') {
+              await refreshUserData();
             }
+            
+            // Загружаем данные марафона если нужно
+            if (data.payment.metadata?.type === 'marathon' || data.payment.metadata?.planType === 'marathon') {
+              try {
+                let marathonData = null;
+                
+                if (data.payment.metadata?.marathonId) {
+                  const marathonResponse = await fetch(`${apiUrl}/api/marathons/${data.payment.metadata.marathonId}`);
+                  if (marathonResponse.ok) {
+                    marathonData = await marathonResponse.json();
+                  }
+                }
+                
+                if (!marathonData && data.payment.metadata?.marathonName) {
+                  const allMarathonsResponse = await fetch(`${apiUrl}/api/marathons`);
+                  if (allMarathonsResponse.ok) {
+                    const marathons = await allMarathonsResponse.json();
+                    marathonData = marathons.find((m: any) => m.title === data.payment.metadata.marathonName);
+                  }
+                }
+                
+                if (marathonData) {
+                  setMarathon(marathonData);
+                }
+              } catch (error) {
+                console.error('Error loading marathon:', error);
+              }
+            }
+            
+            return; // Успешно получили данные
           }
-        );
-        
-        const data = await response.json();
-        console.log('Payment status response:', data);
-        
-        if (!response.ok) {
-          console.error('API error:', response.status, data);
-          setStatus('error');
-          return;
+        } catch (publicError) {
+          console.log('Public endpoint failed, trying authenticated endpoint:', publicError);
         }
         
-        if (data.success && data.payment) {
-          setPayment(data.payment);
-          setStatus(data.payment.status);
-          
-          // Если это марафон - загружаем его данные для получения telegramGroupUrl
-          if (data.payment.metadata?.type === 'marathon' || data.payment.metadata?.planType === 'marathon') {
-            try {
-              let marathonData = null;
+        // Если публичный endpoint не сработал И есть токен - пробуем авторизованный endpoint
+        if (token) {
+          try {
+            response = await fetch(`${apiUrl}/api/payment/status/${orderId}`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            data = await response.json();
+            console.log('Payment status response (auth):', data);
+            
+            if (response.ok && data.success && data.payment) {
+              setPayment(data.payment);
+              setStatus(data.payment.status);
               
-              // Пытаемся загрузить по marathonId (новые платежи)
-              if (data.payment.metadata?.marathonId) {
-                const marathonResponse = await fetch(
-                  `${process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527'}/api/marathons/${data.payment.metadata.marathonId}`
-                );
-                if (marathonResponse.ok) {
-                  marathonData = await marathonResponse.json();
+              if (data.payment.status === 'succeeded') {
+                await refreshUserData();
+              }
+              
+              // Загружаем данные марафона
+              if (data.payment.metadata?.type === 'marathon' || data.payment.metadata?.planType === 'marathon') {
+                try {
+                  let marathonData = null;
+                  
+                  if (data.payment.metadata?.marathonId) {
+                    const marathonResponse = await fetch(`${apiUrl}/api/marathons/${data.payment.metadata.marathonId}`);
+                    if (marathonResponse.ok) {
+                      marathonData = await marathonResponse.json();
+                    }
+                  }
+                  
+                  if (!marathonData && data.payment.metadata?.marathonName) {
+                    const allMarathonsResponse = await fetch(`${apiUrl}/api/marathons`);
+                    if (allMarathonsResponse.ok) {
+                      const marathons = await allMarathonsResponse.json();
+                      marathonData = marathons.find((m: any) => m.title === data.payment.metadata.marathonName);
+                    }
+                  }
+                  
+                  if (marathonData) {
+                    setMarathon(marathonData);
+                  }
+                } catch (error) {
+                  console.error('Error loading marathon:', error);
                 }
               }
               
-              // Fallback: ищем по названию из metadata (старые платежи)
-              if (!marathonData && data.payment.metadata?.marathonName) {
-                const allMarathonsResponse = await fetch(
-                  `${process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527'}/api/marathons`
-                );
-                if (allMarathonsResponse.ok) {
-                  const marathons = await allMarathonsResponse.json();
-                  marathonData = marathons.find((m: any) => m.title === data.payment.metadata.marathonName);
-                }
-              }
-              
-              if (marathonData) {
-                setMarathon(marathonData);
-              }
-            } catch (error) {
-              console.error('Error loading marathon:', error);
+              return; // Успешно получили данные
             }
+          } catch (authError) {
+            console.error('Authenticated endpoint also failed:', authError);
           }
-          
-          // Если платеж успешен - обновляем данные пользователя
-          if (data.payment.status === 'succeeded') {
-            await refreshUserData();
-          }
-        } else {
-          setStatus('error');
         }
+        
+        // Если оба endpoint зафейлились - показываем ошибку
+        console.error('Both endpoints failed - no token or invalid response');
+        setStatus('error');
+        
       } catch (error) {
         console.error('Error checking payment status:', error);
         setStatus('error');
@@ -363,9 +402,30 @@ export default function PaymentSuccess() {
             </div>
 
             <div className="p-8">
-              <p className="text-gray-600 mb-6 text-center">
-                Пожалуйста, проверьте историю платежей в личном кабинете или обратитесь в поддержку.
-              </p>
+              {(() => {
+                const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+                if (!token) {
+                  return (
+                    <div className="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                      <h3 className="font-semibold text-yellow-900 mb-2">🔐 Требуется авторизация</h3>
+                      <p className="text-sm text-yellow-800 mb-3">
+                        Для проверки статуса платежа необходимо войти в аккаунт.
+                      </p>
+                      <Link
+                        href={`/auth/login?redirect=/payment/success?orderId=${orderId}`}
+                        className="inline-block bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+                      >
+                        Войти в аккаунт →
+                      </Link>
+                    </div>
+                  );
+                }
+                return (
+                  <p className="text-gray-600 mb-6 text-center">
+                    Пожалуйста, проверьте историю платежей в личном кабинете или обратитесь в поддержку.
+                  </p>
+                );
+              })()}
 
               <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <h3 className="font-semibold text-blue-900 mb-2">📞 Техническая поддержка</h3>
