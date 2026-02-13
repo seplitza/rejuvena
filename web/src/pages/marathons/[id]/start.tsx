@@ -222,7 +222,7 @@ export default function MarathonStartPage() {
         ) : (
           <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl shadow-2xl p-8 text-center">
             <h3 className="text-2xl font-bold text-white mb-4">Готовы начать?</h3>
-            <p className="text-purple-100 mb-6">Начните свой путь к результатам прямо сейчас!</p>
+            <p className="text-purple-100 mb-6">Переходя на 1-й день обучения Вы соглашаетесь с правилами марафона!</p>
             <Link
               href={`/marathons/${id}/day/1`}
               className="inline-block bg-white text-purple-600 font-bold text-lg px-8 py-4 rounded-lg hover:bg-gray-100 transition-all duration-200 shadow-lg hover:shadow-xl"
