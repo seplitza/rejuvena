@@ -9,6 +9,42 @@ import Link from 'next/link';
 import { useAppDispatch } from '@/store/hooks';
 import { setUser } from '@/store/modules/auth/slice';
 
+// Типы для API ответов
+type PaymentMetadata = {
+  type?: string;
+  planType?: string;
+  marathonId?: string;
+  marathonName?: string;
+  marathonTenure?: number;
+  duration?: number;
+  [key: string]: any;
+};
+
+type PaymentData = {
+  id: string;
+  orderNumber: string;
+  amount: number;
+  status: string;
+  description: string;
+  paymentUrl?: string;
+  createdAt: string;
+  metadata?: PaymentMetadata;
+};
+
+type PaymentStatusResponse = {
+  success: boolean;
+  payment?: PaymentData;
+  error?: string;
+  message?: string;
+};
+
+type MarathonData = {
+  _id: string;
+  title: string;
+  telegramGroupUrl?: string;
+  [key: string]: any;
+};
+
 export default function PaymentSuccess() {
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -60,13 +96,13 @@ export default function PaymentSuccess() {
         const token = localStorage.getItem('auth_token');
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527';
         
-        let response;
-        let data;
+        let response: Response | undefined;
+        let data: PaymentStatusResponse | undefined;
         
         // Сначала пробуем публичный endpoint (не требует авторизации)
         try {
           response = await fetch(`${apiUrl}/api/payment/status-public/${orderId}`);
-          data = await response.json();
+          data = await response.json() as PaymentStatusResponse;
           
           if (response.ok && data.success && data.payment) {
             setPayment(data.payment);
@@ -80,20 +116,20 @@ export default function PaymentSuccess() {
             // Загружаем данные марафона если нужно
             if (data.payment.metadata?.type === 'marathon' || data.payment.metadata?.planType === 'marathon') {
               try {
-                let marathonData = null;
+                let marathonData: MarathonData | null = null;
                 
                 if (data.payment.metadata?.marathonId) {
                   const marathonResponse = await fetch(`${apiUrl}/api/marathons/${data.payment.metadata.marathonId}`);
                   if (marathonResponse.ok) {
-                    marathonData = await marathonResponse.json();
+                    marathonData = await marathonResponse.json() as MarathonData;
                   }
                 }
                 
                 if (!marathonData && data.payment.metadata?.marathonName) {
                   const allMarathonsResponse = await fetch(`${apiUrl}/api/marathons`);
                   if (allMarathonsResponse.ok) {
-                    const marathons = await allMarathonsResponse.json();
-                    marathonData = marathons.find((m: any) => m.title === data.payment.metadata.marathonName);
+                    const marathons = await allMarathonsResponse.json() as MarathonData[];
+                    marathonData = marathons.find((m) => m.title === data.payment.metadata!.marathonName) || null;
                   }
                 }
                 
@@ -118,7 +154,7 @@ export default function PaymentSuccess() {
               headers: { 'Authorization': `Bearer ${token}` }
             });
             
-            data = await response.json();
+            data = await response.json() as PaymentStatusResponse;
             console.log('Payment status response (auth):', data);
             
             if (response.ok && data.success && data.payment) {
@@ -132,20 +168,20 @@ export default function PaymentSuccess() {
               // Загружаем данные марафона
               if (data.payment.metadata?.type === 'marathon' || data.payment.metadata?.planType === 'marathon') {
                 try {
-                  let marathonData = null;
+                  let marathonData: MarathonData | null = null;
                   
                   if (data.payment.metadata?.marathonId) {
                     const marathonResponse = await fetch(`${apiUrl}/api/marathons/${data.payment.metadata.marathonId}`);
                     if (marathonResponse.ok) {
-                      marathonData = await marathonResponse.json();
+                      marathonData = await marathonResponse.json() as MarathonData;
                     }
                   }
                   
                   if (!marathonData && data.payment.metadata?.marathonName) {
                     const allMarathonsResponse = await fetch(`${apiUrl}/api/marathons`);
                     if (allMarathonsResponse.ok) {
-                      const marathons = await allMarathonsResponse.json();
-                      marathonData = marathons.find((m: any) => m.title === data.payment.metadata.marathonName);
+                      const marathons = await allMarathonsResponse.json() as MarathonData[];
+                      marathonData = marathons.find((m) => m.title === data.payment.metadata!.marathonName) || null;
                     }
                   }
                   
