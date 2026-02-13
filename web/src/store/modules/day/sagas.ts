@@ -3,7 +3,7 @@
  * Side effects for API calls
  */
 
-import { call, put, takeLatest, all } from 'redux-saga/effects';
+import { call, put, takeLatest, all, select } from 'redux-saga/effects';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { request } from '../../../api/request';
 import * as endpoints from '../../../api/endpoints';
@@ -26,31 +26,39 @@ function getTimezoneOffset(): number {
 }
 
 // Transform new marathon API response to expected format
-function transformMarathonDayResponse(apiResponse: any): DayExerciseResponse {
-  const { day } = apiResponse;
+function transformMarathonDayResponse(apiResponse: any, marathonId: string, dayNumber: string): DayExerciseResponse {
+  const { day, completedExerciseIds = [] } = apiResponse;
   
   // Transform exerciseGroups to dayCategories
   const dayCategories = day.exerciseGroups?.map((group: any) => ({
     id: group.categoryId._id || group.categoryId.id,
     categoryName: group.categoryId.name,
     imagePath: group.categoryId.icon || '',
-    exercises: group.exerciseIds.map((exercise: any, index: number) => ({
-      id: exercise._id || exercise.id,
-      marathonExerciseId: exercise._id || exercise.id,
-      exerciseName: exercise.title,
-      marathonExerciseName: exercise.title,
-      description: exercise.description || '',
-      videoUrl: exercise.carouselMedia?.find((m: any) => m.type === 'video')?.url || '',
-      imageUrl: exercise.carouselMedia?.find((m: any) => m.type === 'image')?.url || '',
-      duration: 0,
-      type: 'Practice' as const,
-      status: 'NotStarted' as const,
-      order: index,
-      commentsCount: 0,
-      isDone: false,
-      isNew: exercise.isNew || false,
-      blockExercise: false,
-    }))
+    exercises: group.exerciseIds.map((exercise: any, index: number) => {
+      const exerciseId = exercise._id || exercise.id;
+      const isDone = completedExerciseIds.includes(exerciseId);
+      
+      return {
+        id: exerciseId,
+        marathonExerciseId: exerciseId,
+        exerciseName: exercise.title,
+        marathonExerciseName: exercise.title,
+        description: exercise.description || '',
+        videoUrl: exercise.carouselMedia?.find((m: any) => m.type === 'video')?.url || '',
+        imageUrl: exercise.carouselMedia?.find((m: any) => m.type === 'image')?.url || '',
+        duration: 0,
+        type: 'Practice' as const,
+        status: isDone ? 'Completed' as const : 'NotStarted' as const,
+        order: index,
+        commentsCount: 0,
+        isDone,
+        isNew: exercise.isNew || false,
+        blockExercise: false,
+        // Store marathon context for status updates
+        _marathonId: marathonId,
+        _dayNumber: dayNumber,
+      };
+    })
   })) || [];
 
   // Flatten all exercises
@@ -110,7 +118,7 @@ function* getDayExerciseSaga(
       if (daysResponse.success && progressResponse.success) {
         const allDays = daysResponse.days || [];
         const completedDays = progressResponse.progress?.completedDays || [];
-        const currentAvailableDay = progressResponse.progress?.currentDay || 1;
+        const dayProgress = progressResponse.progress?.dayProgress || {};
         const marathon = marathonResponse.marathon;
         
         // Calculate current available day from start date
@@ -128,7 +136,7 @@ function* getDayExerciseSaga(
             title: d.title || `День ${d.dayNumber}`,
             description: d.description,
             dayDate: d.dayDate,
-            progress: completedDays.includes(d.dayNumber) ? 100 : 0,
+            progress: dayProgress[d.dayNumber] || 0,
             isLocked: d.dayNumber > maxAvailableDay,
           }));
         
@@ -140,7 +148,7 @@ function* getDayExerciseSaga(
             title: d.title || `День ${d.dayNumber}`,
             description: d.description,
             dayDate: d.dayDate,
-            progress: completedDays.includes(d.dayNumber) ? 100 : 0,
+            progress: dayProgress[d.dayNumber] || 0,
             isLocked: d.dayNumber > maxAvailableDay,
           }));
         
@@ -178,7 +186,7 @@ function* getDayExerciseSaga(
     console.log('✅ Marathon day API response:', apiResponse);
     
     // Transform to expected format
-    const response: DayExerciseResponse = transformMarathonDayResponse(apiResponse);
+    const response: DayExerciseResponse = transformMarathonDayResponse(apiResponse, marathonId, dayId);
     
     console.log('✅ Transformed response:', response);
     
@@ -205,19 +213,65 @@ function* changeExerciseStatusSaga(
     // Mark as changing
     yield put(addChangingStatusRequest(uniqueId));
     
-    // Call API (status is boolean - true/false)
+    // Extract marathonId and dayNumber from current state
+    const state = yield select((state: any) => state);
+    const currentMarathon = state.dayReducer?.currentMarathon;
+    const currentDay = state.dayReducer?.currentDay;
+    
+    if (!currentMarathon || !currentDay) {
+      throw new Error('Marathon context not available');
+    }
+    
+    const marathonId = currentMarathon._id;
+    const dayNumber = currentDay.marathonDay.day.toString();
+    
+    // Call new marathon API endpoint
     yield call(
       request.post,
-      endpoints.change_exercise_status,
+      endpoints.update_exercise_status(marathonId, dayNumber, marathonExerciseId),
       {
-        dayId,
-        marathonExerciseId,
-        status,
+        isCompleted: status,
       }
     );
     
     // Update local state
     yield put(updateExerciseStatus({ uniqueId, status }));
+    
+    // Reload progress to update stars
+    try {
+      const progressResponse = yield call(
+        request.get,
+        `/api/marathons/${marathonId}/progress`,
+        {}
+      );
+      
+      if (progressResponse.success && progressResponse.progress?.dayProgress) {
+        // Update marathonData with new progress
+        const marathonData = state.dayReducer?.marathonData;
+        if (marathonData) {
+          const updatedMarathonDays = marathonData.marathonDays.map((day: any) => ({
+            ...day,
+            progress: progressResponse.progress.dayProgress[day.day] || 0,
+          }));
+          
+          const updatedPracticeDays = marathonData.greatExtensionDays.map((day: any) => ({
+            ...day,
+            progress: progressResponse.progress.dayProgress[day.day] || 0,
+          }));
+          
+          yield put({
+            type: 'day/setMarathonData',
+            payload: {
+              ...marathonData,
+              marathonDays: updatedMarathonDays,
+              greatExtensionDays: updatedPracticeDays,
+            },
+          });
+        }
+      }
+    } catch (progressError) {
+      console.warn('Failed to reload progress:', progressError);
+    }
   } catch (error: any) {
     const errorMessage = error?.response?.data?.message || error?.message || 'Failed to update exercise status';
     console.error('changeExerciseStatusSaga error:', error);

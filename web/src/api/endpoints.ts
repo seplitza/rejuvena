@@ -70,6 +70,7 @@ export const create_order = '/Order/CreateOrder';
 
 // New Marathon API
 export const get_marathon_day = (marathonId: string, dayNumber: string) => `/api/marathons/${marathonId}/day/${dayNumber}`;
+export const update_exercise_status = (marathonId: string, dayNumber: string, exerciseId: string) => `/api/marathons/${marathonId}/day/${dayNumber}/exercise/${exerciseId}/status`;
 
 // Payment
 export const payment_create = '/api/payment/create';
