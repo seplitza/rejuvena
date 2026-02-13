@@ -110,10 +110,10 @@ export default function MarathonDayPage() {
         <DayPlan />
 
         {/* Days List - показываем все пройденные дни со звездами */}
-        {id && typeof id === 'string' && marathonDay?.id && (
+        {id && typeof id === 'string' && marathonDay?.day && (
           <DaysList 
             marathonId={id} 
-            currentDayId={marathonDay.id}
+            currentDayNumber={marathonDay.day}
           />
         )}
       </div>

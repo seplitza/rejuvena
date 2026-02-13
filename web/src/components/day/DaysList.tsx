@@ -20,7 +20,7 @@ interface MarathonDay {
 
 interface DaysListProps {
   marathonId: string;
-  currentDayId: string;
+  currentDayNumber: number;
 }
 
 /**
@@ -77,7 +77,7 @@ const StarRating: React.FC<{ rating: number; maxStars?: number }> = ({ rating, m
   );
 };
 
-export default function DaysList({ marathonId, currentDayId }: DaysListProps) {
+export default function DaysList({ marathonId, currentDayNumber }: DaysListProps) {
   const router = useRouter();
   
   // Use marathon data from Redux (already loaded by saga)
@@ -87,12 +87,12 @@ export default function DaysList({ marathonId, currentDayId }: DaysListProps) {
   const greatExtensionDays = marathonData?.greatExtensionDays || [];
   
   // Debug logging
-  console.log('📋 DaysList - Current day ID:', currentDayId);
+  console.log('📋 DaysList - Current day number:', currentDayNumber);
   console.log('📋 DaysList - Marathon days:', marathonDays.map((d: any) => ({ id: d.id, day: d.day, progress: d.progress })));
   console.log('📋 DaysList - Practice days:', greatExtensionDays.map((d: any) => ({ id: d.id, day: d.day, progress: d.progress })));
 
-  const handleDayClick = (dayId: string) => {
-    router.push(`/courses/${marathonId}/day/${dayId}`);
+  const handleDayClick = (dayNumber: number) => {
+    router.push(`/marathons/${marathonId}/day/${dayNumber}`);
   };
 
   const allDays = [...marathonDays, ...greatExtensionDays];
@@ -108,9 +108,9 @@ export default function DaysList({ marathonId, currentDayId }: DaysListProps) {
           Пройденные дни
         </h3>
         
-        {/* START button to return to course welcome page */}
+        {/* START button to return to marathon start page */}
         <button
-          onClick={() => router.push(`/courses/${marathonId}/start`)}
+          onClick={() => router.push(`/marathons/${marathonId}/start`)}
           className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all shadow-md hover:shadow-lg"
         >
           СТАРТ
@@ -125,13 +125,13 @@ export default function DaysList({ marathonId, currentDayId }: DaysListProps) {
           </h4>
           <div className="grid grid-cols-7 gap-2">
             {marathonDays.map((day) => {
-              const isActive = day.id === currentDayId;
+              const isActive = day.day === currentDayNumber;
               const rating = getRatingFromProgress(day.progress || 0, false); // false = training
               
               return (
                 <button
                   key={day.id}
-                  onClick={() => handleDayClick(day.id)}
+                  onClick={() => handleDayClick(day.day)}
                   disabled={day.isLocked}
                   className={`
                     relative p-3 rounded-lg border-2 transition-all
@@ -186,13 +186,13 @@ export default function DaysList({ marathonId, currentDayId }: DaysListProps) {
           </h4>
           <div className="grid grid-cols-7 gap-2">
             {greatExtensionDays.map((day) => {
-              const isActive = day.id === currentDayId;
+              const isActive = day.day === currentDayNumber;
               const rating = getRatingFromProgress(day.progress || 0, true); // true = practice
               
               return (
                 <button
                   key={day.id}
-                  onClick={() => handleDayClick(day.id)}
+                  onClick={() => handleDayClick(day.day)}
                   disabled={day.isLocked}
                   className={`
                     relative p-3 rounded-lg border-2 transition-all

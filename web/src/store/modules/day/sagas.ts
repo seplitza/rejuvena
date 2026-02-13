@@ -85,26 +85,86 @@ function* getDayExerciseSaga(
     
     console.log('🔄 Loading marathon day:', { marathonId, dayId });
     
-    // First, load marathon info
+    // Load marathon info, all days, and progress in parallel
     try {
-      const marathonResponse = yield call(
-        request.get,
-        `/api/marathons/${marathonId}`,
-        {}
-      );
+      const [marathonResponse, daysResponse, progressResponse] = yield Promise.all([
+        call(request.get, `/api/marathons/${marathonId}`, {}),
+        call(request.get, `/api/marathons/${marathonId}/days`, {}),
+        call(request.get, `/api/marathons/${marathonId}/progress`, {}),
+      ]);
       
+      // Save marathon info
       if (marathonResponse.success && marathonResponse.marathon) {
+        const marathon = marathonResponse.marathon;
         yield put(setCurrentMarathon({
-          _id: marathonResponse.marathon._id,
-          title: marathonResponse.marathon.title,
-          imagePath: marathonResponse.marathon.imagePath,
-          numberOfDays: marathonResponse.marathon.numberOfDays,
-          startDate: marathonResponse.marathon.startDate,
+          _id: marathon._id,
+          title: marathon.title,
+          imagePath: marathon.imagePath,
+          numberOfDays: marathon.numberOfDays,
+          startDate: marathon.startDate,
         }));
-        console.log('✅ Marathon info loaded:', marathonResponse.marathon.title);
+        console.log('✅ Marathon info loaded:', marathon.title);
+      }
+      
+      // Build marathon data for DaysList
+      if (daysResponse.success && progressResponse.success) {
+        const allDays = daysResponse.days || [];
+        const completedDays = progressResponse.progress?.completedDays || [];
+        const currentAvailableDay = progressResponse.progress?.currentDay || 1;
+        const marathon = marathonResponse.marathon;
+        
+        // Calculate current available day from start date
+        const now = new Date();
+        const startDate = new Date(marathon.startDate);
+        const daysSinceStart = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        const maxAvailableDay = daysSinceStart + 1;
+        
+        // Split into training (1-14) and practice (15+) days
+        const marathonDays = allDays
+          .filter((d: any) => d.dayNumber <= 14)
+          .map((d: any) => ({
+            id: d._id,
+            day: d.dayNumber,
+            title: d.title || `День ${d.dayNumber}`,
+            description: d.description,
+            dayDate: d.dayDate,
+            progress: completedDays.includes(d.dayNumber) ? 100 : 0,
+            isLocked: d.dayNumber > maxAvailableDay,
+          }));
+        
+        const greatExtensionDays = allDays
+          .filter((d: any) => d.dayNumber > 14)
+          .map((d: any) => ({
+            id: d._id,
+            day: d.dayNumber,
+            title: d.title || `День ${d.dayNumber}`,
+            description: d.description,
+            dayDate: d.dayDate,
+            progress: completedDays.includes(d.dayNumber) ? 100 : 0,
+            isLocked: d.dayNumber > maxAvailableDay,
+          }));
+        
+        yield put({
+          type: 'day/setMarathonData',
+          payload: {
+            marathonDays,
+            greatExtensionDays,
+            oldGreatExtensions: [],
+            rule: {
+              rule: marathon.rules || '',
+              welcomeMessage: marathon.welcomeMessage || '',
+            },
+          },
+        });
+        
+        console.log('✅ Marathon data built:', { 
+          trainingDays: marathonDays.length, 
+          practiceDays: greatExtensionDays.length,
+          completedDays: completedDays.length 
+        });
       }
     } catch (marathonError) {
-      console.warn('Failed to load marathon info:', marathonError);
+      console.warn('Failed to load marathon info/progress:', marathonError);
       // Continue anyway - day might still load
     }
     
