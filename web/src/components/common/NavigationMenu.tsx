@@ -6,6 +6,7 @@
 import { useRouter } from 'next/router';
 import { useAppDispatch } from '@/store/hooks';
 import { logout } from '@/store/modules/auth/slice';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface NavigationMenuProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ function normalizeEmoji(text: string): string {
 export default function NavigationMenu({ isOpen, onClose }: NavigationMenuProps) {
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const { theme: currentTheme, themes, setTheme, loading } = useTheme();
 
   const handleNavigation = (path: string) => {
     router.push(path);
@@ -97,6 +99,69 @@ export default function NavigationMenu({ isOpen, onClose }: NavigationMenuProps)
           ))}
 
           {/* Divider */}
+          <div className="border-t border-gray-200 my-4"></div>
+
+          {/* Theme Selector */}
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold text-gray-600 px-3 mb-2">Тема оформления</h3>
+            {loading ? (
+              <div className="text-gray-500 text-sm px-3">Загрузка тем...</div>
+            ) : (
+              <div className="space-y-1">
+                {themes.map((theme) => (
+                  <button
+                    key={theme.slug}
+                    onClick={() => setTheme(theme.slug)}
+                    className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-all text-left ${
+                      currentTheme?.slug === theme.slug
+                        ? 'bg-purple-50 border-2 border-purple-300'
+                        : 'hover:bg-gray-50 border-2 border-transparent'
+                    }`}
+                  >
+                    {/* Color Preview */}
+                    <div className="flex space-x-1">
+                      <div
+                        className="w-4 h-4 rounded-full border border-gray-300"
+                        style={{ backgroundColor: theme.colors.primary }}
+                        title={theme.colors.primary}
+                      />
+                      <div
+                        className="w-4 h-4 rounded-full border border-gray-300"
+                        style={{ backgroundColor: theme.colors.secondary }}
+                        title={theme.colors.secondary}
+                      />
+                      <div
+                        className="w-4 h-4 rounded-full border border-gray-300"
+                        style={{ backgroundColor: theme.colors.accent }}
+                        title={theme.colors.accent}
+                      />
+                    </div>
+                    
+                    {/* Theme Name */}
+                    <div className="flex-1">
+                      <span className={`text-sm font-medium ${
+                        currentTheme?.slug === theme.slug ? 'text-purple-700' : 'text-gray-700'
+                      }`}>
+                        {theme.name}
+                      </span>
+                      {theme.isDark && (
+                        <span className="ml-2 text-xs text-gray-500">🌙</span>
+                      )}
+                    </div>
+                    
+                    {/* Active Indicator */}
+                    {currentTheme?.slug === theme.slug && (
+                      <svg className="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Divider before logout */}
           <div className="border-t border-gray-200 my-4"></div>
 
           {/* Logout */}

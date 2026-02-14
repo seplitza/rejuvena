@@ -6,6 +6,7 @@ import { useRouter } from 'next/router';
 import { useAppDispatch } from '@/store/hooks';
 import { setAuthToken, setUser, logout } from '@/store/modules/auth/slice';
 import { AuthTokenManager, request, endpoints } from '@/api';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 
 function App({ Component, pageProps }: AppProps) {
   const dispatch = useAppDispatch();
@@ -124,7 +125,11 @@ function App({ Component, pageProps }: AppProps) {
     };
   }, [dispatch]);
 
-  return <Component {...pageProps} />;
+  return (
+    <ThemeProvider>
+      <Component {...pageProps} />
+    </ThemeProvider>
+  );
 }
 
 export default wrapper.withRedux(App);
