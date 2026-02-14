@@ -55,7 +55,7 @@ function App({ Component, pageProps }: AppProps) {
         
         try {
           // Загружаем данные пользователя
-          const user = await request.get(endpoints.get_user_profile);
+          const user: any = await request.get(endpoints.get_user_profile);
           if (user) {
             dispatch(setUser(user));
             console.log('✅ Token and user profile restored from localStorage');
