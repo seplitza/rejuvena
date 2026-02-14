@@ -220,7 +220,10 @@ export default function MarathonStartPage() {
             </p>
           </div>
         ) : (
-          <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl shadow-2xl p-8 text-center">
+          <div 
+            className="rounded-xl shadow-2xl p-8 text-center"
+            style={{ backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))' }}
+          >
             <h3 className="text-2xl font-bold text-white mb-4">Готовы начать?</h3>
             <p className="text-purple-100 mb-6">Переходя на 1-й день обучения Вы соглашаетесь с правилами марафона!</p>
             <Link

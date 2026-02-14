@@ -257,7 +257,10 @@ export default function ExercisesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg">
+      <header 
+        className="text-white shadow-lg"
+        style={{ backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))' }}
+      >
         <div className="max-w-4xl mx-auto px-3 py-3">
           <div className="flex items-center justify-between">
             <button
@@ -305,9 +308,10 @@ export default function ExercisesPage() {
                   onClick={() => setSelectedCategory('all')}
                   className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
                     selectedCategory === 'all'
-                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                      ? 'text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
+                  style={selectedCategory === 'all' ? { backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))' } : {}}
                 >
                   Все ({sortedExercises.length})
                 </button>
@@ -317,9 +321,10 @@ export default function ExercisesPage() {
                     onClick={() => setSelectedCategory(category)}
                     className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
                       selectedCategory === category
-                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                        ? 'text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
+                    style={selectedCategory === category ? { backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))' } : {}}
                   >
                     {category} ({exercisesByCategory[category].length})
                   </button>
@@ -329,7 +334,10 @@ export default function ExercisesPage() {
 
             {/* Exercises List */}
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-              <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-4">
+              <div 
+                className="text-white px-6 py-4"
+                style={{ backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))' }}
+              >
                 <h2 className="text-xl font-bold">
                   {selectedCategory === 'all' 
                     ? `Все упражнения (${sortedExercises.length})`
