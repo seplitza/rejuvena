@@ -156,7 +156,7 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
     const exerciseData = exercise as any;
     const exerciseContents = exerciseData.exerciseContents || [];
     
-    const items: ContentItem[] = exerciseContents
+    let items: ContentItem[] = exerciseContents
       .filter((c: any) => c.type === 'video' || c.type === 'image')
       .map((c: any) => {
         const item: ContentItem = {
@@ -174,6 +174,30 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
 
         return item;
       });
+
+    if (items.length === 0) {
+      const fallbackVideoUrl = exerciseData.videoUrl || exercise.videoUrl;
+      if (fallbackVideoUrl) {
+        const { embedUrl, type: videoType } = getVideoEmbedUrl(fallbackVideoUrl);
+        items = [{
+          id: 'fallback-video',
+          type: 'video',
+          contentPath: fallbackVideoUrl,
+          embedUrl,
+          videoType,
+          loadError: false,
+        }];
+      }
+    }
+
+    if (items.length === 0 && exerciseData.imageUrl) {
+      items = [{
+        id: 'fallback-image',
+        type: 'image',
+        contentPath: exerciseData.imageUrl,
+        loadError: false,
+      }];
+    }
 
     setContentItems(items);
     setCurrentContentIndex(0);
@@ -265,7 +289,11 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
   const exerciseData = exercise as any;
   const exerciseName = exercise.exerciseName || '';
   const marathonExerciseName = exercise.marathonExerciseName || '';
-  let description = exerciseData.exerciseDescription || exercise.description || '';
+  const descriptionFromExercise = exerciseData.exerciseDescription || '';
+  const descriptionFromLegacy = exercise.description || '';
+  let description = descriptionFromLegacy.length > descriptionFromExercise.length
+    ? descriptionFromLegacy
+    : descriptionFromExercise;
   
   // Normalize emoji in description - fix multiple character emoji display bug
   if (description) {
@@ -274,6 +302,8 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
       return match.replace(/[\uFE0F\u200D]/g, '');
     });
   }
+
+  const hasHtmlDescription = /<\/?[a-z][\s\S]*>/i.test(description);
   
   const type = exercise.type || '';
   const duration = exercise.duration || 0;
@@ -527,17 +557,23 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
           {/* Description */}
           {description && (
             <div className="p-4 md:p-6">
-              <div 
-                className="prose prose-sm max-w-none
-                  prose-headings:text-purple-900 prose-headings:font-bold
-                  prose-p:text-gray-700 prose-p:leading-relaxed
-                  prose-a:text-purple-600 prose-a:no-underline hover:prose-a:underline
-                  prose-strong:text-gray-900 prose-strong:font-semibold
-                  prose-ul:list-disc prose-ol:list-decimal
-                  prose-li:text-gray-700 prose-li:my-1
-                  prose-blockquote:border-l-4 prose-blockquote:border-purple-400 prose-blockquote:pl-4 prose-blockquote:italic"
-                dangerouslySetInnerHTML={{ __html: description }}
-              />
+              {hasHtmlDescription ? (
+                <div 
+                  className="prose prose-sm max-w-none
+                    prose-headings:text-purple-900 prose-headings:font-bold
+                    prose-p:text-gray-700 prose-p:leading-relaxed
+                    prose-a:text-purple-600 prose-a:no-underline hover:prose-a:underline
+                    prose-strong:text-gray-900 prose-strong:font-semibold
+                    prose-ul:list-disc prose-ol:list-decimal
+                    prose-li:text-gray-700 prose-li:my-1
+                    prose-blockquote:border-l-4 prose-blockquote:border-purple-400 prose-blockquote:pl-4 prose-blockquote:italic"
+                  dangerouslySetInnerHTML={{ __html: description }}
+                />
+              ) : (
+                <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                  {description}
+                </div>
+              )}
             </div>
           )}
 
