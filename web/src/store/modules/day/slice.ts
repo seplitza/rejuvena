@@ -27,7 +27,7 @@ export interface Exercise {
 export interface ExerciseCategory {
   id: string;
   categoryName: string;
-  imagePath: string;
+  icon: string; // Emoji icon from backend
   exercises: Exercise[];
 }
 

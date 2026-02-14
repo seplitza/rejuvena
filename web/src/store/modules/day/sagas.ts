@@ -33,7 +33,7 @@ function transformMarathonDayResponse(apiResponse: any, marathonId: string, dayN
   const dayCategories = day.exerciseGroups?.map((group: any) => ({
     id: group.categoryId._id || group.categoryId.id,
     categoryName: group.categoryId.name,
-    imagePath: group.categoryId.icon || '',
+    icon: group.categoryId.icon || '',
     exercises: group.exerciseIds.map((exercise: any, index: number) => {
       const exerciseId = exercise._id || exercise.id;
       const isDone = completedExerciseIds.includes(exerciseId);

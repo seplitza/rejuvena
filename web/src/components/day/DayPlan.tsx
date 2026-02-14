@@ -15,7 +15,6 @@ import {
 import { changeExerciseStatus } from '@/store/modules/day/slice';
 import ExerciseItem from './ExerciseItem';
 import type { Exercise } from '@/store/modules/day/slice';
-import Image from 'next/image';
 
 // Static import - always included
 import ExerciseDetailModal from './ExerciseDetailModal';
@@ -109,16 +108,11 @@ export default function DayPlan() {
                   className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex items-center space-x-3">
-                    {/* Category Icon */}
-                    {category.imagePath && (
-                      <div className="relative w-10 h-10 flex-shrink-0">
-                        <Image
-                          src={category.imagePath}
-                          alt={category.categoryName}
-                          fill
-                          className="object-contain"
-                        />
-                      </div>
+                    {/* Category Icon (emoji) */}
+                    {category.icon && (
+                      <span className="text-2xl flex-shrink-0" role="img" aria-label={category.categoryName}>
+                        {category.icon}
+                      </span>
                     )}
                     
                     {/* Category Name */}
