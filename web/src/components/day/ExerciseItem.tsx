@@ -98,6 +98,7 @@ export default function ExerciseItem({
             Новое
           </span>
         )}
-
-        {/
+      </div>
+    </div>
+  );
 }
