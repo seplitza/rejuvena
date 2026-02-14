@@ -225,18 +225,7 @@ export default function DayDescription() {
 
         {/* HTML Content */}
         <div 
-          className="prose max-w-none
-            prose-h1:text-3xl prose-h1:font-bold prose-h1:text-purple-900 prose-h1:mb-4 prose-h1:mt-6
-            prose-h2:text-2xl prose-h2:font-bold prose-h2:text-purple-800 prose-h2:mb-3 prose-h2:mt-5
-            prose-h3:text-xl prose-h3:font-semibold prose-h3:text-purple-700 prose-h3:mb-2 prose-h3:mt-4
-            prose-p:text-base prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-3
-            prose-a:text-purple-600 prose-a:no-underline hover:prose-a:underline
-            prose-strong:text-gray-900 prose-strong:font-semibold
-            prose-ul:list-disc prose-ul:ml-5 prose-ol:list-decimal prose-ol:ml-5
-            prose-li:text-gray-700 prose-li:my-1 prose-li:text-base
-            prose-img:rounded-lg prose-img:shadow-md prose-img:my-4
-            prose-blockquote:border-l-4 prose-blockquote:border-purple-400 prose-blockquote:pl-4 prose-blockquote:italic
-            prose-iframe:rounded-lg prose-iframe:my-4 prose-iframe:w-full"
+          className="day-content-prose"
           dangerouslySetInnerHTML={{ __html: cleanedHtml }}
         />
       </div>
@@ -256,6 +245,102 @@ export default function DayDescription() {
         }
         div::-webkit-scrollbar-thumb:hover {
           background: #A0AEC0;
+        }
+        
+        /* Explicit styles for day content */
+        .day-content-prose :global(h1) {
+          font-size: 1.875rem !important; /* 30px */
+          font-weight: 700 !important;
+          color: #581c87 !important;
+          margin-bottom: 1rem !important;
+          margin-top: 1.5rem !important;
+          line-height: 1.25 !important;
+        }
+        
+        .day-content-prose :global(h2) {
+          font-size: 1.5rem !important; /* 24px */
+          font-weight: 700 !important;
+          color: #6b21a8 !important;
+          margin-bottom: 0.75rem !important;
+          margin-top: 1.25rem !important;
+          line-height: 1.3 !important;
+        }
+        
+        .day-content-prose :global(h3) {
+          font-size: 1.25rem !important; /* 20px */
+          font-weight: 600 !important;
+          color: #7c3aed !important;
+          margin-bottom: 0.5rem !important;
+          margin-top: 1rem !important;
+          line-height: 1.4 !important;
+        }
+        
+        .day-content-prose :global(p) {
+          font-size: 1rem !important; /* 16px */
+          color: #374151 !important;
+          line-height: 1.625 !important;
+          margin-bottom: 0.75rem !important;
+        }
+        
+        .day-content-prose :global(strong) {
+          font-weight: 600 !important;
+          color: #111827 !important;
+        }
+        
+        .day-content-prose :global(em) {
+          font-style: italic !important;
+        }
+        
+        .day-content-prose :global(a) {
+          color: #7c3aed !important;
+          text-decoration: none !important;
+        }
+        
+        .day-content-prose :global(a:hover) {
+          text-decoration: underline !important;
+        }
+        
+        .day-content-prose :global(ul) {
+          list-style-type: disc !important;
+          margin-left: 1.25rem !important;
+          margin-bottom: 0.75rem !important;
+        }
+        
+        .day-content-prose :global(ol) {
+          list-style-type: decimal !important;
+          margin-left: 1.25rem !important;
+          margin-bottom: 0.75rem !important;
+        }
+        
+        .day-content-prose :global(li) {
+          font-size: 1rem !important;
+          color: #374151 !important;
+          margin-top: 0.25rem !important;
+          margin-bottom: 0.25rem !important;
+        }
+        
+        .day-content-prose :global(img) {
+          border-radius: 0.5rem !important;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+          margin: 1rem 0 !important;
+          max-width: 100% !important;
+          height: auto !important;
+        }
+        
+        .day-content-prose :global(iframe) {
+          border-radius: 0.5rem !important;
+          margin: 1rem 0 !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          aspect-ratio: 16 / 9 !important;
+          border: none !important;
+        }
+        
+        .day-content-prose :global(blockquote) {
+          border-left: 4px solid #a78bfa !important;
+          padding-left: 1rem !important;
+          font-style: italic !important;
+          margin: 1rem 0 !important;
         }
       `}</style>
     </div>
