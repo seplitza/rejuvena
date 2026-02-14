@@ -323,7 +323,7 @@ export default function CourseStartPage() {
         {marathonId && marathonDays.length > 0 && (
           <DaysList 
             marathonId={marathonId} 
-            currentDayId={marathonDays[0]?.id || ''}
+            currentDayNumber={marathonDays[0]?.day || 1}
           />
         )}
       </div>
