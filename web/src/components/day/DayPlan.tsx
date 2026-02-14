@@ -8,12 +8,11 @@ import { useRouter } from 'next/router';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import {
   selectDayCategories,
-  selectActiveExerciseId,
   selectChangingStatusRequests,
   selectUpdatedExercisesStatus,
   selectMarathonDay,
 } from '@/store/modules/day/selectors';
-import { setActiveExerciseId, changeExerciseStatus } from '@/store/modules/day/slice';
+import { changeExerciseStatus } from '@/store/modules/day/slice';
 import ExerciseItem from './ExerciseItem';
 import type { Exercise } from '@/store/modules/day/slice';
 import Image from 'next/image';
@@ -26,7 +25,6 @@ export default function DayPlan() {
   const { courseId, dayId } = router.query;
   const dispatch = useAppDispatch();
   const dayCategories = useAppSelector(selectDayCategories);
-  const activeExerciseId = useAppSelector(selectActiveExerciseId);
   const changingStatusRequests = useAppSelector(selectChangingStatusRequests);
   const updatedExercisesStatus = useAppSelector(selectUpdatedExercisesStatus);
   const marathonDay = useAppSelector(selectMarathonDay);
@@ -51,8 +49,8 @@ export default function DayPlan() {
   const handleExerciseClick = (exercise: Exercise, uniqueId: string) => {
     if (exercise.blockExercise) return;
     
-    // Open modal when clicking on banner or expand arrow
-    console.log('📱 Banner clicked - opening modal for:', exercise.exerciseName);
+    // Open modal with exercise details (carousel, description, comments)
+    console.log('📱 Exercise clicked - opening modal for:', exercise.exerciseName);
     setSelectedExercise(exercise);
   };
 
@@ -70,11 +68,6 @@ export default function DayPlan() {
       dayId: marathonDay?.id || '',
       uniqueId,
     }));
-  };
-
-  const handleExerciseDetailClick = (exercise: Exercise) => {
-    // Open modal instead of navigating to separate page
-    setSelectedExercise(exercise);
   };
 
   const toggleCategory = (categoryId: string) => {
@@ -149,7 +142,6 @@ export default function DayPlan() {
                   <div className="px-0 sm:px-6 pb-4 space-y-2">
                     {category.exercises.map((exercise, index) => {
                       const uniqueId = `${index}-${category.id}-${exercise.id}`;
-                      const isActive = activeExerciseId === uniqueId;
                       const currentStatus = updatedExercisesStatus[uniqueId] !== undefined
                         ? updatedExercisesStatus[uniqueId]
                         : exercise.isDone;
@@ -160,12 +152,10 @@ export default function DayPlan() {
                           key={uniqueId}
                           exercise={exercise}
                           uniqueId={uniqueId}
-                          isActive={isActive}
                           isDone={currentStatus}
                           isChanging={isChanging}
                           onToggle={() => handleExerciseClick(exercise, uniqueId)}
                           onCheck={() => handleExerciseCheck(exercise, uniqueId)}
-                          onDetailClick={() => handleExerciseDetailClick(exercise)}
                         />
                       );
                     })}
