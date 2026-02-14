@@ -43,6 +43,79 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const THEME_STORAGE_KEY = 'rejuvena_selected_theme';
 
+// Fallback themes in case backend is unavailable
+const FALLBACK_THEMES: Theme[] = [
+  {
+    _id: 'fallback-1',
+    name: 'Rejuvena Classic',
+    slug: 'rejuvena-classic',
+    isDark: false,
+    colors: {
+      primary: '#7c3aed',
+      secondary: '#ec4899',
+      accent: '#f97316',
+      background: '#ffffff',
+      surface: '#f9fafb',
+      text: '#111827',
+      textSecondary: '#6b7280',
+    },
+    gradients: {
+      primary: 'from-purple-600 to-pink-600',
+      secondary: 'from-orange-500 to-pink-500',
+      background: 'from-pink-50 to-purple-50',
+    },
+    isDefault: true,
+    isActive: true,
+    order: 1,
+  },
+  {
+    _id: 'fallback-2',
+    name: 'Ocean Breeze',
+    slug: 'ocean-breeze',
+    isDark: false,
+    colors: {
+      primary: '#2563eb',
+      secondary: '#06b6d4',
+      accent: '#14b8a6',
+      background: '#ffffff',
+      surface: '#f0f9ff',
+      text: '#1e3a8a',
+      textSecondary: '#64748b',
+    },
+    gradients: {
+      primary: 'from-blue-600 to-cyan-600',
+      secondary: 'from-cyan-500 to-teal-500',
+      background: 'from-blue-50 to-cyan-50',
+    },
+    isDefault: false,
+    isActive: true,
+    order: 2,
+  },
+  {
+    _id: 'fallback-3',
+    name: 'Dark Mode',
+    slug: 'dark-mode',
+    isDark: true,
+    colors: {
+      primary: '#a855f7',
+      secondary: '#f472b6',
+      accent: '#fb923c',
+      background: '#111827',
+      surface: '#1f2937',
+      text: '#f9fafb',
+      textSecondary: '#9ca3af',
+    },
+    gradients: {
+      primary: 'from-purple-500 to-pink-500',
+      secondary: 'from-orange-400 to-pink-400',
+      background: 'from-gray-900 to-gray-800',
+    },
+    isDefault: false,
+    isActive: true,
+    order: 5,
+  },
+];
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme | null>(null);
   const [themes, setThemes] = useState<Theme[]>([]);
@@ -52,33 +125,56 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const fetchThemes = async () => {
       try {
+        console.log('🎨 ThemeContext: Fetching themes from:', `${API_URL}/api/themes`);
         const response = await fetch(`${API_URL}/api/themes`);
+        console.log('🎨 ThemeContext: Response status:', response.status);
         const data = await response.json();
+        console.log('🎨 ThemeContext: Response data:', data);
         
-        if (data.success && data.themes) {
+        if (data.success && data.themes && data.themes.length > 0) {
+          console.log('🎨 ThemeContext: Setting themes:', data.themes.length, 'themes found');
           setThemes(data.themes);
           
           // Load saved theme or default
           const savedThemeSlug = localStorage.getItem(THEME_STORAGE_KEY);
+          console.log('🎨 ThemeContext: Saved theme slug:', savedThemeSlug);
           
           if (savedThemeSlug) {
             const savedTheme = data.themes.find((t: Theme) => t.slug === savedThemeSlug);
             if (savedTheme) {
+              console.log('🎨 ThemeContext: Applying saved theme:', savedTheme.name);
               setThemeState(savedTheme);
             } else {
               // Saved theme not found, use default
               const defaultTheme = data.themes.find((t: Theme) => t.isDefault);
+              console.log('🎨 ThemeContext: Saved theme not found, using default:', defaultTheme?.name);
               setThemeState(defaultTheme || data.themes[0]);
             }
           } else {
             // No saved theme, use default
             const defaultTheme = data.themes.find((t: Theme) => t.isDefault);
+            console.log('🎨 ThemeContext: No saved theme, using default:', defaultTheme?.name);
             setThemeState(defaultTheme || data.themes[0]);
           }
+        } else {
+          // No themes from API, use fallback
+          console.warn('🎨 ThemeContext: No themes from API, using fallback themes');
+          setThemes(FALLBACK_THEMES);
+          const defaultTheme = FALLBACK_THEMES.find(t => t.isDefault) || FALLBACK_THEMES[0];
+          setThemeState(defaultTheme);
         }
       } catch (error) {
-        console.error('Failed to fetch themes:', error);
+        console.error('🎨 ThemeContext: Failed to fetch themes, using fallback:', error);
+        // Use fallback themes if API fails
+        setThemes(FALLBACK_THEMES);
+        const savedThemeSlug = localStorage.getItem(THEME_STORAGE_KEY);
+        const savedTheme = savedThemeSlug 
+          ? FALLBACK_THEMES.find(t => t.slug === savedThemeSlug)
+          : null;
+        const defaultTheme = savedTheme || FALLBACK_THEMES.find(t => t.isDefault) || FALLBACK_THEMES[0];
+        setThemeState(defaultTheme);
       } finally {
+        console.log('🎨 ThemeContext: Loading complete');
         setLoading(false);
       }
     };
