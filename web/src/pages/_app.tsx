@@ -55,10 +55,9 @@ function App({ Component, pageProps }: AppProps) {
         
         try {
           // Загружаем данные пользователя
-          const response = await request.get(endpoints.get_user_profile);
-          // response уже содержит response.data благодаря interceptor
-          if (response.success && response.user) {
-            dispatch(setUser(response.user));
+          const user = await request.get(endpoints.get_user_profile);
+          if (user) {
+            dispatch(setUser(user));
             console.log('✅ Token and user profile restored from localStorage');
           }
         } catch (error) {
