@@ -37,15 +37,26 @@ function transformMarathonDayResponse(apiResponse: any, marathonId: string, dayN
     exercises: group.exerciseIds.map((exercise: any, index: number) => {
       const exerciseId = exercise._id || exercise.id;
       const isDone = completedExerciseIds.includes(exerciseId);
+      const carouselMedia = [...(exercise.carouselMedia || [])]
+        .sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+      const firstVideo = carouselMedia.find((m: any) => m.type === 'video');
+      const firstImage = carouselMedia.find((m: any) => m.type === 'image');
       
       return {
         id: exerciseId,
         marathonExerciseId: exerciseId,
         exerciseName: exercise.title,
         marathonExerciseName: exercise.title,
-        description: exercise.description || '',
-        videoUrl: exercise.carouselMedia?.find((m: any) => m.type === 'video')?.url || '',
-        imageUrl: exercise.carouselMedia?.find((m: any) => m.type === 'image')?.url || '',
+        description: exercise.content || exercise.description || '',
+        exerciseDescription: exercise.content || exercise.description || '',
+        videoUrl: firstVideo?.url || '',
+        imageUrl: firstImage?.url || '',
+        exerciseContents: carouselMedia.map((m: any) => ({
+          id: m._id || `${exerciseId}-${m.order || 0}-${m.type}`,
+          type: m.type,
+          contentPath: m.url,
+          order: m.order || 0,
+        })),
         duration: 0,
         type: 'Practice' as const,
         status: isDone ? 'Completed' as const : 'NotStarted' as const,

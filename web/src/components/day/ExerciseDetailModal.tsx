@@ -154,7 +154,7 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
     if (!exercise) return;
 
     const exerciseData = exercise as any;
-    const exerciseContents = exerciseData.exerciseContents || [];
+    const exerciseContents = [...(exerciseData.exerciseContents || [])].sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
     
     let items: ContentItem[] = exerciseContents
       .filter((c: any) => c.type === 'video' || c.type === 'image')
@@ -176,27 +176,29 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
       });
 
     if (items.length === 0) {
+      const fallbackImageUrl = exerciseData.imageUrl || exercise.imageUrl;
       const fallbackVideoUrl = exerciseData.videoUrl || exercise.videoUrl;
+
+      if (fallbackImageUrl) {
+        items.push({
+          id: 'fallback-image',
+          type: 'image',
+          contentPath: fallbackImageUrl,
+          loadError: false,
+        });
+      }
+
       if (fallbackVideoUrl) {
         const { embedUrl, type: videoType } = getVideoEmbedUrl(fallbackVideoUrl);
-        items = [{
+        items.push({
           id: 'fallback-video',
           type: 'video',
           contentPath: fallbackVideoUrl,
           embedUrl,
           videoType,
           loadError: false,
-        }];
+        });
       }
-    }
-
-    if (items.length === 0 && exerciseData.imageUrl) {
-      items = [{
-        id: 'fallback-image',
-        type: 'image',
-        contentPath: exerciseData.imageUrl,
-        loadError: false,
-      }];
     }
 
     setContentItems(items);
@@ -291,9 +293,17 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
   const marathonExerciseName = exercise.marathonExerciseName || '';
   const descriptionFromExercise = exerciseData.exerciseDescription || '';
   const descriptionFromLegacy = exercise.description || '';
+  const descriptionFromContent = exerciseData.content || '';
+  const descriptionFromMarathonExercise = exerciseData.marathonExerciseDescription || '';
   let description = descriptionFromLegacy.length > descriptionFromExercise.length
     ? descriptionFromLegacy
     : descriptionFromExercise;
+  if (descriptionFromContent.length > description.length) {
+    description = descriptionFromContent;
+  }
+  if (descriptionFromMarathonExercise.length > description.length) {
+    description = descriptionFromMarathonExercise;
+  }
   
   // Normalize emoji in description - fix multiple character emoji display bug
   if (description) {
@@ -307,6 +317,7 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
   
   const type = exercise.type || '';
   const duration = exercise.duration || 0;
+  const isNewExercise = !!exercise.isNew;
 
   const availableContent = contentItems.filter(item => !item.loadError);
   const currentContent = availableContent[currentContentIndex];
@@ -358,8 +369,12 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
             {/* Checkbox Button */}
             {onCheckboxChange && (
               <button
-                onClick={() => onCheckboxChange(!isDone)}
-                className="flex-shrink-0 w-6 h-6 rounded-md border-2 border-white/50 hover:border-white transition-colors flex items-center justify-center mr-2"
+                onClick={() => {
+                  if (isNewExercise) return;
+                  onCheckboxChange(!isDone);
+                }}
+                disabled={isNewExercise}
+                className="flex-shrink-0 w-6 h-6 rounded-md border-2 border-white/50 hover:border-white transition-colors flex items-center justify-center mr-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label={isDone ? 'Отметить как невыполненное' : 'Отметить как выполненное'}
               >
                 {isDone && (

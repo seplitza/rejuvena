@@ -54,17 +54,20 @@ export default function DayPlan() {
     setSelectedExercise(exercise);
   };
 
-  const handleExerciseCheck = (exercise: Exercise, uniqueId: string) => {
+  const handleExerciseCheck = (exercise: Exercise, uniqueId: string, nextStatus?: boolean) => {
     console.log('✅ Checkbox clicked - changing status for:', exercise.exerciseName);
     if (exercise.blockExercise || changingStatusRequests[uniqueId]) return;
+    if (exercise.isNew && nextStatus === undefined) return;
     
     const currentStatus = updatedExercisesStatus[uniqueId] !== undefined 
       ? updatedExercisesStatus[uniqueId] 
       : exercise.isDone;
+    const targetStatus = nextStatus !== undefined ? nextStatus : !currentStatus;
+    if (currentStatus === targetStatus) return;
     
     dispatch(changeExerciseStatus({
       marathonExerciseId: exercise.marathonExerciseId,
-      status: !currentStatus,
+      status: targetStatus,
       dayId: marathonDay?.id || '',
       uniqueId,
     }));
@@ -184,7 +187,7 @@ export default function DayPlan() {
             if (category) {
               const exerciseIndex = category.exercises.findIndex(e => e.id === selectedExercise.id);
               const uniqueId = `${exerciseIndex}-${category.id}-${selectedExercise.id}`;
-              handleExerciseCheck(selectedExercise, uniqueId);
+              handleExerciseCheck(selectedExercise, uniqueId, newStatus);
             }
           }}
           isDone={(() => {

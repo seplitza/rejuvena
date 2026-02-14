@@ -24,6 +24,7 @@ export default function ExerciseItem({
   onCheck,
 }: ExerciseItemProps) {
   const { exerciseName, marathonExerciseName, isNew, blockExercise } = exercise;
+  const isManualCheckDisabled = blockExercise || isChanging || isNew;
 
   // Determine background color
   const getBgColor = () => {
@@ -61,11 +62,12 @@ export default function ExerciseItem({
         <button
           onClick={(e) => {
             e.stopPropagation();
+            if (isManualCheckDisabled) return;
             onCheck();
           }}
-          disabled={blockExercise || isChanging}
+          disabled={isManualCheckDisabled}
           className={`flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
-            blockExercise
+            isManualCheckDisabled
               ? 'border-gray-300 cursor-not-allowed'
               : isDone
               ? 'bg-purple-600 border-purple-600'
