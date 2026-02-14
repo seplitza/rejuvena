@@ -225,15 +225,18 @@ export default function DayDescription() {
 
         {/* HTML Content */}
         <div 
-          className="prose prose-sm max-w-none
-            prose-headings:text-purple-900 prose-headings:font-bold
-            prose-p:text-gray-700 prose-p:leading-relaxed
+          className="prose max-w-none
+            prose-h1:text-3xl prose-h1:font-bold prose-h1:text-purple-900 prose-h1:mb-4 prose-h1:mt-6
+            prose-h2:text-2xl prose-h2:font-bold prose-h2:text-purple-800 prose-h2:mb-3 prose-h2:mt-5
+            prose-h3:text-xl prose-h3:font-semibold prose-h3:text-purple-700 prose-h3:mb-2 prose-h3:mt-4
+            prose-p:text-base prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-3
             prose-a:text-purple-600 prose-a:no-underline hover:prose-a:underline
             prose-strong:text-gray-900 prose-strong:font-semibold
-            prose-ul:list-disc prose-ol:list-decimal
-            prose-li:text-gray-700 prose-li:my-1
-            prose-img:rounded-lg prose-img:shadow-md
-            prose-blockquote:border-l-4 prose-blockquote:border-purple-400 prose-blockquote:pl-4 prose-blockquote:italic"
+            prose-ul:list-disc prose-ul:ml-5 prose-ol:list-decimal prose-ol:ml-5
+            prose-li:text-gray-700 prose-li:my-1 prose-li:text-base
+            prose-img:rounded-lg prose-img:shadow-md prose-img:my-4
+            prose-blockquote:border-l-4 prose-blockquote:border-purple-400 prose-blockquote:pl-4 prose-blockquote:italic
+            prose-iframe:rounded-lg prose-iframe:my-4 prose-iframe:w-full"
           dangerouslySetInnerHTML={{ __html: cleanedHtml }}
         />
       </div>
