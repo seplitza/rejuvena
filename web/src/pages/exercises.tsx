@@ -375,12 +375,10 @@ export default function ExercisesPage() {
                         <ExerciseItem
                           exercise={exercise as any}
                           uniqueId={uniqueId}
-                          isActive={isExpanded}
                           isDone={isDone}
                           isChanging={false}
                           onToggle={() => handleExerciseToggle(uniqueId)}
                           onCheck={() => handleExerciseCheck(exercise, uniqueId)}
-                          onDetailClick={() => handleExerciseClick(exercise)}
                         />
                         
                         {/* Short description below title */}
