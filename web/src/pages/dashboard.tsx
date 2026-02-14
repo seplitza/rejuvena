@@ -223,7 +223,10 @@ const DashboardPage: React.FC = () => {
 
         {/* Premium Status or Plan Card */}
         {user?.isPremium && (
-          <div className="mb-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg shadow-lg p-6 text-white">
+          <div 
+            className="mb-6 rounded-lg shadow-lg p-6 text-white"
+            style={{ backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))' }}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-xl font-bold mb-2">✨ Премиум доступ активен</h3>
@@ -271,7 +274,8 @@ const DashboardPage: React.FC = () => {
               return (
                 <div 
                   key={marathon._id}
-                  className="bg-gradient-to-r from-orange-500 to-pink-500 rounded-lg shadow-lg p-6 text-white cursor-pointer hover:shadow-xl transition-shadow"
+                  className="rounded-lg shadow-lg p-6 text-white cursor-pointer hover:shadow-xl transition-shadow"
+                  style={{ backgroundImage: 'linear-gradient(to right, var(--color-accent), var(--color-secondary))' }}
                   onClick={() => router.push(targetUrl)}
                 >
                   <div className="flex items-center justify-between">

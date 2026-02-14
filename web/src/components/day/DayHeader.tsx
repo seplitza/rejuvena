@@ -41,7 +41,12 @@ export default function DayHeader() {
     <>
       <NavigationMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
       
-      <header className="bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg">
+      <header 
+        className="text-white shadow-lg" 
+        style={{ 
+          backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))' 
+        }}
+      >
         <div className="max-w-4xl mx-auto px-3 py-3">
           <div className="flex items-center justify-between">
             {/* Left: Back button + Course Icon + Name */}

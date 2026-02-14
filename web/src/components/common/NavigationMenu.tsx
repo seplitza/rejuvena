@@ -62,7 +62,12 @@ export default function NavigationMenu({ isOpen, onClose }: NavigationMenuProps)
         }`}
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6">
+        <div 
+          className="text-white p-6"
+          style={{ 
+            backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))' 
+          }}
+        >
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold">Меню</h2>
             <button
