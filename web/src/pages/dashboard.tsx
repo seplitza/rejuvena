@@ -30,8 +30,11 @@ interface Marathon {
   description?: string;
   numberOfDays: number;
   startDate: string;
+  tenure: number;
   userEnrolled?: boolean;
   userEnrollmentStatus?: 'pending' | 'active' | 'completed' | 'cancelled';
+  lastAccessedDay?: number;
+  currentDay?: number;
 }
 
 // Функция форматирования названия продукта
@@ -99,7 +102,11 @@ const DashboardPage: React.FC = () => {
           console.log('📦 My-enrollments data:', data);
           
           if (data.success && Array.isArray(data.enrollments)) {
-            const enrolled = data.enrollments.map((e: any) => e.marathonId).filter(Boolean);
+            const enrolled = data.enrollments.map((e: any) => ({
+              ...e.marathonId,
+              lastAccessedDay: e.lastAccessedDay || 0,
+              currentDay: e.currentDay || 1
+            })).filter((m: any) => m._id);
             console.log('🎯 Setting enrolled marathons:', enrolled.length, enrolled);
             setEnrolledMarathons(enrolled);
           } else {
@@ -241,12 +248,27 @@ const DashboardPage: React.FC = () => {
             {enrolledMarathons.map((marathon) => {
               const countdown = marathonCountdowns[marathon._id];
               const hasStarted = countdown?.hasStarted ?? true;
+              const hasViewedStart = (marathon.lastAccessedDay || 0) > 0;
+              
+              // Calculate current available day based on start date
+              const getCurrentDay = () => {
+                if (!hasStarted) return 1;
+                const now = new Date();
+                const start = new Date(marathon.startDate);
+                const daysPassed = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+                const currentLearningDay = Math.min(daysPassed + 1, marathon.numberOfDays);
+                return Math.max(1, currentLearningDay);
+              };
+
+              const targetUrl = hasViewedStart && hasStarted 
+                ? `/marathons/${marathon._id}/day/${getCurrentDay()}`
+                : `/marathons/${marathon._id}/start`;
 
               return (
                 <div 
                   key={marathon._id}
                   className="bg-gradient-to-r from-orange-500 to-pink-500 rounded-lg shadow-lg p-6 text-white cursor-pointer hover:shadow-xl transition-shadow"
-                  onClick={() => router.push(`/marathons/${marathon._id}/start`)}
+                  onClick={() => router.push(targetUrl)}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
@@ -310,7 +332,7 @@ const DashboardPage: React.FC = () => {
                     <div className="ml-6 flex-shrink-0">
                       <div className="text-7xl mb-2">🏃</div>
                       <button className="bg-white text-orange-600 font-bold px-6 py-3 rounded-lg hover:bg-orange-50 transition-colors whitespace-nowrap">
-                        {hasStarted ? 'Начать марафон →' : 'Подробнее →'}
+                        {!hasStarted ? 'Подробнее →' : hasViewedStart ? 'Перейти в марафон →' : 'Начать марафон →'}
                       </button>
                     </div>
                   </div>
