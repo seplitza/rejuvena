@@ -54,7 +54,7 @@ function getVideoEmbedUrl(url: string): { embedUrl: string; type: 'iframe' | 'vi
   if (url.includes('youtube.com/embed/')) {
     const videoId = url.split('youtube.com/embed/')[1]?.split('?')[0];
     return { 
-      embedUrl: `https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&showinfo=0&fs=1&controls=1&disablekb=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&origin=${encodeURIComponent(window.location.origin)}`, 
+      embedUrl: `https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&showinfo=0&fs=1&controls=1&disablekb=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`, 
       type: 'iframe' 
     };
   }
@@ -71,7 +71,7 @@ function getVideoEmbedUrl(url: string): { embedUrl: string; type: 'iframe' | 'vi
       ? url.split('youtu.be/')[1]?.split('?')[0]
       : new URL(url).searchParams.get('v');
     return { 
-      embedUrl: `https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&showinfo=0&fs=1&controls=1&disablekb=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&origin=${encodeURIComponent(window.location.origin)}`, 
+      embedUrl: `https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&showinfo=0&fs=1&controls=1&disablekb=0&iv_load_policy=3&cc_load_policy=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`, 
       type: 'iframe' 
     };
   }
@@ -125,6 +125,10 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
   const [commentsExpanded, setCommentsExpanded] = useState(false);
   const [currentContentIndex, setCurrentContentIndex] = useState(0);
   const [contentItems, setContentItems] = useState<ContentItem[]>([]);
+  
+  // Auto-completion tracking
+  const [firstVideoWatched, setFirstVideoWatched] = useState(false);
+  const [descriptionScrolled, setDescriptionScrolled] = useState(false);
 
   // Close on ESC key
   useEffect(() => {
@@ -173,7 +177,85 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
 
     setContentItems(items);
     setCurrentContentIndex(0);
+    
+    // Reset auto-completion tracking when exercise changes
+    setFirstVideoWatched(false);
+    setDescriptionScrolled(false);
   }, [exercise]);
+
+  // Auto-complete exercise when video watched and description scrolled
+  useEffect(() => {
+    // Only auto-complete if exercise is not done yet and callback exists
+    if (isDone || !onCheckboxChange) return;
+
+    const exerciseData = exercise as any;
+    const hasDescription = !!(exerciseData.exerciseDescription || exercise.description);
+    const hasVideo = contentItems.length > 0 && contentItems[0].type === 'video';
+
+    // Check completion conditions
+    const videoConditionMet = !hasVideo || firstVideoWatched;
+    const descriptionConditionMet = !hasDescription || descriptionScrolled;
+
+    // Auto-complete if both conditions met
+    if (videoConditionMet && descriptionConditionMet) {
+      console.log('✅ Auto-completing exercise: video watched and description scrolled');
+      onCheckboxChange(true);
+    }
+  }, [firstVideoWatched, descriptionScrolled, isDone, onCheckboxChange, exercise, contentItems]);
+
+  // Listen for iframe video completion (YouTube/Vimeo postMessage API)
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // YouTube iframe API
+      if (event.data && typeof event.data === 'string') {
+        try {
+          const data = JSON.parse(event.data);
+          // YouTube sends {event: 'ended'} when video finishes
+          if (data.event === 'ended' && currentContentIndex === 0) {
+            console.log('🎥 YouTube video watched to end (via postMessage)');
+            setFirstVideoWatched(true);
+          }
+        } catch (e) {
+          // Not JSON, ignore
+        }
+      }
+      
+      // Vimeo iframe API
+      if (event.data && typeof event.data === 'object' && event.data.event === 'ended') {
+        if (currentContentIndex === 0) {
+          console.log('🎥 Vimeo video watched to end (via postMessage)');
+          setFirstVideoWatched(true);
+        }
+      }
+    };
+
+    if (isOpen) {
+      window.addEventListener('message', handleMessage);
+    }
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, [isOpen, currentContentIndex]);
+
+  // Handle first video completion
+  const handleVideoEnded = () => {
+    if (currentContentIndex === 0) {
+      console.log('🎥 First video watched to end');
+      setFirstVideoWatched(true);
+    }
+  };
+
+  // Handle description scroll to check if user reached the end
+  const handleDescriptionScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    const scrolledToBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 50; // 50px threshold
+    
+    if (scrolledToBottom && !descriptionScrolled) {
+      console.log('📜 Description scrolled to end');
+      setDescriptionScrolled(true);
+    }
+  };
 
   // Don't render if not open or no exercise data
   if (!isOpen || !exercise) {
@@ -272,7 +354,7 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
         </div>
 
         {/* Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto" onScroll={handleDescriptionScroll}>
           {/* Video/Image Carousel */}
           {availableContent.length > 0 && (
             <div className="flex flex-col items-center bg-purple-50 py-4">
@@ -304,6 +386,7 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
                             className="w-full aspect-square object-contain bg-white rounded-lg"
                             playsInline
                             onError={() => handleContentError(currentContentIndex)}
+                            onEnded={handleVideoEnded}
                             onContextMenu={(e) => e.preventDefault()}
                           />
                         ) : (
