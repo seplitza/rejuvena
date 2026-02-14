@@ -210,7 +210,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, var(--color-surface), var(--color-background))' }}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Загрузка...</p>
@@ -221,13 +221,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
 
   if (error || !landing) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, var(--color-surface), var(--color-background))' }}>
         <div className="text-center">
           <h1 className="text-6xl font-bold text-gray-800 mb-4">404</h1>
           <p className="text-xl text-gray-600 mb-8">{error || 'Страница не найдена'}</p>
           <button
             onClick={() => router.push('/')}
-            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:shadow-lg transition"
+            className="px-6 py-3 text-white rounded-lg hover:shadow-lg transition"
+            style={{ backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))' }}
           >
             Вернуться на главную
           </button>
@@ -249,7 +250,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
 
       <main className="min-h-screen bg-white">
         {/* Hero Section */}
-        <section className="relative bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 text-white py-20 px-4">
+        <section className="relative text-white py-20 px-4" style={{ backgroundImage: 'linear-gradient(to bottom right, var(--color-primary), var(--color-secondary), var(--color-accent))' }}>
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
               {landing.heroSection.title}
@@ -266,7 +267,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
 
         {/* Animated Start Date Block - показывается если включен */}
         {landing.showStartDateBlock && landing.marathonsSection?.basic?.startDate && (
-          <div className="bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500">
+          <div style={{ backgroundImage: 'linear-gradient(to bottom right, var(--color-primary), var(--color-secondary), var(--color-accent))' }}>
             <AnimatedStartDate 
               startDate={new Date(landing.marathonsSection.basic.startDate)}
               title="СТАРТ МАРАФОНА"
@@ -529,7 +530,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
                           className="w-16 h-16 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold text-xl">
+                        <div className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl" style={{ backgroundImage: 'linear-gradient(to bottom right, var(--color-primary), var(--color-secondary))' }}>
                           {testimonial.name[0]}
                         </div>
                       )}
@@ -552,7 +553,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
 
         {/* CTA Section */}
         {landing.ctaSection && (
-          <section className="py-20 px-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+          <section className="py-20 px-4 text-white" style={{ backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))' }}>
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-4xl md:text-5xl font-bold mb-6">
                 {landing.ctaSection.title}
