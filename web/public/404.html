@@ -2,31 +2,25 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <title>Redirecting...</title>
+  <title>Rejuvena - Загрузка...</title>
+  <meta http-equiv="refresh" content="0; url=/rejuvena/">
   <script>
-    // GitHub Pages SPA redirect hack
-    // Redirects 404 pages to index.html with path info preserved in URL hash
-    // This allows client-side routing to work on GitHub Pages
-    
-    const path = window.location.pathname;
-    const basePath = '/rejuvena';
-    
-    // Extract the path after basePath
-    let route = path;
-    if (path.startsWith(basePath)) {
-      route = path.slice(basePath.length);
-    }
-    
-    // Redirect to index with route in hash
-    if (route && route !== '/') {
-      const redirectUrl = basePath + '/#' + route + window.location.search;
-      window.location.replace(redirectUrl);
-    } else {
-      window.location.replace(basePath + '/');
-    }
+    // GitHub Pages SPA redirect for Next.js
+    // Immediately redirect to index.html, preserving path and query
+    (function() {
+      const path = window.location.pathname;
+      const search = window.location.search;
+      const basePath = '/rejuvena';
+      
+      // Store the attempted path for the app to handle
+      sessionStorage.setItem('redirectPath', path + search);
+      
+      // Redirect to index
+      window.location.replace(basePath + '/' + search);
+    })();
   </script>
 </head>
 <body>
-  <p>Redirecting...</p>
+  <p style="text-align: center; padding: 50px; font-family: system-ui;">Загрузка...</p>
 </body>
 </html>

@@ -64,13 +64,23 @@ const DashboardPage: React.FC = () => {
   const [recentPayments, setRecentPayments] = useState<Payment[]>([]);
   const [enrolledMarathons, setEnrolledMarathons] = useState<Marathon[]>([]);
   const [marathonCountdowns, setMarathonCountdowns] = useState<Record<string, { days: number; hours: number; minutes: number; seconds: number; hasStarted: boolean }>>({});
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
 
   useEffect(() => {
-    // Redirect to login if not authenticated
-    if (!isAuthenticated) {
+    // Wait for auth to initialize from localStorage
+    const timer = setTimeout(() => {
+      setIsAuthChecking(false);
+    }, 500); // Give _app.tsx time to restore token
+    
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    // Redirect to login only after auth check is complete
+    if (!isAuthChecking && !isAuthenticated) {
       router.push('/auth/login');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthChecking, isAuthenticated, router]);
 
   useEffect(() => {
     const loadPayments = async () => {
@@ -88,18 +98,14 @@ const DashboardPage: React.FC = () => {
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527';
         const token = localStorage.getItem('auth_token');
-        console.log('🏃 Loading my enrollments, token:', token ? 'exists' : 'missing');
         if (!token) return;
         
         const response = await fetch(`${apiUrl}/api/marathons/user/my-enrollments`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         
-        console.log('📡 My-enrollments response status:', response.status);
-        
         if (response.ok) {
           const data = await response.json();
-          console.log('📦 My-enrollments data:', data);
           
           if (data.success && Array.isArray(data.enrollments)) {
             const enrolled = data.enrollments.map((e: any) => ({
@@ -107,13 +113,8 @@ const DashboardPage: React.FC = () => {
               lastAccessedDay: e.lastAccessedDay || 0,
               currentDay: e.currentDay || 1
             })).filter((m: any) => m._id);
-            console.log('🎯 Setting enrolled marathons:', enrolled.length, enrolled);
             setEnrolledMarathons(enrolled);
-          } else {
-            console.warn('⚠️ Unexpected enrollments format:', data);
           }
-        } else {
-          console.error('❌ My-enrollments API error:', response.status, response.statusText);
         }
       } catch (error) {
         console.error('💥 Failed to load marathons:', error);
@@ -164,7 +165,8 @@ const DashboardPage: React.FC = () => {
     return () => clearInterval(interval);
   }, [enrolledMarathons]);
 
-  if (!isAuthenticated) {
+  // Show loading while checking auth or not authenticated
+  if (isAuthChecking || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -250,7 +252,7 @@ const DashboardPage: React.FC = () => {
               const hasStarted = countdown?.hasStarted ?? true;
               const hasViewedStart = (marathon.lastAccessedDay || 0) > 0;
               
-              // Calculate current available day based on start date
+              // Calculate current day of marathon based on start date
               const getCurrentDay = () => {
                 if (!hasStarted) return 1;
                 const now = new Date();
@@ -260,7 +262,9 @@ const DashboardPage: React.FC = () => {
                 return Math.max(1, currentLearningDay);
               };
 
-              const targetUrl = hasViewedStart && hasStarted 
+              // If marathon has started, always go to current day
+              // Otherwise, show welcome/rules on start page
+              const targetUrl = hasStarted 
                 ? `/marathons/${marathon._id}/day/${getCurrentDay()}`
                 : `/marathons/${marathon._id}/start`;
 

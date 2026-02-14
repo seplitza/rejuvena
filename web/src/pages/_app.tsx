@@ -12,8 +12,30 @@ function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
 
   useEffect(() => {
-    // Handle GitHub Pages 404 redirect with hash routing
-    // 404.html redirects to /#/path, we need to extract and navigate to /path
+    // Handle GitHub Pages 404 redirect
+    // 404.html saves path to sessionStorage and redirects to index
+    const redirectPath = sessionStorage.getItem('redirectPath');
+    if (redirectPath) {
+      sessionStorage.removeItem('redirectPath');
+      const basePath = '/rejuvena';
+      let targetPath = redirectPath;
+      
+      // Remove basePath if present
+      if (targetPath.startsWith(basePath)) {
+        targetPath = targetPath.slice(basePath.length);
+      }
+      
+      // Ensure path starts with /
+      if (!targetPath.startsWith('/')) {
+        targetPath = '/' + targetPath;
+      }
+      
+      console.log('🔄 Redirecting from 404 to:', targetPath);
+      router.replace(targetPath);
+      return;
+    }
+    
+    // Also handle hash routing (old method)
     const hash = window.location.hash;
     if (hash && hash.startsWith('#/')) {
       const path = hash.slice(1); // Remove # to get /path
