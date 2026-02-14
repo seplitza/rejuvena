@@ -18,11 +18,11 @@ interface ExerciseItemProps {
 export default function ExerciseItem({
   exercise,
   uniqueId,
-  isActive,
   isDone,
   isChanging,
   onToggle,
-  onCheemProps) {
+  onCheck,
+}: ExerciseItemProps) {
   const { exerciseName, marathonExerciseName, isNew, blockExercise } = exercise;
 
   // Determine background color
