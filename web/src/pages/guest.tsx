@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { guestUserLogin } from '../store/modules/auth/slice';
-import LanguageSelector from '../components/common/LanguageSelector';
 import OffersGrid from '../components/OffersGrid';
 
 const GuestPage: React.FC = () => {
@@ -32,7 +31,6 @@ const GuestPage: React.FC = () => {
             Личный кабинет
           </h1>
           <div className="flex items-center gap-4">
-            <LanguageSelector />
             <button
               onClick={() => router.push('/auth/login')}
               className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"

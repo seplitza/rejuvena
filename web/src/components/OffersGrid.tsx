@@ -577,7 +577,6 @@ export default function OffersGrid() {
           <>
             <button
               onClick={prevSlide}
-              onMouseEnter={() => setIsAutoPlaying(false)}
               className="slider-button absolute top-1/2 -left-4 md:-left-6 transform -translate-y-1/2 text-white w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg flex items-center justify-center z-10 transition-opacity"
               style={{ backgroundColor: 'var(--color-primary)' }}
               onMouseEnter={(e) => {
@@ -595,7 +594,6 @@ export default function OffersGrid() {
 
             <button
               onClick={nextSlide}
-              onMouseEnter={() => setIsAutoPlaying(false)}
               className="slider-button absolute top-1/2 -right-4 md:-right-6 transform -translate-y-1/2 text-white w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg flex items-center justify-center z-10 transition-opacity"
               style={{ backgroundColor: 'var(--color-primary)' }}
               onMouseEnter={(e) => {

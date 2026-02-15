@@ -24,7 +24,6 @@ import {
 import MyCourseCard from '../components/courses/MyCourseCard';
 import CourseCard from '../components/courses/CourseCard';
 import CourseDetailModal from '../components/courses/CourseDetailModal';
-import LanguageSelector from '../components/common/LanguageSelector';
 import { translations, getCurrency, getDurationDescription, type LanguageCode } from '../utils/i18n';
 
 const CoursesPage = () => {
@@ -237,8 +236,6 @@ const CoursesPage = () => {
             Rejuvena
           </h1>
           <div className="flex items-center gap-4">
-            {/* Language Switcher */}
-            <LanguageSelector />
             <button
               onClick={() => router.push('/dashboard')}
               className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"

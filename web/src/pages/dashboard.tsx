@@ -4,7 +4,6 @@ import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { logout } from '../store/modules/auth/slice';
 import { AuthTokenManager, request } from '../api';
 import * as endpoints from '../api/endpoints';
-import LanguageSelector from '../components/common/LanguageSelector';
 import OffersGrid from "../components/OffersGrid";
 import PremiumPlanCard from '../components/payment/PremiumPlanCard';
 
@@ -186,7 +185,6 @@ const DashboardPage: React.FC = () => {
             Личный кабинет
           </h1>
           <div className="flex items-center gap-4">
-            <LanguageSelector />
             {/* User Avatar - only show when authenticated */}
             {isAuthenticated && user && (
               <div 
