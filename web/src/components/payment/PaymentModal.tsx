@@ -76,7 +76,10 @@ export default function PaymentModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6">
+        <div 
+          className="text-white p-6"
+          style={{ backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))' }}
+        >
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-2xl font-bold">Премиум упражнение</h2>
             <button
@@ -128,11 +131,17 @@ export default function PaymentModal({
           </div>
 
           {/* Price */}
-          <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 mb-6">
+          <div 
+            className="rounded-xl p-4 mb-6"
+            style={{ backgroundImage: 'linear-gradient(to right, var(--color-primary-light, rgba(147, 51, 234, 0.1)), var(--color-secondary-light, rgba(236, 72, 153, 0.1)))' }}
+          >
             <div className="flex items-baseline justify-between">
               <span className="text-gray-600">Стоимость:</span>
               <div className="flex items-baseline space-x-1">
-                <span className="text-3xl font-bold text-purple-600">{price}</span>
+                <span 
+                  className="text-3xl font-bold"
+                  style={{ color: 'var(--color-primary)' }}
+                >{price}</span>
                 <span className="text-lg text-gray-600">₽</span>
               </div>
             </div>
@@ -143,7 +152,10 @@ export default function PaymentModal({
             <button
               onClick={handlePurchase}
               disabled={isProcessing}
-              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+              className="flex-1 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+              style={{ backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))' }}
+              onMouseEnter={(e) => !isProcessing && (e.currentTarget.style.opacity = '0.9')}
+              onMouseLeave={(e) => !isProcessing && (e.currentTarget.style.opacity = '1')}
             >
               {isProcessing ? (
                 <span className="flex items-center justify-center">

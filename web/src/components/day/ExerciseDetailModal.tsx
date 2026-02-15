@@ -340,12 +340,15 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm md:p-4">
       <div className="relative w-full h-full md:max-w-3xl md:max-h-[90vh] md:h-auto bg-white md:rounded-2xl shadow-2xl overflow-hidden flex flex-col">
         {/* Compact Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-3 md:p-4 flex-shrink-0">
+        <div 
+          className="text-white p-3 md:p-4 flex-shrink-0"
+          style={{ backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))' }}
+        >
           <div className="flex items-start justify-between">
             <div className="flex-1 pr-2">
               <h2 className="text-lg md:text-xl font-bold mb-0.5">{exerciseName}</h2>
               {marathonExerciseName && (
-                <p className="text-sm text-purple-100">{marathonExerciseName}</p>
+                <p className="text-sm opacity-90">{marathonExerciseName}</p>
               )}
               
               {/* Exercise Meta */}
@@ -402,7 +405,10 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
         <div className="flex-1 overflow-y-auto" onScroll={handleDescriptionScroll}>
           {/* Video/Image Carousel */}
           {availableContent.length > 0 && (
-            <div className="flex flex-col items-center bg-purple-50 py-4">
+            <div 
+              className="flex flex-col items-center py-4"
+              style={{ backgroundColor: 'var(--color-primary-light, rgba(147, 51, 234, 0.1))' }}
+            >
               
               {/* Video/Image Container - Max 400px width, flexible height */}
               <div className="w-full max-w-[400px] px-4 md:px-0">
@@ -410,7 +416,10 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
                   {/* Hint for images (GIFs) - overlaid on content */}
                   {currentContent?.type === 'image' && (
                     <div className="absolute top-4 left-4 right-4 z-10">
-                      <div className="bg-purple-600/95 text-white text-sm px-4 py-2.5 rounded-lg text-center shadow-lg">
+                      <div 
+                        className="text-white text-sm px-4 py-2.5 rounded-lg text-center shadow-lg"
+                        style={{ backgroundColor: 'var(--color-primary, #9333ea)', opacity: 0.95 }}
+                      >
                         <p className="font-semibold mb-1">💡 Основное движение</p>
                         <p className="text-xs opacity-90">
                           Ознакомьтесь с видео инструкцией{availableContent.length > 1 && ', нажмите на стрелочку вправо'}
@@ -575,13 +584,18 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
               {hasHtmlDescription ? (
                 <div 
                   className="prose prose-sm max-w-none
-                    prose-headings:text-purple-900 prose-headings:font-bold
+                    prose-headings:font-bold
                     prose-p:text-gray-700 prose-p:leading-relaxed
-                    prose-a:text-purple-600 prose-a:no-underline hover:prose-a:underline
+                    prose-a:no-underline hover:prose-a:underline
                     prose-strong:text-gray-900 prose-strong:font-semibold
                     prose-ul:list-disc prose-ol:list-decimal
                     prose-li:text-gray-700 prose-li:my-1
-                    prose-blockquote:border-l-4 prose-blockquote:border-purple-400 prose-blockquote:pl-4 prose-blockquote:italic"
+                    prose-blockquote:border-l-4 prose-blockquote:pl-4 prose-blockquote:italic"
+                  style={{
+                    '--tw-prose-headings': 'var(--color-text-primary, #581c87)',
+                    '--tw-prose-links': 'var(--color-primary, #9333ea)',
+                    '--tw-prose-quote-borders': 'var(--color-primary-border, rgba(147, 51, 234, 0.5))'
+                  } as any}
                   dangerouslySetInnerHTML={{ __html: description }}
                 />
               ) : (
@@ -629,7 +643,14 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
         <div className="flex-shrink-0 border-t border-gray-200 px-4 md:px-6 py-3 bg-white">
           <button
             onClick={onClose}
-            className="w-full px-6 py-2.5 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors"
+            className="w-full px-6 py-2.5 text-white font-medium rounded-lg transition-colors"
+            style={{ backgroundColor: 'var(--color-primary)' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = '0.9';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = '1';
+            }}
           >
             Закрыть
           </button>

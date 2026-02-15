@@ -56,17 +56,31 @@ export default function PremiumPlanCard() {
   return (
     <div className="w-full max-w-md mx-auto">
       {/* Card */}
-      <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border-2 border-purple-200 hover:border-purple-400 transition-all duration-300">
+      <div 
+        className="bg-white rounded-2xl shadow-2xl overflow-hidden border-2 transition-all duration-300"
+        style={{ 
+          borderColor: 'var(--color-primary-border, rgba(147, 51, 234, 0.3))',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = 'var(--color-primary, #9333ea)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = 'var(--color-primary-border, rgba(147, 51, 234, 0.3))';
+        }}
+      >
         
         {/* Header with gradient */}
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6 text-white">
+        <div 
+          className="p-6 text-white"
+          style={{ backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))' }}
+        >
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-2xl font-bold">Премиум доступ</h3>
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-400 text-yellow-900">
               ⭐ Популярный
             </span>
           </div>
-          <p className="text-purple-100">Полный доступ ко всем упражнениям</p>
+          <p className="opacity-90">Полный доступ ко всем упражнениям</p>
         </div>
 
         {/* Features */}
@@ -122,12 +136,28 @@ export default function PremiumPlanCard() {
           </div>
 
           {/* Price */}
-          <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 mb-6 border border-purple-200">
+          <div 
+            className="rounded-xl p-4 mb-6 border"
+            style={{ 
+              backgroundImage: 'linear-gradient(to right, var(--color-primary-light, rgba(147, 51, 234, 0.1)), var(--color-secondary-light, rgba(236, 72, 153, 0.1)))',
+              borderColor: 'var(--color-primary-border, rgba(147, 51, 234, 0.3))'
+            }}
+          >
             <div className="flex items-baseline justify-between">
               <div>
                 <span className="text-gray-600 text-sm">Всего за</span>
                 <div className="flex items-baseline space-x-1">
-                  <span className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">990</span>
+                  <span 
+                    className="text-4xl font-bold"
+                    style={{ 
+                      backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text'
+                    }}
+                  >
+                    990
+                  </span>
                   <span className="text-xl text-gray-600">₽</span>
                 </div>
               </div>
@@ -141,7 +171,10 @@ export default function PremiumPlanCard() {
           <button
             onClick={handlePurchase}
             disabled={loading}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-4 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            className="w-full text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            style={{ backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))' }}
+            onMouseEnter={(e) => !loading && (e.currentTarget.style.opacity = '0.9')}
+            onMouseLeave={(e) => !loading && (e.currentTarget.style.opacity = '1')}
           >
             {loading ? (
               <span className="flex items-center justify-center">

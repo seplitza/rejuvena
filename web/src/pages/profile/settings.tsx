@@ -258,13 +258,26 @@ export default function ProfileSettings() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-6">
-            <Link href="/dashboard" className="text-purple-600 hover:text-purple-700 mb-4 inline-block">
+            <Link 
+              href="/dashboard" 
+              className="mb-4 inline-block transition-colors"
+              style={{ color: 'var(--color-primary)' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.8';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
+              }}
+            >
               ← {t[language].backToDashboard}
             </Link>
             <div className="flex items-center gap-4">
               {/* User Avatar */}
               <div className="flex-shrink-0">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                <div 
+                  className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg"
+                  style={{ backgroundImage: 'linear-gradient(to bottom right, var(--color-primary), var(--color-secondary))' }}
+                >
                   {user?.firstName ? user.firstName.charAt(0).toUpperCase() : '👤'}
                 </div>
               </div>
@@ -282,20 +295,48 @@ export default function ProfileSettings() {
 
           {/* Photo Diary Section */}
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4"><Link href="/photo-diary" className="hover:text-purple-600 transition-colors cursor-pointer">{t[language].photoDiary}</Link></h2>
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">
+              <Link 
+                href="/photo-diary" 
+                className="transition-colors cursor-pointer"
+                style={{ color: 'inherit' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--color-primary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'inherit';
+                }}
+              >
+                {t[language].photoDiary}
+              </Link>
+            </h2>
+            <div 
+              className="border rounded-lg p-4"
+              style={{ 
+                backgroundColor: 'var(--color-primary-light, rgba(147, 51, 234, 0.1))',
+                borderColor: 'var(--color-primary-border, rgba(147, 51, 234, 0.3))'
+              }}
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-700 font-medium">
                     {t[language].diaryActive}
                   </p>
-                  <p className="text-2xl font-bold text-purple-600 mt-1">
+                  <p 
+                    className="text-2xl font-bold mt-1"
+                    style={{ color: 'var(--color-primary)' }}
+                  >
                     {diaryExpiresAt ? new Date(diaryExpiresAt).toLocaleDateString('ru-RU') : 'Еще не началась'}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-gray-600 text-sm">{t[language].daysLeft}</p>
-                  <p className="text-3xl font-bold text-purple-600">{daysRemaining !== null ? daysRemaining : "-"}</p>
+                  <p 
+                    className="text-3xl font-bold"
+                    style={{ color: 'var(--color-primary)' }}
+                  >
+                    {daysRemaining !== null ? daysRemaining : "-"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -379,7 +420,14 @@ export default function ProfileSettings() {
 
               <button
                 type="submit"
-                className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors"
+                className="w-full text-white py-3 rounded-lg transition-colors"
+                style={{ backgroundColor: 'var(--color-primary)' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = '0.9';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = '1';
+                }}
               >
                 Сохранить изменения
               </button>

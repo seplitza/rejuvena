@@ -89,15 +89,43 @@ export default function NavigationMenu({ isOpen, onClose }: NavigationMenuProps)
             <button
               key={item.path}
               onClick={() => handleNavigation(item.path)}
-              className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-purple-50 transition-colors text-left group"
+              className="w-full flex items-center space-x-3 p-3 rounded-lg transition-colors text-left group"
+              style={{ ':hover': { backgroundColor: 'var(--color-primary-light, rgba(147, 51, 234, 0.1))' } }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--color-primary-light, rgba(147, 51, 234, 0.1))';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '';
+              }}
             >
               <span className="text-2xl">{normalizeEmoji(item.icon)}</span>
               <div className="flex-1">
-                <span className="text-gray-800 group-hover:text-purple-600 font-medium">
+                <span 
+                  className="font-medium"
+                  style={{ color: '#1F2937' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = 'var(--color-primary)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#1F2937';
+                  }}
+                >
                   {item.label}
                 </span>
               </div>
-              <svg className="w-5 h-5 text-gray-400 group-hover:text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg 
+                className="w-5 h-5 group-hover:opacity-100"
+                style={{ color: '#9CA3AF' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--color-primary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#9CA3AF';
+                }}
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -117,11 +145,15 @@ export default function NavigationMenu({ isOpen, onClose }: NavigationMenuProps)
                   <button
                     key={theme.slug}
                     onClick={() => setTheme(theme.slug)}
-                    className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-all text-left ${
+                    className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-all text-left border-2 ${
                       currentTheme?.slug === theme.slug
-                        ? 'bg-purple-50 border-2 border-purple-300'
-                        : 'hover:bg-gray-50 border-2 border-transparent'
+                        ? ''
+                        : 'hover:bg-gray-50 border-transparent'
                     }`}
+                    style={currentTheme?.slug === theme.slug ? {
+                      backgroundColor: 'var(--color-primary-light, rgba(147, 51, 234, 0.1))',
+                      borderColor: 'var(--color-primary-border, rgba(147, 51, 234, 0.3))'
+                    } : {}}
                   >
                     {/* Color Preview */}
                     <div className="flex space-x-1">
@@ -144,9 +176,10 @@ export default function NavigationMenu({ isOpen, onClose }: NavigationMenuProps)
                     
                     {/* Theme Name */}
                     <div className="flex-1">
-                      <span className={`text-sm font-medium ${
-                        currentTheme?.slug === theme.slug ? 'text-purple-700' : 'text-gray-700'
-                      }`}>
+                      <span 
+                        className="text-sm font-medium"
+                        style={{ color: currentTheme?.slug === theme.slug ? 'var(--color-primary)' : '#374151' }}
+                      >
                         {theme.name}
                       </span>
                       {theme.isDark && (
@@ -156,7 +189,12 @@ export default function NavigationMenu({ isOpen, onClose }: NavigationMenuProps)
                     
                     {/* Active Indicator */}
                     {currentTheme?.slug === theme.slug && (
-                      <svg className="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                      <svg 
+                        className="w-5 h-5" 
+                        style={{ color: 'var(--color-primary)' }}
+                        fill="currentColor" 
+                        viewBox="0 0 20 20"
+                      >
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     )}

@@ -71,7 +71,10 @@ export default function PaymentButton({
       <button 
         onClick={handlePayment} 
         disabled={loading}
-        className={`w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl ${className}`}
+        className={`w-full text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl ${className}`}
+        style={{ backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))' }}
+        onMouseEnter={(e) => !loading && (e.currentTarget.style.opacity = '0.9')}
+        onMouseLeave={(e) => !loading && (e.currentTarget.style.opacity = '1')}
       >
         {loading ? (
           <span className="flex items-center justify-center">
