@@ -35,8 +35,10 @@ export default function DayHeader() {
   const dayType = isPracticeDay ? 'практика' : 'обучение';
 
   // User avatar - from profile or first photo diary image
-  // For GitHub Pages, use relative path without leading slash
-  const userAvatar = userProfile?.profilePicture || userProfile?.avatar || '/rejuvena/images/default-avatar.png.svg';
+  // Dynamic path: local dev vs GitHub Pages production
+  const basePath = process.env.NODE_ENV === 'production' ? '/rejuvena' : '';
+  const defaultAvatar = `${basePath}/images/default-avatar.png.svg`;
+  const userAvatar = userProfile?.profilePicture || userProfile?.avatar || defaultAvatar;
 
   return (
     <>
