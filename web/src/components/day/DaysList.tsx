@@ -111,7 +111,14 @@ export default function DaysList({ marathonId, currentDayNumber }: DaysListProps
         {/* START button to return to marathon start page */}
         <button
           onClick={() => router.push(`/marathons/${marathonId}/start`)}
-          className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all shadow-md hover:shadow-lg"
+          className="px-4 py-2 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg"
+          style={{ backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))' }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.opacity = '0.9';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.opacity = '1';
+          }}
         >
           СТАРТ
         </button>
@@ -120,7 +127,7 @@ export default function DaysList({ marathonId, currentDayNumber }: DaysListProps
       {/* Marathon Days (Learning) */}
       {marathonDays.length > 0 && (
         <div className="mb-6">
-          <h4 className="text-sm font-semibold text-purple-600 mb-3">
+          <h4 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-primary)' }}>
             Обучение
           </h4>
           <div className="grid grid-cols-7 gap-2">
@@ -135,23 +142,31 @@ export default function DaysList({ marathonId, currentDayNumber }: DaysListProps
                   disabled={day.isLocked}
                   className={`
                     relative p-3 rounded-lg border-2 transition-all
-                    ${isActive 
-                      ? 'border-purple-500 bg-purple-50' 
-                      : day.isLocked
+                    ${day.isLocked
                       ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
-                      : 'border-gray-200 hover:border-purple-300 hover:shadow-md cursor-pointer'
+                      : 'border-gray-200 hover:shadow-md cursor-pointer'
                     }
                   `}
+                  style={isActive ? {
+                    borderColor: 'var(--color-primary)',
+                    backgroundColor: 'var(--color-primary-light, rgba(147, 51, 234, 0.1))'
+                  } : {}}
+                  onMouseEnter={(e) => {
+                    if (!day.isLocked && !isActive) {
+                      e.currentTarget.style.borderColor = 'var(--color-primary-hover, rgba(147, 51, 234, 0.5))';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!day.isLocked && !isActive) {
+                      e.currentTarget.style.borderColor = '';
+                    }
+                  }}
                 >
                   <div className="text-center">
-                    <div className={`text-xs font-semibold mb-1 ${
-                      isActive ? 'text-purple-700' : 'text-gray-600'
-                    }`}>
+                    <div className="text-xs font-semibold mb-1" style={isActive ? { color: 'var(--color-primary)' } : { color: '#4B5563' }}>
                       День
                     </div>
-                    <div className={`text-lg font-bold ${
-                      isActive ? 'text-purple-700' : 'text-gray-800'
-                    }`}>
+                    <div className="text-lg font-bold" style={isActive ? { color: 'var(--color-primary)' } : { color: '#1F2937' }}>
                       {day.day}
                     </div>
                   </div>

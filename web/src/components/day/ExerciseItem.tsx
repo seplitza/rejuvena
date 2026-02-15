@@ -35,7 +35,7 @@ export default function ExerciseItem({
       return 'bg-green-50 border-green-300';
     }
     if (isDone) {
-      return 'bg-purple-50 border-purple-300';
+      return 'border-2'; // Will use inline style for theme color
     }
     return 'bg-white border-gray-200';
   };
@@ -55,6 +55,10 @@ export default function ExerciseItem({
       className={`border-2 rounded-lg transition-all ${getBgColor()} ${
         blockExercise ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-md'
       }`}
+      style={isDone && !blockExercise && !isNew ? {
+        backgroundColor: 'var(--color-primary-light, rgba(147, 51, 234, 0.1))',
+        borderColor: 'var(--color-primary-border, rgba(147, 51, 234, 0.3))'
+      } : {}}
     >
       {/* Exercise Header */}
       <div className="flex items-center p-3 space-x-3">
@@ -69,13 +73,25 @@ export default function ExerciseItem({
           className={`flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
             isManualCheckDisabled
               ? 'border-gray-300 cursor-not-allowed'
-              : isDone
-              ? 'bg-purple-600 border-purple-600'
-              : 'border-gray-400 hover:border-purple-600'
+              : 'border-gray-400'
           }`}
+          style={!isManualCheckDisabled && isDone ? {
+            backgroundColor: 'var(--color-primary)',
+            borderColor: 'var(--color-primary)'
+          } : {}}
+          onMouseEnter={(e) => {
+            if (!isManualCheckDisabled && !isDone) {
+              e.currentTarget.style.borderColor = 'var(--color-primary)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isManualCheckDisabled && !isDone) {
+              e.currentTarget.style.borderColor = '';
+            }
+          }}
         >
           {isChanging ? (
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2" style={{ borderBottomColor: 'var(--color-primary)' }}></div>
           ) : isDone ? (
             <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
