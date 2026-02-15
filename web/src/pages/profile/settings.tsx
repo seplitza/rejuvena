@@ -385,7 +385,8 @@ export default function ProfileSettings() {
                     name="firstName"
                     defaultValue={user?.firstName || ''}
                     placeholder="Введите имя"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                    style={{ '--tw-ring-color': 'var(--color-primary)' } as any}
                   />
                 </div>
                 <div>
@@ -397,7 +398,8 @@ export default function ProfileSettings() {
                     name="lastName"
                     defaultValue={user?.lastName || ''}
                     placeholder="Введите фамилию"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                    style={{ '--tw-ring-color': 'var(--color-primary)' } as any}
                   />
                 </div>
               </div>
@@ -411,7 +413,8 @@ export default function ProfileSettings() {
                   name="telegramUsername"
                   defaultValue={user?.telegramUsername || ''}
                   placeholder="@username"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                  style={{ '--tw-ring-color': 'var(--color-primary)' } as any}
                 />
                 <p className="mt-1 text-xs text-gray-500">
                   Укажите ваш Telegram для получения уведомлений о покупках в боте
@@ -447,7 +450,8 @@ export default function ProfileSettings() {
                     type={showCurrentPassword ? "text" : "password"}
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                    style={{ '--tw-ring-color': 'var(--color-primary)' } as any}
                     required
                   />
                   <button
@@ -468,7 +472,8 @@ export default function ProfileSettings() {
                     type={showNewPassword ? "text" : "password"}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                    style={{ '--tw-ring-color': 'var(--color-primary)' } as any}
                     required
                   />
                   <button
@@ -489,7 +494,8 @@ export default function ProfileSettings() {
                     type={showConfirmPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                    style={{ '--tw-ring-color': 'var(--color-primary)' } as any}
                     required
                   />
                   <button
@@ -517,7 +523,16 @@ export default function ProfileSettings() {
               <button
                 type="submit"
                 disabled={isChangingPassword}
-                className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full text-white py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ backgroundColor: 'var(--color-primary)' }}
+                onMouseEnter={(e) => {
+                  if (!isChangingPassword) {
+                    e.currentTarget.style.opacity = '0.9';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = '1';
+                }}
               >
                 {isChangingPassword ? '...' : t[language].savePassword}
               </button>

@@ -7,6 +7,7 @@ import { useAppDispatch } from '@/store/hooks';
 import { setAuthToken, setUser, logout } from '@/store/modules/auth/slice';
 import { AuthTokenManager, request, endpoints } from '@/api';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import MainLayout from '@/components/layout/MainLayout';
 
 function App({ Component, pageProps }: AppProps) {
   const dispatch = useAppDispatch();
@@ -126,7 +127,9 @@ function App({ Component, pageProps }: AppProps) {
 
   return (
     <ThemeProvider>
-      <Component {...pageProps} />
+      <MainLayout>
+        <Component {...pageProps} />
+      </MainLayout>
     </ThemeProvider>
   );
 }
