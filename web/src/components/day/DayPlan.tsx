@@ -91,7 +91,10 @@ export default function DayPlan() {
     <>
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-4">
+        <div 
+          className="text-white px-6 py-4"
+          style={{ backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))' }}
+        >
           <h2 className="text-xl font-bold">План дня</h2>
         </div>
 
