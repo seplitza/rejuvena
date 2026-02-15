@@ -17,15 +17,19 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isAuthenticated } = useAppSelector((state) => state.auth);
 
-  // Pages where menu should NOT be shown (landing, auth, etc.)
+  // Pages where menu should NOT be shown (landing, auth, marathon days with their own header, photo-diary, etc.)
   const excludedPaths = [
     '/auth/login',
     '/auth/register',
     '/landing',
+    '/photo-diary',
   ];
 
+  // Check if current route is marathon day page (has its own header with menu)
+  const isMarathonDayPage = router.pathname.includes('/marathons/') && router.pathname.includes('/day/');
+
   // Check if current route is excluded or is root page
-  const isExcludedPath = router.pathname === '/' || excludedPaths.some(path => router.pathname.startsWith(path));
+  const isExcludedPath = router.pathname === '/' || excludedPaths.some(path => router.pathname.startsWith(path)) || isMarathonDayPage;
 
   // Don't show menu on excluded pages
   const shouldShowMenu = !isExcludedPath && isAuthenticated;

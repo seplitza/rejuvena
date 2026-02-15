@@ -4,6 +4,7 @@ import { useAppSelector, useAppDispatch } from '../store/hooks';
 import Head from 'next/head';
 import { setUser } from '../store/modules/auth/slice';
 import * as faceapi from 'face-api.js';
+import NavigationMenu from '../components/common/NavigationMenu';
 
 interface PhotoSet {
   front: string | null;
@@ -42,6 +43,7 @@ const PhotoDiaryPage: React.FC = () => {
   const router = useRouter();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [showRules, setShowRules] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const dispatch = useAppDispatch();
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -1065,6 +1067,8 @@ const PhotoDiaryPage: React.FC = () => {
 
   return (
     <>
+      <NavigationMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+      
       <Head>
         <title>Фотодневник - Rejuvena</title>
       </Head>
@@ -1143,7 +1147,11 @@ const PhotoDiaryPage: React.FC = () => {
               <h1 className="text-2xl font-bold text-blue-800">Rejuvena</h1>
             </div>
             
-            <button className="text-gray-400">
+            <button 
+              onClick={() => setMenuOpen(true)}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+              aria-label="Меню"
+            >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
