@@ -37,12 +37,12 @@ export default function NavigationMenu({ isOpen, onClose }: NavigationMenuProps)
   };
 
   const menuItems = [
-    { label: 'Личная информация', path: '/profile', icon: '👤' },
+    { label: 'Личная информация', path: '/profile/settings', icon: '👤' },
     { label: 'Фотодневник', path: '/photo-diary', icon: '📸' },
-    { label: 'Мои заказы', path: '/orders', icon: '📦' },
-    { label: 'Лучшие результаты', path: '/results', icon: '🏆' },
-    { label: 'Уведомления', path: '/notifications', icon: '🔔' },
-    { label: 'Обратная связь', path: '/feedback', icon: '💬' },
+    { label: 'Мои заказы', path: '/dashboard', icon: '📦' },
+    { label: 'Упражнения', path: '/exercises', icon: '💪' },
+    { label: 'Марафоны', path: '/marathons', icon: '🏃' },
+    { label: 'Курсы', path: '/courses', icon: '📚' },
   ];
 
   return (
