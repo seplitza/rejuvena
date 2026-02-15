@@ -331,7 +331,10 @@ export default function OffersGrid() {
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
+        <div 
+          className="animate-spin rounded-full h-12 w-12 border-b-2 mb-4"
+          style={{ borderBottomColor: 'var(--color-primary)' }}
+        ></div>
         <span className="text-gray-600 font-medium">Загрузка предложений...</span>
       </div>
     );
@@ -472,7 +475,7 @@ export default function OffersGrid() {
                 </span>
               )}
             </div>
-            <p className={`${currentCard.type === 'premium' ? 'text-purple-100' : 'text-blue-100'}`}>
+            <p className="opacity-90">
               {currentCard.subtitle}
             </p>
           </div>
@@ -535,7 +538,24 @@ export default function OffersGrid() {
                     setSelectedMarathon(currentCard.marathonData);
                     setShowModal(true);
                   }}
-                  className="w-full bg-white border-2 border-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-xl transition-all duration-300 hover:border-purple-500 hover:text-purple-600 hover:bg-purple-50"
+                  className="w-full bg-white border-2 border-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-xl transition-all duration-300"
+                  style={{
+                    ':hover': {
+                      borderColor: 'var(--color-primary)',
+                      color: 'var(--color-primary)',
+                      backgroundColor: 'var(--color-primary-light, rgba(147, 51, 234, 0.1))'
+                    }
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-primary)';
+                    e.currentTarget.style.color = 'var(--color-primary)';
+                    e.currentTarget.style.backgroundColor = 'var(--color-primary-light, rgba(147, 51, 234, 0.1))';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#d1d5db';
+                    e.currentTarget.style.color = '#374151';
+                    e.currentTarget.style.backgroundColor = 'white';
+                  }}
                 >
                   📖 О марафоне
                 </button>
@@ -556,7 +576,15 @@ export default function OffersGrid() {
             <button
               onClick={prevSlide}
               onMouseEnter={() => setIsAutoPlaying(false)}
-              className="slider-button absolute top-1/2 -left-4 md:-left-6 transform -translate-y-1/2 bg-purple-600 text-white w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg flex items-center justify-center z-10 hover:bg-purple-700"
+              className="slider-button absolute top-1/2 -left-4 md:-left-6 transform -translate-y-1/2 text-white w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg flex items-center justify-center z-10 transition-opacity"
+              style={{ backgroundColor: 'var(--color-primary)' }}
+              onMouseEnter={(e) => {
+                setIsAutoPlaying(false);
+                e.currentTarget.style.opacity = '0.9';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
+              }}
             >
               <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -566,7 +594,15 @@ export default function OffersGrid() {
             <button
               onClick={nextSlide}
               onMouseEnter={() => setIsAutoPlaying(false)}
-              className="slider-button absolute top-1/2 -right-4 md:-right-6 transform -translate-y-1/2 bg-purple-600 text-white w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg flex items-center justify-center z-10 hover:bg-purple-700"
+              className="slider-button absolute top-1/2 -right-4 md:-right-6 transform -translate-y-1/2 text-white w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg flex items-center justify-center z-10 transition-opacity"
+              style={{ backgroundColor: 'var(--color-primary)' }}
+              onMouseEnter={(e) => {
+                setIsAutoPlaying(false);
+                e.currentTarget.style.opacity = '0.9';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
+              }}
             >
               <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -582,11 +618,21 @@ export default function OffersGrid() {
               <button
                 key={index}
                 onClick={() => goToSlide(index)}
-                className={`dot w-2.5 h-2.5 rounded-full transition-all ${
-                  index === currentSlide 
-                    ? 'bg-purple-600 w-8' 
-                    : 'bg-gray-300 hover:bg-gray-400'
-                }`}
+                className="dot w-2.5 h-2.5 rounded-full transition-all"
+                style={{
+                  backgroundColor: index === currentSlide ? 'var(--color-primary)' : '#d1d5db',
+                  width: index === currentSlide ? '2rem' : '0.625rem'
+                }}
+                onMouseEnter={(e) => {
+                  if (index !== currentSlide) {
+                    e.currentTarget.style.backgroundColor = '#9ca3af';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (index !== currentSlide) {
+                    e.currentTarget.style.backgroundColor = '#d1d5db';
+                  }
+                }}
                 aria-label={`Перейти к слайду ${index + 1}`}
               />
             ))}
