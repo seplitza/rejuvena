@@ -190,7 +190,8 @@ const DashboardPage: React.FC = () => {
             {/* User Avatar - only show when authenticated */}
             {isAuthenticated && user && (
               <div 
-                className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold shadow-md cursor-pointer hover:shadow-lg transition-shadow"
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-md cursor-pointer hover:shadow-lg transition-shadow"
+                style={{ backgroundImage: 'linear-gradient(to bottom right, var(--color-primary), var(--color-secondary))' }}
                 onClick={() => router.push('/profile/settings')}
                 title={`${user.firstName || 'Профиль'}`}
               >
@@ -245,15 +246,15 @@ const DashboardPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-xl font-bold mb-2">✨ Премиум доступ активен</h3>
-                <p className="text-purple-100">
+                <p className="opacity-90">
                   Активен до: {user?.premiumEndDate ? new Date(user.premiumEndDate).toLocaleDateString('ru-RU') : 'неизвестно'}
                 </p>
                 {user?.premiumEndDate && (
-                  <p className="text-purple-100 mt-1">
+                  <p className="opacity-90 mt-1">
                     Осталось дней: {Math.max(0, Math.ceil((new Date(user.premiumEndDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))}
                   </p>
                 )}
-                <p className="text-purple-100 mt-1">
+                <p className="opacity-90 mt-1">
                   🎯 Разблокирован доступ ко всем упражнениям
                 </p>
               </div>
@@ -374,35 +375,119 @@ const DashboardPage: React.FC = () => {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <button
-                className="flex items-center space-x-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left group border border-purple-200"
+                className="flex items-center space-x-3 p-4 rounded-lg transition-colors text-left group border"
+                style={{ 
+                  backgroundColor: 'var(--color-primary-light, rgba(147, 51, 234, 0.1))',
+                  borderColor: 'var(--color-primary-border, rgba(147, 51, 234, 0.3))'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary-light-hover, rgba(147, 51, 234, 0.2))';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary-light, rgba(147, 51, 234, 0.1))';
+                }}
                 onClick={() => router.push('/courses')}
               >
                 <span className="text-3xl">📚</span>
-                <span className="text-base font-medium text-gray-800 group-hover:text-purple-600">Мои курсы</span>
+                <span 
+                  className="text-base font-medium"
+                  style={{ color: '#1F2937' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = 'var(--color-primary)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#1F2937';
+                  }}
+                >
+                  Мои курсы
+                </span>
               </button>
 
               <button
-                className="flex items-center space-x-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left group border border-purple-200"
+                className="flex items-center space-x-3 p-4 rounded-lg transition-colors text-left group border"
+                style={{ 
+                  backgroundColor: 'var(--color-primary-light, rgba(147, 51, 234, 0.1))',
+                  borderColor: 'var(--color-primary-border, rgba(147, 51, 234, 0.3))'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary-light-hover, rgba(147, 51, 234, 0.2))';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary-light, rgba(147, 51, 234, 0.1))';
+                }}
                 onClick={() => router.push('/exercises')}
               >
                 <span className="text-3xl">🏋️</span>
-                <span className="text-base font-medium text-gray-800 group-hover:text-purple-600">Упражнения</span>
+                <span 
+                  className="text-base font-medium"
+                  style={{ color: '#1F2937' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = 'var(--color-primary)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#1F2937';
+                  }}
+                >
+                  Упражнения
+                </span>
               </button>
 
               <button
-                className="flex items-center space-x-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left group border border-purple-200"
+                className="flex items-center space-x-3 p-4 rounded-lg transition-colors text-left group border"
+                style={{ 
+                  backgroundColor: 'var(--color-primary-light, rgba(147, 51, 234, 0.1))',
+                  borderColor: 'var(--color-primary-border, rgba(147, 51, 234, 0.3))'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary-light-hover, rgba(147, 51, 234, 0.2))';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary-light, rgba(147, 51, 234, 0.1))';
+                }}
                 onClick={() => router.push('/photo-diary')}
               >
                 <span className="text-3xl">📸</span>
-                <span className="text-base font-medium text-gray-800 group-hover:text-purple-600">Фото-дневник</span>
+                <span 
+                  className="text-base font-medium"
+                  style={{ color: '#1F2937' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = 'var(--color-primary)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#1F2937';
+                  }}
+                >
+                  Фото-дневник
+                </span>
               </button>
 
               <button
-                className="flex items-center space-x-3 p-4 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-left group border border-purple-200"
+                className="flex items-center space-x-3 p-4 rounded-lg transition-colors text-left group border"
+                style={{ 
+                  backgroundColor: 'var(--color-primary-light, rgba(147, 51, 234, 0.1))',
+                  borderColor: 'var(--color-primary-border, rgba(147, 51, 234, 0.3))'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary-light-hover, rgba(147, 51, 234, 0.2))';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary-light, rgba(147, 51, 234, 0.1))';
+                }}
                 onClick={() => router.push('/profile/settings')}
               >
                 <span className="text-3xl">👤</span>
-                <span className="text-base font-medium text-gray-800 group-hover:text-purple-600">Профиль</span>
+                <span 
+                  className="text-base font-medium"
+                  style={{ color: '#1F2937' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = 'var(--color-primary)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#1F2937';
+                  }}
+                >
+                  Профиль
+                </span>
               </button>
             </div>
         </div>
