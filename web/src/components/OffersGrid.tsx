@@ -56,6 +56,7 @@ export default function OffersGrid() {
 
   useEffect(() => {
     Promise.all([fetchOffers(), fetchMarathons()]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchOffers = async () => {
@@ -318,6 +319,7 @@ export default function OffersGrid() {
     return () => {
       if (autoPlayRef.current) clearInterval(autoPlayRef.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAutoPlaying, allSlides.length]);
 
   const handleCardAction = async (slide: any) => {

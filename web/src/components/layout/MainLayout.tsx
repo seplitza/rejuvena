@@ -19,14 +19,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
   // Pages where menu should NOT be shown (landing, auth, etc.)
   const excludedPaths = [
-    '/',
     '/auth/login',
     '/auth/register',
     '/landing',
   ];
 
-  // Check if current route starts with excluded path
-  const isExcludedPath = excludedPaths.some(path => router.pathname.startsWith(path)) && router.pathname !== '/dashboard';
+  // Check if current route is excluded or is root page
+  const isExcludedPath = router.pathname === '/' || excludedPaths.some(path => router.pathname.startsWith(path));
 
   // Don't show menu on excluded pages
   const shouldShowMenu = !isExcludedPath && isAuthenticated;
@@ -43,11 +42,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <button
           onClick={() => setIsMenuOpen(true)}
           className="fixed top-4 right-4 z-30 p-3 rounded-lg shadow-lg bg-white hover:shadow-xl transition-all"
-          style={{
-            ':hover': {
-              backgroundColor: 'var(--color-primary-light, rgba(147, 51, 234, 0.1))'
-            }
-          }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = 'var(--color-primary-light, rgba(147, 51, 234, 0.1))';
           }}
