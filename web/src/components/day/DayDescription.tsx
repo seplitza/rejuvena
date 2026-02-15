@@ -6,6 +6,7 @@
 
 import { useAppSelector } from '@/store/hooks';
 import { selectMarathonDay } from '@/store/modules/day/selectors';
+import { selectUserProfile } from '@/store/modules/auth/selectors';
 import { useMemo } from 'react';
 
 // Video URL patterns
@@ -179,6 +180,7 @@ function VideoPlayer({ video }: { video: VideoEmbed }) {
 
 export default function DayDescription() {
   const marathonDay = useAppSelector(selectMarathonDay);
+  const user = useAppSelector(selectUserProfile);
 
   const { videos, cleanedHtml } = useMemo(() => {
     if (!marathonDay?.description) {
@@ -193,11 +195,20 @@ export default function DayDescription() {
       .replace(/<div[^>]*data-f-id[^>]*>.*?<\/div>/gi, '')
       .replace(/Powered by Froala Editor/gi, '');
 
+    // Replace firstName placeholder
+    if (user?.firstName) {
+      cleaned = cleaned.replace(/\{firstName\}/gi, user.firstName);
+    } else {
+      // Remove placeholder and preceding comma if present
+      cleaned = cleaned.replace(/,\s*\{firstName\}/gi, '');
+      cleaned = cleaned.replace(/\{firstName\}/gi, '');
+    }
+
     return {
       videos: extractedVideos,
       cleanedHtml: cleaned,
     };
-  }, [marathonDay?.description]);
+  }, [marathonDay?.description, user?.firstName]);
 
   if (!marathonDay) {
     return null;
