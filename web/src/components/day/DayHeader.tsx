@@ -35,7 +35,8 @@ export default function DayHeader() {
   const dayType = isPracticeDay ? 'практика' : 'обучение';
 
   // User avatar - from profile or first photo diary image
-  const userAvatar = userProfile?.profilePicture || userProfile?.avatar || '/images/default-avatar.png';
+  // For GitHub Pages, use relative path without leading slash
+  const userAvatar = userProfile?.profilePicture || userProfile?.avatar || '/rejuvena/images/default-avatar.png';
 
   return (
     <>

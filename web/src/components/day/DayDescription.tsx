@@ -195,13 +195,17 @@ export default function DayDescription() {
       .replace(/<div[^>]*data-f-id[^>]*>.*?<\/div>/gi, '')
       .replace(/Powered by Froala Editor/gi, '');
 
-    // Replace firstName placeholder
-    if (user?.firstName) {
-      cleaned = cleaned.replace(/\{firstName\}/gi, user.firstName);
+    // Replace firstName and name placeholders
+    const userName = user?.firstName || '';
+    if (userName) {
+      cleaned = cleaned.replace(/\{firstName\}/gi, userName);
+      cleaned = cleaned.replace(/\{name\}/gi, userName);
     } else {
-      // Remove placeholder and preceding comma if present
+      // Remove placeholders and preceding comma if present
       cleaned = cleaned.replace(/,\s*\{firstName\}/gi, '');
       cleaned = cleaned.replace(/\{firstName\}/gi, '');
+      cleaned = cleaned.replace(/,\s*\{name\}/gi, '');
+      cleaned = cleaned.replace(/\{name\}/gi, '');
     }
 
     return {
