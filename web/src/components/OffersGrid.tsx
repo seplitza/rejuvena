@@ -541,13 +541,6 @@ export default function OffersGrid() {
                     setShowModal(true);
                   }}
                   className="w-full bg-white border-2 border-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-xl transition-all duration-300"
-                  style={{
-                    ':hover': {
-                      borderColor: 'var(--color-primary)',
-                      color: 'var(--color-primary)',
-                      backgroundColor: 'var(--color-primary-light, rgba(147, 51, 234, 0.1))'
-                    }
-                  }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.borderColor = 'var(--color-primary)';
                     e.currentTarget.style.color = 'var(--color-primary)';
