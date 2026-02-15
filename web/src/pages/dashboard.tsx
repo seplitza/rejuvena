@@ -187,6 +187,16 @@ const DashboardPage: React.FC = () => {
           </h1>
           <div className="flex items-center gap-4">
             <LanguageSelector />
+            {/* User Avatar - only show when authenticated */}
+            {isAuthenticated && user && (
+              <div 
+                className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold shadow-md cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => router.push('/profile/settings')}
+                title={`${user.firstName || 'Профиль'}`}
+              >
+                {user.firstName ? user.firstName.charAt(0).toUpperCase() : '👤'}
+              </div>
+            )}
             <button
               onClick={() => {
                 if (isAuthenticated) {
@@ -214,8 +224,13 @@ const DashboardPage: React.FC = () => {
         {/* Welcome Section */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-            Добро пожаловать, {user?.firstName || 'Гость'}!
+            Здравствуйте{user?.firstName ? `, ${user.firstName}` : ''}!
           </h2>
+          {!user?.firstName && (
+            <p className="text-gray-500 text-sm mb-3">
+              Заполните профиль, пожалуйста, что бы мы могли к Вам правильно обращаться.
+            </p>
+          )}
           <p className="text-gray-600">
             Email: {user?.email || 'Не указан'}
           </p>

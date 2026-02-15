@@ -261,12 +261,23 @@ export default function ProfileSettings() {
             <Link href="/dashboard" className="text-purple-600 hover:text-purple-700 mb-4 inline-block">
               ← {t[language].backToDashboard}
             </Link>
-            <h1 className="text-3xl font-bold text-gray-800">{t[language].title}</h1>
-            {user && (
-              <p className="text-gray-600 mt-2">
-                {user.firstName} {user.lastName} • {user.email}
-              </p>
-            )}
+            <div className="flex items-center gap-4">
+              {/* User Avatar */}
+              <div className="flex-shrink-0">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                  {user?.firstName ? user.firstName.charAt(0).toUpperCase() : '👤'}
+                </div>
+              </div>
+              {/* User Info */}
+              <div>
+                <h1 className="text-3xl font-bold text-gray-800">{t[language].title}</h1>
+                {user && (
+                  <p className="text-gray-600 mt-2">
+                    {user.firstName} {user.lastName} • {user.email}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Change Password Section */}
