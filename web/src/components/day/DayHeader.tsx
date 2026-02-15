@@ -36,7 +36,7 @@ export default function DayHeader() {
 
   // User avatar - from profile or first photo diary image
   // For GitHub Pages, use relative path without leading slash
-  const userAvatar = userProfile?.profilePicture || userProfile?.avatar || '/rejuvena/images/default-avatar.png';
+  const userAvatar = userProfile?.profilePicture || userProfile?.avatar || '/rejuvena/images/default-avatar.png.svg';
 
   return (
     <>
