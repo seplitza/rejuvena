@@ -21,10 +21,30 @@ interface Marathon {
   userEnrollmentStatus?: 'pending' | 'active' | 'completed' | 'cancelled';
 }
 
+interface Offer {
+  _id: string;
+  type: 'premium' | 'marathon' | 'exercise';
+  title: string;
+  subtitle?: string;
+  badge?: string;
+  gradient: { from: string; to: string };
+  price?: number;
+  priceLabel?: string;
+  features: Array<{ title: string; description: string }>;
+  isVisible: boolean;
+  order: number;
+  showToGuests: boolean;
+  showToLoggedIn: boolean;
+  hiddenIfOwned: boolean;
+  marathonId?: string;
+  exerciseId?: string;
+}
+
 export default function OffersGrid() {
   const router = useRouter();
   const { user } = useAppSelector((state) => state.auth);
   const [marathons, setMarathons] = useState<Marathon[]>([]);
+  const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [purchaseLoading, setPurchaseLoading] = useState<string | null>(null);
@@ -35,8 +55,55 @@ export default function OffersGrid() {
   const [selectedMarathon, setSelectedMarathon] = useState<Marathon | null>(null);
 
   useEffect(() => {
-    fetchMarathons();
+    Promise.all([fetchOffers(), fetchMarathons()]);
   }, []);
+
+  const fetchOffers = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527';
+      console.log('🎁 Fetching offers from:', `${apiUrl}/api/offers`);
+      
+      const response = await fetch(`${apiUrl}/api/offers`);
+      console.log('📡 Offers response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('📦 Offers data:', data);
+      
+      if (data.success && data.offers) {
+        // Фильтруем offers по showToGuests/showToLoggedIn
+        const filteredOffers = data.offers.filter((offer: Offer) => {
+          // Проверяем видимость
+          if (!offer.isVisible) return false;
+          
+          // Проверяем доступность для гостей/авторизованных
+          if (user) {
+            if (!offer.showToLoggedIn) return false;
+          } else {
+            if (!offer.showToGuests) return false;
+          }
+          
+          // Если Premium и hiddenIfOwned, проверяем isPremium
+          if (offer.type === 'premium' && offer.hiddenIfOwned && user?.isPremium) {
+            return false;
+          }
+          
+          return true;
+        });
+        
+        setOffers(filteredOffers);
+        console.log('✅ Loaded offers:', filteredOffers.length);
+      } else {
+        console.warn('⚠️ No offers in response');
+      }
+    } catch (error) {
+      console.error('❌ Failed to fetch offers:', error);
+      // Не показываем ошибку, просто логируем - offers опциональны
+    }
+  };
 
   const fetchMarathons = async () => {
     try {
@@ -74,8 +141,8 @@ export default function OffersGrid() {
     }
   };
 
-  const handlePremiumPurchase = async () => {
-    setPurchaseLoading('premium');
+  const handlePremiumPurchase = async (offerId: string, price: number, title: string) => {
+    setPurchaseLoading(offerId);
     
     try {
       const token = localStorage.getItem('auth_token');
@@ -92,8 +159,8 @@ export default function OffersGrid() {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          amount: 990,
-          description: 'Премиум подписка на 30 дней',
+          amount: price,
+          description: `${title} (Премиум подписка на 30 дней)`,
           planType: 'premium',
           duration: 30
         })
@@ -170,31 +237,31 @@ export default function OffersGrid() {
     return `${days} дней`;
   };
 
-  // Premium card data
-  const premiumCard = {
-    id: 'premium',
-    type: 'premium',
-    title: 'Премиум доступ',
-    subtitle: 'Полный доступ ко всем упражнениям',
-    badge: '⭐ Популярный',
-    badgeColor: 'bg-yellow-400 text-yellow-900',
-    gradient: { from: '#9333ea', to: '#ec4899' },
-    borderColor: 'border-purple-200 hover:border-purple-400',
-    price: 990,
-    priceLabel: '/ месяц',
-    features: [
-      { title: 'Полное видео-инструкция', description: 'Детальная демонстрация каждого упражнения' },
-      { title: 'Доступ на 1 месяц', description: '30 дней автоматического доступа' },
-      { title: 'Все категории упражнений', description: '100+ видео, лицо, шея, тело + другое' }
-    ],
+  // Трансформация offers из API в формат слайдера
+  const offerSlides = offers.map(offer => ({
+    id: offer._id,
+    type: offer.type,
+    title: offer.title,
+    subtitle: offer.subtitle || '',
+    badge: offer.badge || null,
+    badgeColor: offer.type === 'premium' 
+      ? 'bg-yellow-400 text-yellow-900' 
+      : 'bg-purple-400 text-purple-900',
+    gradient: offer.gradient,
+    borderColor: offer.type === 'premium' 
+      ? 'border-purple-200 hover:border-purple-400' 
+      : 'border-blue-200 hover:border-blue-400',
+    price: offer.price || null,
+    priceLabel: offer.priceLabel || '/ месяц',
+    features: offer.features,
     marathonData: undefined,
     isEnrolled: false,
     enrollmentStatus: undefined
-  };
+  }));
 
-  // All slides: Premium + Marathons
+  // All slides: Offers (Premium) + Marathons
   const allSlides = [
-    ...(user?.isPremium ? [] : [premiumCard]),
+    ...offerSlides,
     ...marathons.filter(m => !m.userEnrolled).map(m => ({
       id: m._id,
       type: 'marathon',
@@ -255,7 +322,7 @@ export default function OffersGrid() {
 
   const handleCardAction = async (slide: any) => {
     if (slide.type === 'premium') {
-      await handlePremiumPurchase();
+      await handlePremiumPurchase(slide.id, slide.price, slide.title);
     } else if (slide.marathonData) {
       await handleMarathonAction(slide.marathonData);
     }
