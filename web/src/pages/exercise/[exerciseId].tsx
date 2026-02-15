@@ -8,6 +8,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import PaymentModal from '@/components/PaymentModal';
 import { getExerciseAccess, hasUserAccess } from '@/utils/exerciseAccess';
+import CommentSection from '@/components/comments/CommentSection';
 
 // Always use unified API
 import { API_URL } from '@/config/api';
@@ -96,8 +97,6 @@ export default function ExercisePage() {
   const [loading, setLoading] = useState(true);
   const [isDone, setIsDone] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [comments, setComments] = useState<any[]>([]);
-  const [newComment, setNewComment] = useState('');
   const [currentContentIndex, setCurrentContentIndex] = useState(0);
   const [contentItems, setContentItems] = useState<any[]>([]);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -167,38 +166,8 @@ export default function ExercisePage() {
     setCurrentContentIndex(0);
   }, [exercise]);
 
-  // Mock comments
-  useEffect(() => {
-    if (exercise) {
-      setComments([
-        {
-          id: '1',
-          userName: 'Ирина М.',
-          userAvatar: 'https://ui-avatars.com/api/?name=Irina+M&background=ec4899&color=fff',
-          text: 'Делаю это упражнение каждое утро. Главное не торопиться и делать все плавно.',
-          date: '27 декабря 2025',
-        },
-      ]);
-    }
-  }, [exercise]);
-
   const handleToggleCompletion = () => {
     setIsDone(!isDone);
-  };
-
-  const handlePostComment = () => {
-    if (!newComment.trim()) return;
-    
-    const comment = {
-      id: Date.now().toString(),
-      userName: 'Вы',
-      userAvatar: 'https://ui-avatars.com/api/?name=User&background=8b5cf6&color=fff',
-      text: newComment,
-      date: new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }),
-    };
-    
-    setComments([comment, ...comments]);
-    setNewComment('');
   };
 
   const toggleFullscreen = () => {
@@ -442,54 +411,11 @@ export default function ExercisePage() {
         </div>
 
         {/* Comments Section */}
-        <div className={`bg-white rounded-2xl shadow-lg p-6 mx-4 ${showBlurred ? 'filter blur-sm' : ''}`}>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Комментарии ({comments.length})
-          </h2>
-
-          {/* Add Comment */}
-          <div className="mb-6">
-            <textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Напишите комментарий..."
-              disabled={!hasAccess}
-              className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed"
-              rows={3}
-            />
-            <button
-              onClick={handlePostComment}
-              disabled={!newComment.trim() || !hasAccess}
-              className="mt-2 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Отправить
-            </button>
+        {exerciseId && typeof exerciseId === 'string' && (
+          <div className={`mx-4 ${showBlurred ? 'filter blur-sm' : ''}`}>
+            <CommentSection exerciseId={exerciseId} context="exercise" />
           </div>
-
-          {/* Comments List */}
-          <div className="space-y-4">
-            {comments.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">Комментариев пока нет. Будьте первым!</p>
-            ) : (
-              comments.map((comment) => (
-                <div key={comment.id} className="flex space-x-4 p-4 bg-gray-50 rounded-lg">
-                  <img
-                    src={comment.userAvatar}
-                    alt={comment.userName}
-                    className="w-12 h-12 rounded-full flex-shrink-0"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <h3 className="font-semibold text-gray-900">{comment.userName}</h3>
-                      <span className="text-sm text-gray-500">{comment.date}</span>
-                    </div>
-                    <p className="text-gray-700">{comment.text}</p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Payment Modal */}

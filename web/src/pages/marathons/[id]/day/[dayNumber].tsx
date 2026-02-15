@@ -18,6 +18,7 @@ import DayHeader from '@/components/day/DayHeader';
 import DayDescription from '@/components/day/DayDescription';
 import DayPlan from '@/components/day/DayPlan';
 import DaysList from '@/components/day/DaysList';
+import CommentSection from '@/components/comments/CommentSection';
 
 export default function MarathonDayPage() {
   const router = useRouter();
@@ -114,6 +115,15 @@ export default function MarathonDayPage() {
           <DaysList 
             marathonId={id} 
             currentDayNumber={marathonDay.day}
+          />
+        )}
+
+        {/* Comments Section */}
+        {id && typeof id === 'string' && marathonDay?.day && (
+          <CommentSection 
+            marathonId={id}
+            marathonDayNumber={marathonDay.day}
+            context="marathon-day"
           />
         )}
       </div>
