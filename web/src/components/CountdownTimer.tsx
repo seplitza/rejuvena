@@ -65,8 +65,10 @@ export default function CountdownTimer({ targetDate, onComplete }: CountdownTime
   }
 
   return (
-    <div className="bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 rounded-2xl p-8 text-white shadow-xl">
-      <div className="text-center mb-6">
+    <div 
+      className="rounded-2xl p-8 text-white shadow-xl"
+      style={{ backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-primary), var(--color-secondary))' }}
+    >\n      <div className="text-center mb-6">
         <h3 className="text-3xl font-bold mb-2">⏰ До старта марафона</h3>
         <p className="text-lg opacity-90">Приготовьтесь к началу вашего путешествия</p>
       </div>
