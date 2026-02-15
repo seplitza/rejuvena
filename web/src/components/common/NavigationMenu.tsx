@@ -90,7 +90,6 @@ export default function NavigationMenu({ isOpen, onClose }: NavigationMenuProps)
               key={item.path}
               onClick={() => handleNavigation(item.path)}
               className="w-full flex items-center space-x-3 p-3 rounded-lg transition-colors text-left group"
-              style={{ ':hover': { backgroundColor: 'var(--color-primary-light, rgba(147, 51, 234, 0.1))' } }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = 'var(--color-primary-light, rgba(147, 51, 234, 0.1))';
               }}
