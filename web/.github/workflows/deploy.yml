@@ -93,13 +93,14 @@ jobs:
                 var path = window.location.pathname;
                 var search = window.location.search;
                 var hash = window.location.hash;
-                var basePath = '/rejuvena';
                 
-                // Store the full attempted URL
+                // Store the full attempted URL for the app to handle
                 sessionStorage.setItem('redirectPath', path + search + hash);
                 
-                // Redirect to index
-                window.location.replace(basePath + '/' + search);
+                console.log('404 redirect: saving path =', path + search + hash);
+                
+                // Always redirect to index - Next.js will handle routing from there
+                window.location.replace('/rejuvena/');
               })();
             </script>
           </head>

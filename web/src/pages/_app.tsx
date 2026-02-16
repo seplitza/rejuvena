@@ -32,8 +32,21 @@ function App({ Component, pageProps }: AppProps) {
         targetPath = '/' + targetPath;
       }
       
+      // Don't redirect if already on home page
+      if (targetPath === '/' || targetPath === '') {
+        return;
+      }
+      
       console.log('🔄 Redirecting from 404 to:', targetPath);
-      router.replace(targetPath);
+      console.log('Current router ready:', router.isReady);
+      
+      // Use push for better navigation
+      if (router.isReady) {
+        router.push(targetPath);
+      } else {
+        // If router not ready, wait a bit
+        setTimeout(() => router.push(targetPath), 100);
+      }
       return;
     }
     
@@ -45,7 +58,7 @@ function App({ Component, pageProps }: AppProps) {
       window.history.replaceState(null, '', path);
       router.replace(path);
     }
-  }, [router]);
+  }, [router, router.isReady]);
 
   useEffect(() => {
     // Восстанавливаем токен и пользователя из localStorage при загрузке приложения
