@@ -12,12 +12,15 @@ import { useMemo } from 'react';
 // Video URL patterns
 const YOUTUBE_REGEX = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
 const VIMEO_REGEX = /vimeo\.com\/(\d+)/;
-const VK_VIDEO_REGEX = /vk\.com\/video(-?\d+_\d+)/;
+// VK Video - поддержка обоих доменов (vk.com и vkvideo.ru) и приватных видео
+const VK_VIDEO_REGEX = /(?:vk\.com\/video|vkvideo\.ru\/video)(-?\d+_\d+)(?:[?&]\S+)?/;
 
 interface VideoEmbed {
   type: 'youtube' | 'vimeo' | 'vk' | 'mp4' | 'telegram';
   url: string;
   id?: string;
+  isPrivate?: boolean; // Для VK приватных видео
+  originalUrl?: string; // Полный URL с параметрами доступа
 }
 
 function extractVideos(html: string): VideoEmbed[] {
@@ -47,11 +50,29 @@ function extractVideos(html: string): VideoEmbed[] {
   // Extract VK videos
   const vkMatches = html.matchAll(new RegExp(VK_VIDEO_REGEX, 'g'));
   for (const match of vkMatches) {
-    videos.push({
-      type: 'vk',
-      url: `https://vk.com/video_ext.php?oid=${match[1].split('_')[0]}&id=${match[1].split('_')[1]}`,
-      id: match[1],
-    });
+    const fullUrl = match[0];
+    const videoId = match[1];
+    // Проверяем, есть ли параметры доступа (sh, list) - означает приватное видео
+    const hasAccessParams = /[?&](sh|list)=/.test(fullUrl);
+    
+    if (hasAccessParams) {
+      // Приватное видео - сохраняем полный URL для кнопки
+      videos.push({
+        type: 'vk',
+        url: fullUrl, // Полный URL с токенами
+        id: videoId,
+        isPrivate: true,
+        originalUrl: fullUrl
+      });
+    } else {
+      // Публичное видео - используем стандартный embed
+      videos.push({
+        type: 'vk',
+        url: `https://vk.com/video_ext.php?oid=${videoId.split('_')[0]}&id=${videoId.split('_')[1]}`,
+        id: videoId,
+        isPrivate: false
+      });
+    }
   }
   
   // Extract direct MP4 links
@@ -79,7 +100,6 @@ function VideoPlayer({ video }: { video: VideoEmbed }) {
   switch (video.type) {
     case 'youtube':
     case 'vimeo':
-    case 'vk':
       return (
         <div className="w-full mb-4">
           <div className="w-full aspect-video relative overflow-hidden rounded-none md:rounded-lg">
@@ -143,6 +163,60 @@ function VideoPlayer({ video }: { video: VideoEmbed }) {
                 position: relative;
               }
             `}</style>
+          </div>
+        </div>
+      );
+    
+    case 'vk':
+      // Приватные VK видео (с токенами доступа) - показываем кнопку
+      if (video.isPrivate) {
+        return (
+          <div className="w-full mb-4">
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
+              <div className="flex items-center gap-3 mb-3">
+                <svg className="w-8 h-8 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M15.07 2H8.93C3.33 2 2 3.33 2 8.93v6.14C2 20.67 3.33 22 8.93 22h6.14c5.6 0 6.93-1.33 6.93-6.93V8.93C22 3.33 20.67 2 15.07 2z"/>
+                  <path fill="white" d="M16.5 11.5h-2v-2c0-.28-.22-.5-.5-.5s-.5.22-.5.5v2h-2c-.28 0-.5.22-.5.5s.22.5.5.5h2v2c0 .28.22.5.5.5s.5-.22.5-.5v-2h2c.28 0 .5-.22.5-.5s-.22-.5-.5-.5z"/>
+                </svg>
+                <div>
+                  <h3 className="font-semibold text-gray-800">Видео ВКонтакте</h3>
+                  <p className="text-sm text-gray-600">Ограниченный доступ</p>
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Это видео доступно только по прямой ссылке с токеном доступа.
+              </p>
+              <a
+                href={video.originalUrl || video.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Открыть видео в VK
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        );
+      }
+      
+      // Публичные VK видео - показываем iframe
+      return (
+        <div className="w-full mb-4">
+          <div className="w-full aspect-video relative overflow-hidden rounded-none md:rounded-lg">
+            <iframe
+              src={video.url}
+              className="w-full h-full"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
           </div>
         </div>
       );
