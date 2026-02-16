@@ -39,6 +39,80 @@ jobs:
       - name: Create .nojekyll file
         run: touch ./out/.nojekyll
       
+      - name: Copy custom 404 redirect
+        run: |
+          cat > ./out/404.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="ru">
+          <head>
+            <meta charset="utf-8">
+            <title>Загрузка... - Rejuvena</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <style>
+              body { 
+                margin: 0; 
+                padding: 0;
+                font-family: system-ui, -apple-system, sans-serif;
+                background: linear-gradient(135deg, #fef3f8 0%, #f3e7ff 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              }
+              .container {
+                text-align: center;
+                padding: 2rem;
+              }
+              .spinner {
+                width: 50px;
+                height: 50px;
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid #B794F6;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 1.5rem;
+              }
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+              h1 {
+                font-size: 1.5rem;
+                font-weight: 600;
+                color: #1f2937;
+                margin-bottom: 0.5rem;
+              }
+              p {
+                font-size: 0.875rem;
+                color: #6b7280;
+              }
+            </style>
+            <script>
+              // GitHub Pages SPA redirect
+              (function() {
+                var path = window.location.pathname;
+                var search = window.location.search;
+                var hash = window.location.hash;
+                var basePath = '/rejuvena';
+                
+                // Store the full attempted URL
+                sessionStorage.setItem('redirectPath', path + search + hash);
+                
+                // Redirect to index
+                window.location.replace(basePath + '/' + search);
+              })();
+            </script>
+          </head>
+          <body>
+            <div class="container">
+              <div class="spinner"></div>
+              <h1>Загрузка...</h1>
+              <p>Перенаправление на запрошенную страницу</p>
+            </div>
+          </body>
+          </html>
+          EOF
+      
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
