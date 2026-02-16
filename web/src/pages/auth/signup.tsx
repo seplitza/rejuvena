@@ -19,6 +19,9 @@ export default function Signup() {
   const [language, setLanguage] = useState<'ru' | 'en'>('ru'); // Русский по умолчанию
   const wasLoading = useRef(false);
 
+  // Get returnUrl from query params
+  const returnUrl = router.query.returnUrl as string | undefined;
+
   const t = {
     ru: {
       title: 'Создать аккаунт',
@@ -86,7 +89,9 @@ export default function Signup() {
   };
 
   const handleGoToLogin = () => {
-    router.push('/auth/login');
+    // Pass returnUrl to login page if it exists
+    const loginPath = returnUrl ? `/auth/login?returnUrl=${encodeURIComponent(returnUrl)}` : '/auth/login';
+    router.push(loginPath);
   };
 
   return (
@@ -215,7 +220,10 @@ export default function Signup() {
 
           <p className="mt-6 text-center text-sm text-gray-600">
             {t[language].haveAccount}{' '}
-            <Link href="/auth/login" className="text-pink-600 hover:text-pink-700 font-semibold">
+            <Link 
+              href={returnUrl ? `/auth/login?returnUrl=${encodeURIComponent(returnUrl)}` : '/auth/login'} 
+              className="text-pink-600 hover:text-pink-700 font-semibold"
+            >
               {t[language].signIn}
             </Link>
           </p>

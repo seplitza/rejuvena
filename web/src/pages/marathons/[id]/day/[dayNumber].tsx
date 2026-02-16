@@ -29,10 +29,20 @@ export default function MarathonDayPage() {
   const loading = useAppSelector(selectDayLoading);
   const error = useAppSelector(selectDayError);
   const marathonDay = useAppSelector(selectMarathonDay);
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+
+  // Authentication guard - redirect to login if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      // Save current path to redirect back after login
+      const currentPath = router.asPath;
+      router.push(`/auth/login?returnUrl=${encodeURIComponent(currentPath)}`);
+    }
+  }, [isAuthenticated, router]);
 
   // Fetch day data
   useEffect(() => {
-    if (id && dayNumber && typeof id === 'string' && typeof dayNumber === 'string') {
+    if (id && dayNumber && typeof id === 'string' && typeof dayNumber === 'string' && isAuthenticated) {
       dispatch(getDayExercise({
         marathonId: id,
         dayId: dayNumber,
@@ -43,7 +53,19 @@ export default function MarathonDayPage() {
     return () => {
       dispatch(clearDayData());
     };
-  }, [id, dayNumber, dispatch]);
+  }, [id, dayNumber, dispatch, isAuthenticated]);
+
+  // Show loading while checking authentication
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Проверка доступа...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

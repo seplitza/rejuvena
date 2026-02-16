@@ -14,6 +14,9 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [language, setLanguage] = useState<'ru' | 'en'>('ru');
 
+  // Get returnUrl from query params
+  const returnUrl = router.query.returnUrl as string | undefined;
+
   const t = {
     ru: {
       title: 'Войти в аккаунт',
@@ -93,9 +96,12 @@ export default function Login() {
     dispatch(loginWithEmail({ email, password }));
   };
 
-  // Redirect to dashboard if authenticated
+  // Redirect after successful authentication
   if (isAuthenticated) {
-    router.push('/dashboard');
+    // If there's a returnUrl, go there; otherwise go to dashboard
+    const destination = returnUrl || '/dashboard';
+    router.push(destination);
+    return null;
   }
 
   return (
@@ -121,7 +127,10 @@ export default function Login() {
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
               {t[language].subtitle}{' '}
-              <Link href="/auth/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
+              <Link 
+                href={returnUrl ? `/auth/signup?returnUrl=${encodeURIComponent(returnUrl)}` : '/auth/signup'} 
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
                 {t[language].createAccount}
               </Link>
             </p>
