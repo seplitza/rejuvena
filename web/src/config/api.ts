@@ -8,10 +8,19 @@
  * - Single JWT token for everything
  */
 
+// Production API URL (default for GitHub Pages deployment)
+const PRODUCTION_API_URL = 'https://api-rejuvena.duckdns.org';
+const LOCAL_API_URL = 'http://localhost:9527';
+
 // OLD Backend - for auth and courses (legacy Azure)
 const getOldApiUrl = (): string => {
-  // ALWAYS use production backend (local frontend + prod backend for UI testing)
-  return process.env.NEXT_PUBLIC_API_URL || 'https://api-rejuvena.duckdns.org';
+  // For local development, use localhost if env not set
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    return process.env.NEXT_PUBLIC_API_URL || LOCAL_API_URL;
+  }
+  
+  // For production (GitHub Pages) - always use production API
+  return process.env.NEXT_PUBLIC_API_URL || PRODUCTION_API_URL;
 };
 
 export const API_URL = getOldApiUrl(); // Unified backend for everything

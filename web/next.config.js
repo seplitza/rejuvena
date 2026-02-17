@@ -12,8 +12,8 @@ const nextConfig = {
   basePath: process.env.NODE_ENV === 'production' ? '/rejuvena' : '', // Matches GitHub repo name
   assetPrefix: process.env.NODE_ENV === 'production' ? '/rejuvena' : '',
   env: {
-    API_URL: process.env.API_URL,
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+    API_URL: process.env.NODE_ENV === 'production' ? 'https://api-rejuvena.duckdns.org' : (process.env.API_URL || 'http://localhost:9527'),
+    NEXT_PUBLIC_API_URL: process.env.NODE_ENV === 'production' ? 'https://api-rejuvena.duckdns.org' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9527'),
   },
 }
 
