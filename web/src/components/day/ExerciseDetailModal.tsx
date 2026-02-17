@@ -9,7 +9,7 @@
  * - Collapsible comments
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import type { Exercise } from '@/store/modules/day/slice';
 import Image from 'next/image';
 
@@ -129,6 +129,9 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
   // Auto-completion tracking
   const [firstVideoWatched, setFirstVideoWatched] = useState(false);
   const [descriptionScrolled, setDescriptionScrolled] = useState(false);
+  
+  // Ref for scrollable content container
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Close on ESC key
   useEffect(() => {
@@ -148,6 +151,26 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
       document.body.style.overflow = 'unset';
     };
   }, [isOpen, onClose]);
+
+  // Check if content needs scrolling - auto-complete if not
+  useEffect(() => {
+    if (!isOpen || !scrollContainerRef.current) return;
+    
+    // Small delay to ensure content is rendered
+    const timeoutId = setTimeout(() => {
+      const container = scrollContainerRef.current;
+      if (!container) return;
+      
+      const needsScroll = container.scrollHeight > container.clientHeight + 10; // 10px threshold
+      
+      if (!needsScroll && !descriptionScrolled) {
+        console.log('📜 Content is short, no scroll needed - auto-completing description');
+        setDescriptionScrolled(true);
+      }
+    }, 300); // Wait for content to render
+    
+    return () => clearTimeout(timeoutId);
+  }, [isOpen, exercise, contentItems]); // Re-check when exercise or content changes
 
   // Build content items from exerciseContents
   useEffect(() => {
@@ -215,7 +238,19 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
     if (isDone || !onCheckboxChange) return;
 
     const exerciseData = exercise as any;
-    const hasDescription = !!(exerciseData.exerciseDescription || exercise.description);
+    // Check all possible description sources (same logic as in render)
+    const descriptionFromExercise = exerciseData.exerciseDescription || '';
+    const descriptionFromLegacy = exercise.description || '';
+    const descriptionFromContent = exerciseData.content || '';
+    const descriptionFromMarathonExercise = exerciseData.marathonExerciseDescription || '';
+    
+    const hasDescription = !!(
+      descriptionFromExercise || 
+      descriptionFromLegacy || 
+      descriptionFromContent || 
+      descriptionFromMarathonExercise
+    );
+    
     const hasVideo = contentItems.length > 0 && contentItems[0].type === 'video';
 
     // Check completion conditions
@@ -229,7 +264,7 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
     }
   }, [firstVideoWatched, descriptionScrolled, isDone, onCheckboxChange, exercise, contentItems]);
 
-  // Listen for iframe video completion (YouTube/Vimeo postMessage API)
+  // Listen for iframe video completion (YouTube/Vimeo/RuTube postMessage API)
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       // YouTube iframe API
@@ -250,6 +285,14 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
       if (event.data && typeof event.data === 'object' && event.data.event === 'ended') {
         if (currentContentIndex === 0) {
           console.log('🎥 Vimeo video watched to end (via postMessage)');
+          setFirstVideoWatched(true);
+        }
+      }
+      
+      // RuTube iframe API
+      if (event.data && typeof event.data === 'object' && event.data.type === 'player:ended') {
+        if (currentContentIndex === 0) {
+          console.log('🎥 RuTube video watched to end (via postMessage)');
           setFirstVideoWatched(true);
         }
       }
@@ -402,7 +445,11 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
         </div>
 
         {/* Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto" onScroll={handleDescriptionScroll}>
+        <div 
+          ref={scrollContainerRef}
+          className="flex-1 overflow-y-auto" 
+          onScroll={handleDescriptionScroll}
+        >
           {/* Video/Image Carousel */}
           {availableContent.length > 0 && (
             <div 
