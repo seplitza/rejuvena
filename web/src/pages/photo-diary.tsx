@@ -327,40 +327,20 @@ const PhotoDiaryPage: React.FC = () => {
     }
   };
 
-  // Автосохранение в localStorage при изменении данных (БЕЗ повторного сжатия)
+  // Автосохранение метаданных в localStorage (без изображений)
   useEffect(() => {
-    // НЕ сохраняем пока данные не загружены из localStorage
     if (isAuthenticated && user?._id && isDataLoadedRef.current) {
-      const storageKey = `photo_diary_${user._id}`;
-      const originalsKey = `photo_diary_originals_${user._id}`;
       const metadataKey = `photo_diary_metadata_${user._id}`;
       
       try {
-        // Данные в state УЖЕ сжаты (60% при загрузке), просто сохраняем как есть
-        localStorage.setItem(storageKey, JSON.stringify(data));
-        
-        // Сохраняем оригиналы с timestamp
-        const originalsData = {
-          originalPhotos,
-          timestamp: Date.now()
-        };
-        localStorage.setItem(originalsKey, JSON.stringify(originalsData));
-        
-        // Сохраняем метаданные
+        // Сохраняем только метаданные (даты, EXIF) - без изображений
         localStorage.setItem(metadataKey, JSON.stringify(photoMetadata));
-        
-        console.log('💾 Photo diary auto-saved');
+        console.log('💾 Metadata saved to localStorage');
       } catch (error: any) {
-        if (error.name === 'QuotaExceededError') {
-          console.error('❌ LocalStorage quota exceeded!');
-          localStorage.removeItem(storageKey);
-          alert('Превышен лимит хранилища. Данные были очищены. Пожалуйста, загрузите фото заново.');
-        } else {
-          console.error('❌ LocalStorage save error:', error);
-        }
+        console.error('❌ LocalStorage save error:', error);
       }
     }
-  }, [data, originalPhotos, photoMetadata, isAuthenticated, user]);
+  }, [photoMetadata, isAuthenticated, user]);
 
   // Проверка авторизации (отложенный промпт на 3-м фото)
   useEffect(() => {
@@ -377,67 +357,34 @@ const PhotoDiaryPage: React.FC = () => {
     }
   }, [isAuthenticated]);
 
-  // Загрузка данных из localStorage (только один раз при монтировании)
+  // Загрузка фото с сервера и метаданных из localStorage
   useEffect(() => {
-    if (user?._id && !isDataLoadedRef.current) {
-      const storageKey = `photo_diary_${user._id}`;
-      const originalsKey = `photo_diary_originals_${user._id}`;
-      // Version check temporarily disabled to preserve user data during async migration
-      
-      const savedData = localStorage.getItem(storageKey);
-      console.log(`🔍 Looking for saved data with key: ${storageKey}`);
-      if (savedData) {
-        try {
-          const parsed = JSON.parse(savedData);
-          console.log('📂 Loaded saved photo diary from localStorage:', {
-            hasBefore: !!parsed.before?.front,
-            hasAfter: !!parsed.after?.front
-          });
-          setData(parsed);
-        } catch (error) {
-          console.error('❌ Failed to load saved data:', error);
-        }
-      } else {
-        console.log('ℹ️ No saved data found in localStorage');
-      }
-      
-      // Загружаем оригиналы (если им меньше 24 часов)
-      const savedOriginals = localStorage.getItem(originalsKey);
-      if (savedOriginals) {
-        try {
-          const parsed = JSON.parse(savedOriginals);
-          const age = Date.now() - parsed.timestamp;
-          const hours = age / (1000 * 60 * 60);
-          if (hours < 24) {
-            setOriginalPhotos(parsed.originalPhotos);
-            console.log(`📂 Loaded original photos (age: ${hours.toFixed(1)}h)`);
-          } else {
-            console.log('⏰ Original photos expired (>24h), removing...');
-            localStorage.removeItem(originalsKey);
+    if (user?._id && !isDataLoadedRef.current && isAuthenticated) {
+      const loadData = async () => {
+        // 1. Загружаем фото с сервера
+        await loadPhotosFromServer();
+        
+        // 2. Загружаем метаданные из localStorage (EXIF, даты)
+        const metadataKey = `photo_diary_metadata_${user._id}`;
+        const savedMetadata = localStorage.getItem(metadataKey);
+        if (savedMetadata) {
+          try {
+            const parsed = JSON.parse(savedMetadata);
+            setPhotoMetadata(parsed);
+            console.log('📅 Loaded metadata from localStorage');
+          } catch (error) {
+            console.error('❌ Failed to load metadata:', error);
           }
-        } catch (error) {
-          console.error('❌ Failed to load original photos:', error);
         }
-      }
+        
+        // Данные загружены - СИНХРОННО
+        isDataLoadedRef.current = true;
+        console.log('✅ Data load complete');
+      };
       
-      // Загружаем метаданные (даты, EXIF)
-      const metadataKey = `photo_diary_metadata_${user._id}`;
-      const savedMetadata = localStorage.getItem(metadataKey);
-      if (savedMetadata) {
-        try {
-          const parsed = JSON.parse(savedMetadata);
-          setPhotoMetadata(parsed);
-          console.log('📅 Loaded photo metadata from localStorage');
-        } catch (error) {
-          console.error('❌ Failed to load metadata:', error);
-        }
-      }
-      
-      // Данные загружены (даже если было пусто) - СИНХРОННО
-      isDataLoadedRef.current = true;
-      console.log('✅ Data load complete, auto-save now enabled');
+      loadData();
     }
-  }, [user?._id]);
+  }, [user?._id, isAuthenticated]);
   
   // Загрузка моделей face-api.js (только один раз)
   useEffect(() => {
@@ -517,41 +464,20 @@ const PhotoDiaryPage: React.FC = () => {
   };
 
   const savePhotoToServer = async (imageDataUrl: string, type: 'before' | 'after', photoKey: keyof PhotoSet) => {
-    // Закомментировано: сохранение на сервер пока не реализовано
-    // Фото сохраняются только в localStorage
-    console.log(`💾 Photo saved locally (server upload disabled): ${photoKey} for ${type}`);
-    return Promise.resolve();
-    
-    /* ВРЕМЕННО ОТКЛЮЧЕНО - backend endpoint не готов
     try {
       console.log(`💾 Saving ${photoKey} photo for ${type} to server...`);
       
-      // Извлекаем base64 из data URL
-      const base64Data = imageDataUrl.split(',')[1];
-      
-      // Определяем тип фото для API (photoType: 0-5 для 6 кадров)
-      const photoTypeMap: { [key in keyof PhotoSet]: number } = {
-        front: 0,
-        left34: 1,
-        leftProfile: 2,
-        right34: 3,
-        rightProfile: 4,
-        closeup: 5,
-      };
-      
-      const photoType = photoTypeMap[photoKey];
       const isBeforePhoto = type === 'before';
       
-      // Сохраняем фото на сервер
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contest/uploadcontestimages`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/photo-diary/save-photo`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
         },
         body: JSON.stringify({
-          image: base64Data,
-          photoType: photoType,
+          image: imageDataUrl,
+          photoType: photoKey,
           isBeforePhoto: isBeforePhoto,
         }),
       });
@@ -561,14 +487,64 @@ const PhotoDiaryPage: React.FC = () => {
       }
 
       const result = await response.json();
-      console.log(`✅ Photo saved:`, result);
+      console.log(`✅ Photo saved to server:`, result.photoUrl);
       
-      return result;
+      return result.photoUrl;
     } catch (error) {
       console.error('❌ Photo save error:', error);
-      // Не критичная ошибка - фото остаётся в локальном состоянии
+      return null;
     }
-    */
+  };
+
+  const loadPhotosFromServer = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/photo-diary/photos`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load photos');
+      }
+
+      const result = await response.json();
+      
+      if (result.success && result.photos) {
+        // Конвертируем URLs в полные пути
+        const photos = result.photos;
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+        
+        const convertToFullUrl = (url: string | null) => {
+          if (!url) return null;
+          return url.startsWith('http') ? url : `${baseUrl}${url}`;
+        };
+
+        setData(prev => ({
+          ...prev,
+          before: {
+            front: convertToFullUrl(photos.before.front),
+            left34: convertToFullUrl(photos.before.left34),
+            leftProfile: convertToFullUrl(photos.before.leftProfile),
+            right34: convertToFullUrl(photos.before.right34),
+            rightProfile: convertToFullUrl(photos.before.rightProfile),
+            closeup: convertToFullUrl(photos.before.closeup),
+          },
+          after: {
+            front: convertToFullUrl(photos.after.front),
+            left34: convertToFullUrl(photos.after.left34),
+            leftProfile: convertToFullUrl(photos.after.leftProfile),
+            right34: convertToFullUrl(photos.after.right34),
+            rightProfile: convertToFullUrl(photos.after.rightProfile),
+            closeup: convertToFullUrl(photos.after.closeup),
+          },
+        }));
+
+        console.log('✅ Photos loaded from server');
+      }
+    } catch (error) {
+      console.error('❌ Failed to load photos from server:', error);
+    }
   };
 
   const estimateAge = async (imageDataUrl: string, type: 'before' | 'after') => {
@@ -674,13 +650,14 @@ const PhotoDiaryPage: React.FC = () => {
         try {
           const croppedImage = await cropFaceImage(result, photoKey);
           
+          // Сохраняем обрезанное фото на сервер и получаем URL
+          const photoUrl = await savePhotoToServer(croppedImage, type, photoKey);
+          
+          // Сохраняем URL в state (или fallback на локальный base64 если сервер не ответил)
           setData(prev => ({
             ...prev,
-            [type]: { ...prev[type], [photoKey]: croppedImage }
+            [type]: { ...prev[type], [photoKey]: photoUrl || croppedImage }
           }));
-
-          // Сохраняем обрезанное фото на сервер
-          await savePhotoToServer(croppedImage, type, photoKey);
 
           // Определение возраста для фронтального фото через Age-bot API
           // Отправляем КРОПНУТОЕ фото с 30% padding - InsightFace видит всё лицо
@@ -694,11 +671,11 @@ const PhotoDiaryPage: React.FC = () => {
             try {
               // Используем тот же кроп, но с 0% отступами (как для closeup)
               const closeupCropped = await cropFaceImage(result, 'closeup');
+              const closeupUrl = await savePhotoToServer(closeupCropped, type, 'closeup');
               setData(prev => ({
                 ...prev,
-                [type]: { ...prev[type], closeup: closeupCropped }
+                [type]: { ...prev[type], closeup: closeupUrl || closeupCropped }
               }));
-              await savePhotoToServer(closeupCropped, type, 'closeup');
               console.log(`✅ Closeup auto-filled from front photo`);
             } catch (error) {
               console.error(`⚠️ Failed to auto-fill closeup: ${error}`);
