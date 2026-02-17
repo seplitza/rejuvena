@@ -327,117 +327,38 @@ const PhotoDiaryPage: React.FC = () => {
     }
   };
 
-  // Автосохранение в localStorage при изменении данных (с сжатием)
+  // Автосохранение в localStorage при изменении данных (БЕЗ повторного сжатия)
   useEffect(() => {
     // НЕ сохраняем пока данные не загружены из localStorage
     if (isAuthenticated && user?._id && isDataLoadedRef.current) {
       const storageKey = `photo_diary_${user._id}`;
       const originalsKey = `photo_diary_originals_${user._id}`;
+      const metadataKey = `photo_diary_metadata_${user._id}`;
       
-      // Async save function with Promise.all for parallel compression
-      const saveData = async () => {
-        try {
-          // Сжимаем все изображения параллельно для скорости
-          const [beforeCompressed, afterCompressed, originalsBeforeCompressed, originalsAfterCompressed] = await Promise.all([
-            Promise.all([
-              compressImageForStorage(data.before.front),
-              compressImageForStorage(data.before.left34),
-              compressImageForStorage(data.before.leftProfile),
-              compressImageForStorage(data.before.right34),
-              compressImageForStorage(data.before.rightProfile),
-              compressImageForStorage(data.before.closeup),
-            ]),
-            Promise.all([
-              compressImageForStorage(data.after.front),
-              compressImageForStorage(data.after.left34),
-              compressImageForStorage(data.after.leftProfile),
-              compressImageForStorage(data.after.right34),
-              compressImageForStorage(data.after.rightProfile),
-              compressImageForStorage(data.after.closeup),
-            ]),
-            Promise.all([
-              compressImageForStorage(originalPhotos.before.front),
-              compressImageForStorage(originalPhotos.before.left34),
-              compressImageForStorage(originalPhotos.before.leftProfile),
-              compressImageForStorage(originalPhotos.before.right34),
-              compressImageForStorage(originalPhotos.before.rightProfile),
-              compressImageForStorage(originalPhotos.before.closeup),
-            ]),
-            Promise.all([
-              compressImageForStorage(originalPhotos.after.front),
-              compressImageForStorage(originalPhotos.after.left34),
-              compressImageForStorage(originalPhotos.after.leftProfile),
-              compressImageForStorage(originalPhotos.after.right34),
-              compressImageForStorage(originalPhotos.after.rightProfile),
-              compressImageForStorage(originalPhotos.after.closeup),
-            ]),
-          ]);
-          
-          // Создаём копию данных со сжатыми изображениями
-          const compressedData = {
-            ...data,
-            before: {
-              front: beforeCompressed[0],
-              left34: beforeCompressed[1],
-              leftProfile: beforeCompressed[2],
-              right34: beforeCompressed[3],
-              rightProfile: beforeCompressed[4],
-              closeup: beforeCompressed[5],
-            },
-            after: {
-              front: afterCompressed[0],
-              left34: afterCompressed[1],
-              leftProfile: afterCompressed[2],
-              right34: afterCompressed[3],
-              rightProfile: afterCompressed[4],
-              closeup: afterCompressed[5],
-            },
-          };
-          
-          localStorage.setItem(storageKey, JSON.stringify(compressedData));
-          
-          // Сохраняем оригиналы отдельно
-          const originalsData = {
-            originalPhotos: {
-              before: {
-                front: originalsBeforeCompressed[0],
-                left34: originalsBeforeCompressed[1],
-                leftProfile: originalsBeforeCompressed[2],
-                right34: originalsBeforeCompressed[3],
-                rightProfile: originalsBeforeCompressed[4],
-                closeup: originalsBeforeCompressed[5],
-              },
-              after: {
-                front: originalsAfterCompressed[0],
-                left34: originalsAfterCompressed[1],
-                leftProfile: originalsAfterCompressed[2],
-                right34: originalsAfterCompressed[3],
-                rightProfile: originalsAfterCompressed[4],
-                closeup: originalsAfterCompressed[5],
-              },
-            },
-            timestamp: Date.now()
-          };
-          localStorage.setItem(originalsKey, JSON.stringify(originalsData));
-          
-          // Сохраняем метаданные
-          const metadataKey = `photo_diary_metadata_${user._id}`;
-          localStorage.setItem(metadataKey, JSON.stringify(photoMetadata));
-          
-          console.log('💾 Photo diary auto-saved (parallel compression)');
-        } catch (error: any) {
-          if (error.name === 'QuotaExceededError') {
-            console.error('❌ LocalStorage quota exceeded!');
-            localStorage.removeItem(storageKey);
-            alert('Превышен лимит хранилища. Данные были очищены. Пожалуйста, загрузите фото заново.');
-          } else {
-            console.error('❌ LocalStorage save error:', error);
-          }
+      try {
+        // Данные в state УЖЕ сжаты (60% при загрузке), просто сохраняем как есть
+        localStorage.setItem(storageKey, JSON.stringify(data));
+        
+        // Сохраняем оригиналы с timestamp
+        const originalsData = {
+          originalPhotos,
+          timestamp: Date.now()
+        };
+        localStorage.setItem(originalsKey, JSON.stringify(originalsData));
+        
+        // Сохраняем метаданные
+        localStorage.setItem(metadataKey, JSON.stringify(photoMetadata));
+        
+        console.log('💾 Photo diary auto-saved');
+      } catch (error: any) {
+        if (error.name === 'QuotaExceededError') {
+          console.error('❌ LocalStorage quota exceeded!');
+          localStorage.removeItem(storageKey);
+          alert('Превышен лимит хранилища. Данные были очищены. Пожалуйста, загрузите фото заново.');
+        } else {
+          console.error('❌ LocalStorage save error:', error);
         }
-      };
-      
-      // Call async save
-      saveData();
+      }
     }
   }, [data, originalPhotos, photoMetadata, isAuthenticated, user]);
 
