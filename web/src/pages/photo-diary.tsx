@@ -334,66 +334,100 @@ const PhotoDiaryPage: React.FC = () => {
       const storageKey = `photo_diary_${user._id}`;
       const originalsKey = `photo_diary_originals_${user._id}`;
       
-      // Async save function
+      // Async save function with Promise.all for parallel compression
       const saveData = async () => {
         try {
-          // Создаём копию данных со сжатыми изображениями для localStorage
+          // Сжимаем все изображения параллельно для скорости
+          const [beforeCompressed, afterCompressed, originalsBeforeCompressed, originalsAfterCompressed] = await Promise.all([
+            Promise.all([
+              compressImageForStorage(data.before.front),
+              compressImageForStorage(data.before.left34),
+              compressImageForStorage(data.before.leftProfile),
+              compressImageForStorage(data.before.right34),
+              compressImageForStorage(data.before.rightProfile),
+              compressImageForStorage(data.before.closeup),
+            ]),
+            Promise.all([
+              compressImageForStorage(data.after.front),
+              compressImageForStorage(data.after.left34),
+              compressImageForStorage(data.after.leftProfile),
+              compressImageForStorage(data.after.right34),
+              compressImageForStorage(data.after.rightProfile),
+              compressImageForStorage(data.after.closeup),
+            ]),
+            Promise.all([
+              compressImageForStorage(originalPhotos.before.front),
+              compressImageForStorage(originalPhotos.before.left34),
+              compressImageForStorage(originalPhotos.before.leftProfile),
+              compressImageForStorage(originalPhotos.before.right34),
+              compressImageForStorage(originalPhotos.before.rightProfile),
+              compressImageForStorage(originalPhotos.before.closeup),
+            ]),
+            Promise.all([
+              compressImageForStorage(originalPhotos.after.front),
+              compressImageForStorage(originalPhotos.after.left34),
+              compressImageForStorage(originalPhotos.after.leftProfile),
+              compressImageForStorage(originalPhotos.after.right34),
+              compressImageForStorage(originalPhotos.after.rightProfile),
+              compressImageForStorage(originalPhotos.after.closeup),
+            ]),
+          ]);
+          
+          // Создаём копию данных со сжатыми изображениями
           const compressedData = {
             ...data,
             before: {
-              front: await compressImageForStorage(data.before.front),
-              left34: await compressImageForStorage(data.before.left34),
-              leftProfile: await compressImageForStorage(data.before.leftProfile),
-              right34: await compressImageForStorage(data.before.right34),
-              rightProfile: await compressImageForStorage(data.before.rightProfile),
-              closeup: await compressImageForStorage(data.before.closeup),
+              front: beforeCompressed[0],
+              left34: beforeCompressed[1],
+              leftProfile: beforeCompressed[2],
+              right34: beforeCompressed[3],
+              rightProfile: beforeCompressed[4],
+              closeup: beforeCompressed[5],
             },
             after: {
-              front: await compressImageForStorage(data.after.front),
-              left34: await compressImageForStorage(data.after.left34),
-              leftProfile: await compressImageForStorage(data.after.leftProfile),
-              right34: await compressImageForStorage(data.after.right34),
-              rightProfile: await compressImageForStorage(data.after.rightProfile),
-              closeup: await compressImageForStorage(data.after.closeup),
+              front: afterCompressed[0],
+              left34: afterCompressed[1],
+              leftProfile: afterCompressed[2],
+              right34: afterCompressed[3],
+              rightProfile: afterCompressed[4],
+              closeup: afterCompressed[5],
             },
           };
           
           localStorage.setItem(storageKey, JSON.stringify(compressedData));
           
-          // Сохраняем оригиналы отдельно для корректировки в течение 24 часов
-          // >2MB сжимаются до 60%, ≤2MB хранятся без изменений
+          // Сохраняем оригиналы отдельно
           const originalsData = {
             originalPhotos: {
               before: {
-                front: await compressImageForStorage(originalPhotos.before.front),
-                left34: await compressImageForStorage(originalPhotos.before.left34),
-                leftProfile: await compressImageForStorage(originalPhotos.before.leftProfile),
-                right34: await compressImageForStorage(originalPhotos.before.right34),
-                rightProfile: await compressImageForStorage(originalPhotos.before.rightProfile),
-                closeup: await compressImageForStorage(originalPhotos.before.closeup),
+                front: originalsBeforeCompressed[0],
+                left34: originalsBeforeCompressed[1],
+                leftProfile: originalsBeforeCompressed[2],
+                right34: originalsBeforeCompressed[3],
+                rightProfile: originalsBeforeCompressed[4],
+                closeup: originalsBeforeCompressed[5],
               },
               after: {
-                front: await compressImageForStorage(originalPhotos.after.front),
-                left34: await compressImageForStorage(originalPhotos.after.left34),
-                leftProfile: await compressImageForStorage(originalPhotos.after.leftProfile),
-                right34: await compressImageForStorage(originalPhotos.after.right34),
-                rightProfile: await compressImageForStorage(originalPhotos.after.rightProfile),
-                closeup: await compressImageForStorage(originalPhotos.after.closeup),
+                front: originalsAfterCompressed[0],
+                left34: originalsAfterCompressed[1],
+                leftProfile: originalsAfterCompressed[2],
+                right34: originalsAfterCompressed[3],
+                rightProfile: originalsAfterCompressed[4],
+                closeup: originalsAfterCompressed[5],
               },
             },
             timestamp: Date.now()
           };
           localStorage.setItem(originalsKey, JSON.stringify(originalsData));
           
-          // Сохраняем метаданные (даты, EXIF)
+          // Сохраняем метаданные
           const metadataKey = `photo_diary_metadata_${user._id}`;
           localStorage.setItem(metadataKey, JSON.stringify(photoMetadata));
           
-          console.log('💾 Photo diary auto-saved (display + originals + metadata)');
+          console.log('💾 Photo diary auto-saved (parallel compression)');
         } catch (error: any) {
           if (error.name === 'QuotaExceededError') {
-            console.error('❌ LocalStorage quota exceeded! Clearing old data...');
-            // Очищаем старые данные
+            console.error('❌ LocalStorage quota exceeded!');
             localStorage.removeItem(storageKey);
             alert('Превышен лимит хранилища. Данные были очищены. Пожалуйста, загрузите фото заново.');
           } else {
@@ -427,17 +461,7 @@ const PhotoDiaryPage: React.FC = () => {
     if (user?._id && !isDataLoadedRef.current) {
       const storageKey = `photo_diary_${user._id}`;
       const originalsKey = `photo_diary_originals_${user._id}`;
-      const versionKey = `photo_diary_version_${user._id}`;
-      const CURRENT_VERSION = '2.0'; // Версия с server-side originals
-      
-      // Проверяем версию данных
-      const savedVersion = localStorage.getItem(versionKey);
-      if (savedVersion !== CURRENT_VERSION) {
-        console.log(`🔄 Data version mismatch (${savedVersion} !== ${CURRENT_VERSION}), clearing old data...`);
-        localStorage.removeItem(storageKey);
-        localStorage.removeItem(originalsKey);
-        localStorage.setItem(versionKey, CURRENT_VERSION);
-      }
+      // Version check temporarily disabled to preserve user data during async migration
       
       const savedData = localStorage.getItem(storageKey);
       console.log(`🔍 Looking for saved data with key: ${storageKey}`);
