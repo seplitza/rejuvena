@@ -97,15 +97,19 @@ const PhotoDiaryPage: React.FC = () => {
 
   // Функция сжатия изображения для localStorage с умным выбором качества
   // Файлы >2MB сжимаются до 60%, файлы ≤2MB хранятся без изменений
-  const compressImageForStorage = (dataUrl: string | null, forceQuality?: number): string | null => {
+  const compressImageForStorage = async (dataUrl: string | null, forceQuality?: number): Promise<string | null> => {
     if (!dataUrl) return null;
     
     try {
       // Если указано принудительное качество, используем его
       if (forceQuality !== undefined) {
         const img = new Image();
+        const loaded = new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error('Failed to load image'));
+        });
         img.src = dataUrl;
-        if (!img.complete) return dataUrl;
+        await loaded;
         
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
@@ -134,8 +138,12 @@ const PhotoDiaryPage: React.FC = () => {
       // Если >2MB, сжимаем до 60%
       console.log('🗜️ File >2MB, compressing to 60%');
       const img = new Image();
+      const loaded = new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('Failed to load image'));
+      });
       img.src = dataUrl;
-      if (!img.complete) return dataUrl;
+      await loaded;
       
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
@@ -325,70 +333,77 @@ const PhotoDiaryPage: React.FC = () => {
     if (isAuthenticated && user?._id && isDataLoadedRef.current) {
       const storageKey = `photo_diary_${user._id}`;
       const originalsKey = `photo_diary_originals_${user._id}`;
-      try {
-        // Создаём копию данных со сжатыми изображениями для localStorage
-        const compressedData = {
-          ...data,
-          before: {
-            front: compressImageForStorage(data.before.front),
-            left34: compressImageForStorage(data.before.left34),
-            leftProfile: compressImageForStorage(data.before.leftProfile),
-            right34: compressImageForStorage(data.before.right34),
-            rightProfile: compressImageForStorage(data.before.rightProfile),
-            closeup: compressImageForStorage(data.before.closeup),
-          },
-          after: {
-            front: compressImageForStorage(data.after.front),
-            left34: compressImageForStorage(data.after.left34),
-            leftProfile: compressImageForStorage(data.after.leftProfile),
-            right34: compressImageForStorage(data.after.right34),
-            rightProfile: compressImageForStorage(data.after.rightProfile),
-            closeup: compressImageForStorage(data.after.closeup),
-          },
-        };
-        
-        localStorage.setItem(storageKey, JSON.stringify(compressedData));
-        
-        // Сохраняем оригиналы отдельно для корректировки в течение 24 часов
-        // >2MB сжимаются до 60%, ≤2MB хранятся без изменений
-        const originalsData = {
-          originalPhotos: {
+      
+      // Async save function
+      const saveData = async () => {
+        try {
+          // Создаём копию данных со сжатыми изображениями для localStorage
+          const compressedData = {
+            ...data,
             before: {
-              front: compressImageForStorage(originalPhotos.before.front),
-              left34: compressImageForStorage(originalPhotos.before.left34),
-              leftProfile: compressImageForStorage(originalPhotos.before.leftProfile),
-              right34: compressImageForStorage(originalPhotos.before.right34),
-              rightProfile: compressImageForStorage(originalPhotos.before.rightProfile),
-              closeup: compressImageForStorage(originalPhotos.before.closeup),
+              front: await compressImageForStorage(data.before.front),
+              left34: await compressImageForStorage(data.before.left34),
+              leftProfile: await compressImageForStorage(data.before.leftProfile),
+              right34: await compressImageForStorage(data.before.right34),
+              rightProfile: await compressImageForStorage(data.before.rightProfile),
+              closeup: await compressImageForStorage(data.before.closeup),
             },
             after: {
-              front: compressImageForStorage(originalPhotos.after.front),
-              left34: compressImageForStorage(originalPhotos.after.left34),
-              leftProfile: compressImageForStorage(originalPhotos.after.leftProfile),
-              right34: compressImageForStorage(originalPhotos.after.right34),
-              rightProfile: compressImageForStorage(originalPhotos.after.rightProfile),
-              closeup: compressImageForStorage(originalPhotos.after.closeup),
+              front: await compressImageForStorage(data.after.front),
+              left34: await compressImageForStorage(data.after.left34),
+              leftProfile: await compressImageForStorage(data.after.leftProfile),
+              right34: await compressImageForStorage(data.after.right34),
+              rightProfile: await compressImageForStorage(data.after.rightProfile),
+              closeup: await compressImageForStorage(data.after.closeup),
             },
-          },
-          timestamp: Date.now()
-        };
-        localStorage.setItem(originalsKey, JSON.stringify(originalsData));
-        
-        // Сохраняем метаданные (даты, EXIF)
-        const metadataKey = `photo_diary_metadata_${user._id}`;
-        localStorage.setItem(metadataKey, JSON.stringify(photoMetadata));
-        
-        console.log('💾 Photo diary auto-saved (display + originals + metadata)');
-      } catch (error: any) {
-        if (error.name === 'QuotaExceededError') {
-          console.error('❌ LocalStorage quota exceeded! Clearing old data...');
-          // Очищаем старые данные
-          localStorage.removeItem(storageKey);
-          alert('Превышен лимит хранилища. Данные были очищены. Пожалуйста, загрузите фото заново.');
-        } else {
-          console.error('❌ LocalStorage save error:', error);
+          };
+          
+          localStorage.setItem(storageKey, JSON.stringify(compressedData));
+          
+          // Сохраняем оригиналы отдельно для корректировки в течение 24 часов
+          // >2MB сжимаются до 60%, ≤2MB хранятся без изменений
+          const originalsData = {
+            originalPhotos: {
+              before: {
+                front: await compressImageForStorage(originalPhotos.before.front),
+                left34: await compressImageForStorage(originalPhotos.before.left34),
+                leftProfile: await compressImageForStorage(originalPhotos.before.leftProfile),
+                right34: await compressImageForStorage(originalPhotos.before.right34),
+                rightProfile: await compressImageForStorage(originalPhotos.before.rightProfile),
+                closeup: await compressImageForStorage(originalPhotos.before.closeup),
+              },
+              after: {
+                front: await compressImageForStorage(originalPhotos.after.front),
+                left34: await compressImageForStorage(originalPhotos.after.left34),
+                leftProfile: await compressImageForStorage(originalPhotos.after.leftProfile),
+                right34: await compressImageForStorage(originalPhotos.after.right34),
+                rightProfile: await compressImageForStorage(originalPhotos.after.rightProfile),
+                closeup: await compressImageForStorage(originalPhotos.after.closeup),
+              },
+            },
+            timestamp: Date.now()
+          };
+          localStorage.setItem(originalsKey, JSON.stringify(originalsData));
+          
+          // Сохраняем метаданные (даты, EXIF)
+          const metadataKey = `photo_diary_metadata_${user._id}`;
+          localStorage.setItem(metadataKey, JSON.stringify(photoMetadata));
+          
+          console.log('💾 Photo diary auto-saved (display + originals + metadata)');
+        } catch (error: any) {
+          if (error.name === 'QuotaExceededError') {
+            console.error('❌ LocalStorage quota exceeded! Clearing old data...');
+            // Очищаем старые данные
+            localStorage.removeItem(storageKey);
+            alert('Превышен лимит хранилища. Данные были очищены. Пожалуйста, загрузите фото заново.');
+          } else {
+            console.error('❌ LocalStorage save error:', error);
+          }
         }
-      }
+      };
+      
+      // Call async save
+      saveData();
     }
   }, [data, originalPhotos, photoMetadata, isAuthenticated, user]);
 
@@ -692,7 +707,7 @@ const PhotoDiaryPage: React.FC = () => {
         // Для профилей и closeup - сразу ручная обрезка
         if (photoKey === 'leftProfile' || photoKey === 'rightProfile' || photoKey === 'closeup') {
           // Сохраняем сжатый для отображения (60%)
-          const compressedForDisplay = compressImageForStorage(result, 0.6);
+          const compressedForDisplay = await compressImageForStorage(result, 0.6);
           setData(prev => ({
             ...prev,
             [type]: { ...prev[type], [photoKey]: compressedForDisplay }
