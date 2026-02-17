@@ -8,7 +8,7 @@
  * - Single JWT token for everything
  */
 
-// Production API URL (default for GitHub Pages deployment)
+// Production API URL (ВРЕМЕННО на DuckDNS до настройки Cloudflare для backend.seplitza.ru)
 const PRODUCTION_API_URL = 'https://api-rejuvena.duckdns.org';
 const LOCAL_API_URL = 'http://localhost:9527';
 

@@ -129,6 +129,7 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
   // Auto-completion tracking
   const [firstVideoWatched, setFirstVideoWatched] = useState(false);
   const [descriptionScrolled, setDescriptionScrolled] = useState(false);
+  const [videoTimerSeconds, setVideoTimerSeconds] = useState(0);
   
   // Ref for scrollable content container
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -230,6 +231,7 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
     // Reset auto-completion tracking when exercise changes
     setFirstVideoWatched(false);
     setDescriptionScrolled(false);
+    setVideoTimerSeconds(0);
   }, [exercise]);
 
   // Auto-complete exercise when video watched and description scrolled
@@ -264,17 +266,46 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
     }
   }, [firstVideoWatched, descriptionScrolled, isDone, onCheckboxChange, exercise, contentItems]);
 
+  // Timer-based video completion (15 seconds = video considered watched)
+  useEffect(() => {
+    if (!isOpen || firstVideoWatched) return;
+    
+    const hasVideo = contentItems.length > 0 && contentItems[0].type === 'video';
+    if (!hasVideo) return;
+    
+    const timer = setInterval(() => {
+      setVideoTimerSeconds(prev => {
+        const next = prev + 1;
+        if (next >= 15) {
+          console.log('🎥 Video timer reached 15s - marking as watched');
+          setFirstVideoWatched(true);
+          clearInterval(timer);
+        }
+        return next;
+      });
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, [isOpen, firstVideoWatched, contentItems]);
+
   // Listen for iframe video completion (YouTube/Vimeo/RuTube postMessage API)
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      // YouTube iframe API
+      // YouTube iframe API - sends {event: 'onStateChange', info: 0} when ended
       if (event.data && typeof event.data === 'string') {
         try {
           const data = JSON.parse(event.data);
-          // YouTube sends {event: 'ended'} when video finishes
-          if (data.event === 'ended' && currentContentIndex === 0) {
-            console.log('🎥 YouTube video watched to end (via postMessage)');
-            setFirstVideoWatched(true);
+          if (currentContentIndex === 0) {
+            // YouTube: onStateChange with info=0 means ended
+            if (data.event === 'onStateChange' && data.info === 0) {
+              console.log('🎥 YouTube video ended (onStateChange=0)');
+              setFirstVideoWatched(true);
+            }
+            // YouTube: also check for 'ended' event name
+            if (data.event === 'ended') {
+              console.log('🎥 Video ended (via postMessage)');
+              setFirstVideoWatched(true);
+            }
           }
         } catch (e) {
           // Not JSON, ignore
@@ -282,18 +313,17 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
       }
       
       // Vimeo iframe API
-      if (event.data && typeof event.data === 'object' && event.data.event === 'ended') {
+      if (event.data && typeof event.data === 'object') {
         if (currentContentIndex === 0) {
-          console.log('🎥 Vimeo video watched to end (via postMessage)');
-          setFirstVideoWatched(true);
-        }
-      }
-      
-      // RuTube iframe API
-      if (event.data && typeof event.data === 'object' && event.data.type === 'player:ended') {
-        if (currentContentIndex === 0) {
-          console.log('🎥 RuTube video watched to end (via postMessage)');
-          setFirstVideoWatched(true);
+          if (event.data.event === 'ended' || event.data.event === 'finish') {
+            console.log('🎥 Vimeo video ended (via postMessage)');
+            setFirstVideoWatched(true);
+          }
+          // RuTube iframe API
+          if (event.data.type === 'player:ended') {
+            console.log('🎥 RuTube video ended (via postMessage)');
+            setFirstVideoWatched(true);
+          }
         }
       }
     };
@@ -432,42 +462,62 @@ export default function ExerciseDetailModal({ exercise, isOpen, onClose, onCheck
                     </svg>
                     Для завершения:
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     {videoRequired && (
-                      <div className="flex items-center space-x-1.5">
-                        {firstVideoWatched ? (
-                          <>
-                            <svg className="w-3 h-3 text-green-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                            <span className="line-through opacity-70">Видео просмотрено</span>
-                          </>
-                        ) : (
-                          <>
-                            <svg className="w-3 h-3 text-yellow-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clipRule="evenodd" />
-                            </svg>
-                            <span>Досмотрите видео до конца</span>
-                          </>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-1.5">
+                          {firstVideoWatched ? (
+                            <>
+                              <svg className="w-3 h-3 text-green-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              <span className="line-through opacity-70">Видео просмотрено</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-3 h-3 text-yellow-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clipRule="evenodd" />
+                              </svg>
+                              <span>Досмотрите видео{videoTimerSeconds > 0 ? ` (${15 - videoTimerSeconds}с)` : ''}</span>
+                            </>
+                          )}
+                        </div>
+                        {!firstVideoWatched && videoTimerSeconds >= 5 && (
+                          <button 
+                            onClick={() => setFirstVideoWatched(true)}
+                            className="text-[10px] bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-full transition-colors"
+                          >
+                            Просмотрено ✓
+                          </button>
                         )}
                       </div>
                     )}
                     {descriptionRequired && (
-                      <div className="flex items-center space-x-1.5">
-                        {descriptionScrolled ? (
-                          <>
-                            <svg className="w-3 h-3 text-green-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                            <span className="line-through opacity-70">Текст прочитан</span>
-                          </>
-                        ) : (
-                          <>
-                            <svg className="w-3 h-3 text-yellow-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clipRule="evenodd" />
-                            </svg>
-                            <span>Дочитайте описание до конца</span>
-                          </>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-1.5">
+                          {descriptionScrolled ? (
+                            <>
+                              <svg className="w-3 h-3 text-green-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              <span className="line-through opacity-70">Текст прочитан</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-3 h-3 text-yellow-300 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-2a6 6 0 100-12 6 6 0 000 12z" clipRule="evenodd" />
+                              </svg>
+                              <span>Дочитайте описание</span>
+                            </>
+                          )}
+                        </div>
+                        {!descriptionScrolled && (
+                          <button 
+                            onClick={() => setDescriptionScrolled(true)}
+                            className="text-[10px] bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-full transition-colors"
+                          >
+                            Прочитано ✓
+                          </button>
                         )}
                       </div>
                     )}
