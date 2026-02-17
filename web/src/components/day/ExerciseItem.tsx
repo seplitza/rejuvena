@@ -24,7 +24,7 @@ export default function ExerciseItem({
   onCheck,
 }: ExerciseItemProps) {
   const { exerciseName, marathonExerciseName, isNew, blockExercise } = exercise;
-  const isManualCheckDisabled = blockExercise || isChanging || isNew;
+  const isManualCheckDisabled = blockExercise || isChanging;
 
   // Determine background color
   const getBgColor = () => {

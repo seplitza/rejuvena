@@ -56,7 +56,6 @@ export default function DayPlan() {
   const handleExerciseCheck = (exercise: Exercise, uniqueId: string, nextStatus?: boolean) => {
     console.log('✅ Checkbox clicked - changing status for:', exercise.exerciseName);
     if (exercise.blockExercise || changingStatusRequests[uniqueId]) return;
-    if (exercise.isNew && nextStatus === undefined) return;
     
     const currentStatus = updatedExercisesStatus[uniqueId] !== undefined 
       ? updatedExercisesStatus[uniqueId] 
