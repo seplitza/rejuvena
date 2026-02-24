@@ -100,6 +100,23 @@ const PhotoDiaryPage: React.FC = () => {
     after: {},
   });
 
+  // Ряды, выбранные для коллажа (клик по примеру слева)
+  const [collageSelectedRows, setCollageSelectedRows] = useState<Set<keyof PhotoSet>>(
+    () => {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('collage_selected_rows');
+        if (saved) {
+          try {
+            return new Set<keyof PhotoSet>(JSON.parse(saved) as (keyof PhotoSet)[]);
+          } catch (e) {
+            console.error('Failed to parse saved collage rows:', e);
+          }
+        }
+      }
+      return new Set<keyof PhotoSet>();
+    }
+  );
+
   // Функция сжатия изображения для localStorage с умным выбором качества
   // Файлы >2MB сжимаются до 60%, файлы ≤2MB хранятся без изменений
   const compressImageForStorage = async (dataUrl: string | null, forceQuality?: number): Promise<string | null> => {
@@ -925,11 +942,51 @@ const PhotoDiaryPage: React.FC = () => {
     }
   };
 
+  // Функции управления выбором рядов для коллажа
+  const toggleCollageRow = (photoType: keyof PhotoSet) => {
+    setCollageSelectedRows(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(photoType)) {
+        newSet.delete(photoType);
+      } else {
+        newSet.add(photoType);
+      }
+      // Сохраняем в localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('collage_selected_rows', JSON.stringify(Array.from(newSet)));
+      }
+      return newSet;
+    });
+  };
+
+  const selectAllRows = () => {
+    const allPhotoTypes: (keyof PhotoSet)[] = ['front', 'left34', 'leftProfile', 'right34', 'rightProfile', 'closeup'];
+    const newSet = new Set<keyof PhotoSet>(allPhotoTypes);
+    setCollageSelectedRows(newSet);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('collage_selected_rows', JSON.stringify(allPhotoTypes));
+    }
+  };
+
+  const deselectAllRows = () => {
+    setCollageSelectedRows(new Set());
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('collage_selected_rows', JSON.stringify([]));
+    }
+  };
+
   const handleDownloadCollage = async () => {
     try {
       setProcessing(true);
       
-      // Собираем только загруженные ряды (хотя бы 1 фото в ряду)
+      // Проверяем что выбран хотя бы один ряд
+      if (collageSelectedRows.size === 0) {
+        alert('Выберите ряды для коллажа!\n\nНажимайте на ПРИМЕРЫ СЛЕВА (первая колонка) чтобы выбрать ряды.');
+        setProcessing(false);
+        return;
+      }
+      
+      // Собираем только выбранные ряды
       const photoTypesOrder: (keyof PhotoSet)[] = ['front', 'left34', 'leftProfile', 'right34', 'rightProfile', 'closeup'];
       
       const rowsToInclude: {
@@ -939,10 +996,15 @@ const PhotoDiaryPage: React.FC = () => {
       }[] = [];
       
       photoTypesOrder.forEach(photoType => {
+        // Проверяем что ряд выбран пользователем
+        if (!collageSelectedRows.has(photoType)) {
+          return; // Пропускаем невыбранные ряды
+        }
+        
         const hasBefore = !!data.before[photoType];
         const hasAfter = !!data.after[photoType];
         
-        // Включаем ряд если есть хотя бы 1 фото
+        // Включаем ряд если выбран И есть хотя бы 1 фото
         if (hasBefore || hasAfter) {
           rowsToInclude.push({
             beforePhoto: data.before[photoType] || null,
@@ -1221,6 +1283,39 @@ const PhotoDiaryPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Collage Row Selection Controls */}
+          <div className="mb-4 p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-2">
+                <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-sm font-medium text-green-800">
+                  Выбрано рядов для коллажа: {collageSelectedRows.size} из 6
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={selectAllRows}
+                  className="px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors duration-200 shadow-sm"
+                  disabled={processing}
+                >
+                  ✓ Выбрать все
+                </button>
+                <button
+                  onClick={deselectAllRows}
+                  className="px-3 py-1.5 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700 transition-colors duration-200 shadow-sm"
+                  disabled={processing}
+                >
+                  ✗ Снять все
+                </button>
+              </div>
+            </div>
+            <p className="text-xs text-green-700 mt-2">
+              💡 Нажимайте на ПРИМЕРЫ слева чтобы выбрать ряды для включения в коллаж
+            </p>
+          </div>
+
           {/* Processing/Error Messages */}
           {processing && (
             <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center">
@@ -1259,8 +1354,16 @@ const PhotoDiaryPage: React.FC = () => {
           <div className="space-y-4">
             {photoTypes.map((photoType) => (
               <div key={photoType.id} className="grid grid-cols-3 gap-4">
-                <div className="flex flex-col items-center">
-                  <div className="w-full aspect-square bg-gray-200 rounded-lg overflow-hidden border-2 border-gray-300 mb-2">
+                <div 
+                  className="flex flex-col items-center cursor-pointer"
+                  onClick={() => toggleCollageRow(photoType.id)}
+                  title="Нажмите чтобы выбрать/снять для коллажа"
+                >
+                  <div className={`w-full aspect-square rounded-lg overflow-hidden border-2 mb-2 transition-all duration-200 ${
+                    collageSelectedRows.has(photoType.id) 
+                      ? 'bg-green-100 border-green-500 shadow-lg' 
+                      : 'bg-gray-200 border-gray-300 hover:border-gray-400'
+                  }`}>
                     <img 
                       src={photoType.example} 
                       alt={`Пример ${photoType.label}`}
