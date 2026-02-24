@@ -516,6 +516,9 @@ const PhotoDiaryPage: React.FC = () => {
       
       const isBeforePhoto = type === 'before';
       
+      // Получаем EXIF и uploadDate из photoMetadata (если есть)
+      const metadata = photoMetadata[type][photoKey];
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/photo-diary/save-photo`, {
         method: 'POST',
         headers: {
@@ -526,6 +529,8 @@ const PhotoDiaryPage: React.FC = () => {
           image: imageDataUrl,
           photoType: photoKey,
           isBeforePhoto: isBeforePhoto,
+          exifData: metadata?.exifData || null,
+          uploadDate: metadata?.uploadDate || new Date().toISOString(),
         }),
       });
 
@@ -600,6 +605,12 @@ const PhotoDiaryPage: React.FC = () => {
             closeup: convertToFullUrl(photos.after.closeup),
           },
         }));
+
+        // Загружаем metadata с сервера (EXIF данные)
+        if (result.metadata) {
+          setPhotoMetadata(result.metadata);
+          console.log('✅ Metadata loaded from server:', result.metadata);
+        }
 
         console.log('✅ Photos loaded from server');
       }
@@ -918,12 +929,15 @@ const PhotoDiaryPage: React.FC = () => {
         croppedDataUrl = result.croppedImage; // Получаем обрезанный оригинал с сервера
         */
 
-        // Обновляем данные
+        // Сохраняем обрезанное фото на сервер и получаем URL
+        const photoUrl = await savePhotoToServer(croppedDataUrl, cropImage.period, cropImage.photoType);
+
+        // Обновляем данные с URL сервера (или fallback на локальный base64)
         setData(prev => ({
           ...prev,
           [cropImage.period]: {
             ...prev[cropImage.period],
-            [cropImage.photoType]: croppedDataUrl
+            [cropImage.photoType]: photoUrl || croppedDataUrl
           }
         }));
 
@@ -932,7 +946,7 @@ const PhotoDiaryPage: React.FC = () => {
         setCropImage(null);
         setProcessing(false);
         
-        console.log('✂️ Manual crop applied (from preview, server crop TODO)');
+        console.log('✂️ Manual crop applied and saved to server');
       };
       img.src = cropImage.dataUrl;
     } catch (error) {
@@ -973,6 +987,28 @@ const PhotoDiaryPage: React.FC = () => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('collage_selected_rows', JSON.stringify([]));
     }
+  };
+
+  // Конвертация URL изображения в base64
+  const urlToBase64 = async (url: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL('image/jpeg', 0.95));
+        } else {
+          reject(new Error('Failed to get canvas context'));
+        }
+      };
+      img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
+      img.src = url;
+    });
   };
 
   const handleDownloadCollage = async () => {
@@ -1022,6 +1058,19 @@ const PhotoDiaryPage: React.FC = () => {
       
       console.log(`🎨 Creating collage with ${rowsToInclude.length} rows...`);
       
+      // Конвертируем все URL-ы в base64
+      const rowsWithBase64 = await Promise.all(
+        rowsToInclude.map(async (row) => {
+          const beforeBase64 = row.beforePhoto ? await urlToBase64(row.beforePhoto) : null;
+          const afterBase64 = row.afterPhoto ? await urlToBase64(row.afterPhoto) : null;
+          return {
+            beforePhoto: beforeBase64,
+            afterPhoto: afterBase64,
+            photoType: row.photoType,
+          };
+        })
+      );
+      
       // Отправляем запрос на создание коллажа
       const response = await fetch('https://api.seplitza.ru/api/create-collage', {
         method: 'POST',
@@ -1029,7 +1078,7 @@ const PhotoDiaryPage: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          rows: rowsToInclude,
+          rows: rowsWithBase64,
           metadata: photoMetadata,
           userInfo: {
             username: user?.email?.split('@')[0] || user?.firstName || 'Пользователь',
@@ -1353,17 +1402,20 @@ const PhotoDiaryPage: React.FC = () => {
 
           <div className="space-y-4">
             {photoTypes.map((photoType) => (
-              <div key={photoType.id} className="grid grid-cols-3 gap-4">
+              <div 
+                key={photoType.id} 
+                className={`grid grid-cols-3 gap-4 p-2 rounded-lg transition-all duration-200 ${
+                  collageSelectedRows.has(photoType.id) 
+                    ? 'bg-green-50 border-2 border-green-400 shadow-md' 
+                    : 'border-2 border-transparent'
+                }`}
+              >
                 <div 
                   className="flex flex-col items-center cursor-pointer"
                   onClick={() => toggleCollageRow(photoType.id)}
                   title="Нажмите чтобы выбрать/снять для коллажа"
                 >
-                  <div className={`w-full aspect-square rounded-lg overflow-hidden border-2 mb-2 transition-all duration-200 ${
-                    collageSelectedRows.has(photoType.id) 
-                      ? 'bg-green-100 border-green-500 shadow-lg' 
-                      : 'bg-gray-200 border-gray-300 hover:border-gray-400'
-                  }`}>
+                  <div className="w-full aspect-square bg-white rounded-lg overflow-hidden border-2 border-gray-300 mb-2">
                     <img 
                       src={photoType.example} 
                       alt={`Пример ${photoType.label}`}
