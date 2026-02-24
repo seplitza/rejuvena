@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import Head from 'next/head';
 import { setUser } from '../store/modules/auth/slice';
+import { useTheme } from '@/contexts/ThemeContext';
 import * as faceapi from 'face-api.js';
 import NavigationMenu from '../components/common/NavigationMenu';
 
@@ -31,17 +32,19 @@ interface PhotoDiaryData {
 }
 
 const photoTypes: Array<{ id: keyof PhotoSet; label: string; example: string }> = [
-  { id: 'front', label: 'Вид спереди', example: 'https://api-rejuvena.duckdns.org/uploads/example-front.png?v=2' },
-  { id: 'left34', label: '3/4 слева', example: 'https://api-rejuvena.duckdns.org/uploads/example-left34.png?v=2' },
-  { id: 'leftProfile', label: 'Профиль слева', example: 'https://api-rejuvena.duckdns.org/uploads/example-left-profile.png?v=2' },
-  { id: 'right34', label: '3/4 справа', example: 'https://api-rejuvena.duckdns.org/uploads/example-right34.png?v=2' },
-  { id: 'rightProfile', label: 'Профиль справа', example: 'https://api-rejuvena.duckdns.org/uploads/example-right-profile.png?v=2' },
-  { id: 'closeup', label: 'твоё\nпроблемное\nместо\nкрупный план', example: 'https://api-rejuvena.duckdns.org/uploads/example-closeup.png?v=2' },
+  { id: 'front', label: 'Вид спереди', example: 'https://api-rejuvena.duckdns.org/uploads/example-front.png?v=3' },
+  { id: 'left34', label: '3/4 слева', example: 'https://api-rejuvena.duckdns.org/uploads/example-left34.png?v=3' },
+  { id: 'leftProfile', label: 'Профиль слева', example: 'https://api-rejuvena.duckdns.org/uploads/example-leftProfile.png?v=3' },
+  { id: 'right34', label: '3/4 справа', example: 'https://api-rejuvena.duckdns.org/uploads/example-right34.png?v=3' },
+  { id: 'rightProfile', label: 'Профиль справа', example: 'https://api-rejuvena.duckdns.org/uploads/example-rightProfile.png?v=3' },
+  { id: 'closeup', label: 'твоё\nпроблемное\nместо\nкрупный план', example: 'https://api-rejuvena.duckdns.org/uploads/example-closeup.png?v=3' },
 ];
 
 const PhotoDiaryPage: React.FC = () => {
   const router = useRouter();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+  const { theme } = useTheme();
+  const greenColor = theme?.colors?.accent || theme?.colors?.primary || '#10b981';
   const [showRules, setShowRules] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const dispatch = useAppDispatch();
@@ -586,29 +589,40 @@ const PhotoDiaryPage: React.FC = () => {
           return url.startsWith('http') ? url : `${baseUrl}${url}`;
         };
 
+        // Обновляем только те фото которые есть на сервере (не null)
+        // Это предотвращает перезапись локальных фото которые еще не сохранены
+        const updatePhotoIfExists = (current: string | null, serverUrl: string | null) => {
+          const fullUrl = convertToFullUrl(serverUrl);
+          return fullUrl || current; // Если с сервера null, оставляем текущее значение
+        };
+
         setData(prev => ({
           ...prev,
           before: {
-            front: convertToFullUrl(photos.before.front),
-            left34: convertToFullUrl(photos.before.left34),
-            leftProfile: convertToFullUrl(photos.before.leftProfile),
-            right34: convertToFullUrl(photos.before.right34),
-            rightProfile: convertToFullUrl(photos.before.rightProfile),
-            closeup: convertToFullUrl(photos.before.closeup),
+            front: updatePhotoIfExists(prev.before.front, photos.before.front),
+            left34: updatePhotoIfExists(prev.before.left34, photos.before.left34),
+            leftProfile: updatePhotoIfExists(prev.before.leftProfile, photos.before.leftProfile),
+            right34: updatePhotoIfExists(prev.before.right34, photos.before.right34),
+            rightProfile: updatePhotoIfExists(prev.before.rightProfile, photos.before.rightProfile),
+            closeup: updatePhotoIfExists(prev.before.closeup, photos.before.closeup),
           },
           after: {
-            front: convertToFullUrl(photos.after.front),
-            left34: convertToFullUrl(photos.after.left34),
-            leftProfile: convertToFullUrl(photos.after.leftProfile),
-            right34: convertToFullUrl(photos.after.right34),
-            rightProfile: convertToFullUrl(photos.after.rightProfile),
-            closeup: convertToFullUrl(photos.after.closeup),
+            front: updatePhotoIfExists(prev.after.front, photos.after.front),
+            left34: updatePhotoIfExists(prev.after.left34, photos.after.left34),
+            leftProfile: updatePhotoIfExists(prev.after.leftProfile, photos.after.leftProfile),
+            right34: updatePhotoIfExists(prev.after.right34, photos.after.right34),
+            rightProfile: updatePhotoIfExists(prev.after.rightProfile, photos.after.rightProfile),
+            closeup: updatePhotoIfExists(prev.after.closeup, photos.after.closeup),
           },
         }));
 
-        // Загружаем metadata с сервера (EXIF данные)
+        // Загружаем metadata с сервера (EXIF данные) только если есть
         if (result.metadata) {
-          setPhotoMetadata(result.metadata);
+          // Мерджим с существующими metadata (не перезаписываем полностью)
+          setPhotoMetadata(prev => ({
+            before: { ...prev.before, ...result.metadata.before },
+            after: { ...prev.after, ...result.metadata.after },
+          }));
           console.log('✅ Metadata loaded from server:', result.metadata);
         }
 
@@ -1404,23 +1418,41 @@ const PhotoDiaryPage: React.FC = () => {
             {photoTypes.map((photoType) => (
               <div 
                 key={photoType.id} 
-                className={`grid grid-cols-3 gap-4 p-2 rounded-lg transition-all duration-200 ${
-                  collageSelectedRows.has(photoType.id) 
-                    ? 'bg-green-50 border-2 border-green-400 shadow-md' 
-                    : 'border-2 border-transparent'
-                }`}
+                className="grid grid-cols-3 gap-4 p-2 rounded-lg transition-all duration-200"
+                style={{
+                  backgroundColor: collageSelectedRows.has(photoType.id) ? `${greenColor}15` : 'transparent',
+                  borderWidth: '2px',
+                  borderColor: collageSelectedRows.has(photoType.id) ? greenColor : 'transparent',
+                  boxShadow: collageSelectedRows.has(photoType.id) ? `0 4px 6px -1px ${greenColor}33` : 'none'
+                }}
               >
                 <div 
-                  className="flex flex-col items-center cursor-pointer"
+                  className="flex flex-col items-center cursor-pointer relative"
                   onClick={() => toggleCollageRow(photoType.id)}
                   title="Нажмите чтобы выбрать/снять для коллажа"
                 >
-                  <div className="w-full aspect-square bg-white rounded-lg overflow-hidden border-2 border-gray-300 mb-2">
+                  <div className="w-full aspect-square bg-white rounded-lg overflow-hidden border-2 border-gray-300 mb-2 relative group">
                     <img 
                       src={photoType.example} 
-                      alt={`Пример ${photoType.label}`}
+                  alt={`Пример ${photoType.label}`}
                       className="w-full h-full object-contain"
                     />
+                    {collageSelectedRows.has(photoType.id) ? (
+                      <div 
+                        className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center shadow-lg"
+                        style={{ backgroundColor: greenColor }}
+                      >
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    ) : (
+                      <div className="absolute top-2 right-2 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L12 4l-2.5 9M7 13l2 5L12 4l.5 3" />
+                        </svg>
+                      </div>
+                    )}
                   </div>
                   <p className="text-sm font-medium text-blue-800 text-center whitespace-pre-line">
                     {photoType.label}
