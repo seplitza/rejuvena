@@ -28,21 +28,27 @@ interface DaysListProps {
  * For training days (marathon): max 3 stars
  * For practice days (extension): max 5 stars
  * 
- * Progress >= 200 → 3 stars (training) / 5 stars (practice)
- * Progress >= 150 → 3 stars (training) / 4 stars (practice)  
- * Progress >= 100 → 3 stars
- * Progress >= 50  → 2 stars
- * Progress >= 1   → 1 star
- * Progress = 0    → 0 stars
+ * NEW LOGIC for Practice Days:
+ * - 5 stars: >= 90% (все упражнения минус 2)
+ * - 4 stars: >= 70%
+ * - 3 stars: >= 50%
+ * - 2 stars: >= 30%
+ * - 1 star:  >= 10%
+ * - 0 stars: < 10%
+ * 
+ * For Training Days:
+ * - 3 stars: >= 100%
+ * - 2 stars: >= 50%
+ * - 1 star:  >= 1%
  */
 const getRatingFromProgress = (progress: number = 0, isPractice: boolean = false): number => {
   if (isPractice) {
     // Practice days have 5-star rating system
-    if (progress >= 200) return 5;
-    if (progress >= 150) return 4;
-    if (progress >= 100) return 3;
-    if (progress >= 50) return 2;
-    if (progress >= 1) return 1;
+    if (progress >= 90) return 5;
+    if (progress >= 70) return 4;
+    if (progress >= 50) return 3;
+    if (progress >= 30) return 2;
+    if (progress >= 10) return 1;
     return 0;
   } else {
     // Training days have 3-star rating system

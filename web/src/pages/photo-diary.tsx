@@ -326,7 +326,7 @@ const PhotoDiaryPage: React.FC = () => {
 
       /* TODO: Реализовать endpoint на сервере /api/save-original для долгосрочного хранения
       const base64Data = imageDataUrl.split(',')[1];
-      const response = await fetch('https://api.seplitza.ru/api/save-original', {
+      const response = await fetch('https://api-rejuvena.duckdns.org/api/save-original', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -369,15 +369,18 @@ const PhotoDiaryPage: React.FC = () => {
 
   // Проверка авторизации (отложенный промпт на 3-м фото)
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated && typeof window !== 'undefined') {
       // Не редиректим сразу - даём пользователю попробовать сервис
       const userId = 'guest';
       const uploadCountKey = `rejuvena_upload_count_${userId}`;
+      const promptShownKey = `rejuvena_prompt_shown_${userId}`;
       const currentCount = parseInt(localStorage.getItem(uploadCountKey) || '0', 10);
+      const promptShown = localStorage.getItem(promptShownKey) === 'true';
       
-      // Показываем промпт регистрации только после 3-го фото
-      if (currentCount >= 3) {
+      // Показываем промпт регистрации только после 3-го фото и если раньше не показывали
+      if (currentCount >= 3 && !promptShown) {
         setShowRegistrationPrompt(true);
+        localStorage.setItem(promptShownKey, 'true');
       }
     }
   }, [isAuthenticated]);
@@ -641,7 +644,7 @@ const PhotoDiaryPage: React.FC = () => {
       console.log(`📸 Image size: ${base64Data.length} chars`);
       
       // Используем Age-bot API через Cloudflare с SSL
-      const response = await fetch('https://api.seplitza.ru/api/estimate-age', {
+      const response = await fetch('https://api-rejuvena.duckdns.org/api/estimate-age', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1086,7 +1089,7 @@ const PhotoDiaryPage: React.FC = () => {
       );
       
       // Отправляем запрос на создание коллажа
-      const response = await fetch('https://api.seplitza.ru/api/create-collage', {
+      const response = await fetch('https://api-rejuvena.duckdns.org/api/create-collage', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1096,6 +1099,7 @@ const PhotoDiaryPage: React.FC = () => {
           metadata: photoMetadata,
           userInfo: {
             username: user?.email?.split('@')[0] || user?.firstName || 'Пользователь',
+            siteUrl: typeof window !== 'undefined' ? `${window.location.origin}/photo-diary/${encodeURIComponent(user?.email?.split('@')[0] || user?.firstName || 'user')}` : '',
             realAgeBefore: data.realAgeBefore,
             realAgeAfter: data.realAgeAfter,
             weightBefore: data.weightBefore,
@@ -1437,22 +1441,30 @@ const PhotoDiaryPage: React.FC = () => {
                   alt={`Пример ${photoType.label}`}
                       className="w-full h-full object-contain"
                     />
-                    {collageSelectedRows.has(photoType.id) ? (
-                      <div 
-                        className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center shadow-lg"
-                        style={{ backgroundColor: greenColor }}
-                      >
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                    ) : (
-                      <div className="absolute top-2 right-2 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L12 4l-2.5 9M7 13l2 5L12 4l.5 3" />
-                        </svg>
-                      </div>
-                    )}
+                    {/* Overlay for selection hint */}
+                    <div className="absolute inset-0 bg-black/8 group-hover:bg-black/0 transition-all duration-200 flex items-center justify-center">
+                      {collageSelectedRows.has(photoType.id) ? (
+                        <div 
+                          className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center shadow-lg"
+                          style={{ backgroundColor: greenColor }}
+                        >
+                          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      ) : (
+                        <div className="opacity-25 group-hover:opacity-100 transition-all duration-200 transform translate-y-1 scale-95 group-hover:translate-y-0 group-hover:scale-100">
+                          <div className="bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-md border border-gray-200">
+                            <div className="flex items-center gap-1.5">
+                              <svg className="w-4 h-4" style={{ color: greenColor }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 4l6 6 2-3-5 8z" />
+                              </svg>
+                              <span className="text-xs font-medium text-gray-700">Нажми</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <p className="text-sm font-medium text-blue-800 text-center whitespace-pre-line">
                     {photoType.label}

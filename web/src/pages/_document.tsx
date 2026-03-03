@@ -22,7 +22,8 @@ export default function Document() {
         <script
           dangerouslySetInnerHTML={{
             __html: `
-                                            var red                                            var red         if                                    io                                            var                                               var red                           f (window.loc                  ow.      on.hash.startsWith('#/')) {
+              (function() {
+                if (window.location.hash.startsWith('#/')) {
                   var route = window.location.hash.slice(1);
                   history.replaceState(null, '', route);
                 }

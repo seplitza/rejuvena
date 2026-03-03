@@ -316,7 +316,9 @@ def create_collage():
         user_info = data.get('userInfo', {})
         metadata = data.get('metadata', {})
         username = user_info.get('username', 'Пользователь')
+        site_url = user_info.get('siteUrl', '')
         print(f'📄 UserInfo: {user_info}')
+        print(f'🌐 Site URL: {site_url}')
         print(f'📊 Metadata: {list(metadata.keys())}')
         
         # Создаём вертикальный коллаж с заголовком и футером
@@ -396,7 +398,7 @@ def create_collage():
                 
                 # Метаданные под фото "До"
                 meta_before = metadata.get('before', {}).get(photo_type, {})
-                exif_before = meta_before.get('exifData', {})
+                exif_before = meta_before.get('exifData') or {}
                 date_time = exif_before.get('DateTime') or exif_before.get('captureDate')
                 upload_date = meta_before.get('uploadDate')
                 
@@ -425,7 +427,7 @@ def create_collage():
                 
                 # Метаданные под фото "После"
                 meta_after = metadata.get('after', {}).get(photo_type, {})
-                exif_after = meta_after.get('exifData', {})
+                exif_after = meta_after.get('exifData') or {}
                 date_time = exif_after.get('DateTime') or exif_after.get('captureDate')
                 upload_date = meta_after.get('uploadDate')
                 
@@ -443,6 +445,24 @@ def create_collage():
                 else:
                     meta_text = f"↓ No EXIF data found (screenshot)"
                 draw.text((x_after + 10, y_position + photo_size + 10), meta_text, fill='#666666', font=font_small)
+            
+            # Водяной знак: ссылка на фотодневник поверх фотографий внизу по центру
+            if site_url:
+                # Центр между двумя фотографиями (spanning both photos)
+                watermark_x = border + pair_width // 2
+                watermark_y = y_position + photo_size - 45  # Поверх фото снизу
+                
+                # Получаем размер текста для центрирования
+                bbox = draw.textbbox((0, 0), site_url, font=font_small)
+                text_width = bbox[2] - bbox[0]
+                
+                # Рисуем водяной знак с центрированием (без фона)
+                draw.text(
+                    (watermark_x - text_width // 2, watermark_y), 
+                    site_url, 
+                    fill='#999999',  # Серый цвет
+                    font=font_small
+                )
         
         # ФУТЕР С АНКЕТОЙ (только заполненные поля)
         footer_y = photos_start_y + photos_height + 60
