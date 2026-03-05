@@ -132,13 +132,8 @@ function* getDayExerciseSaga(
         const dayProgress = progressResponse.progress?.dayProgress || {};
         const marathon = marathonResponse.marathon;
         
-        // Calculate current available day from start date
-        const now = new Date();
-        const startDate = new Date(marathon.startDate);
-        const daysSinceStart = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-        const maxAvailableDay = daysSinceStart + 1;
-        
         // Split into training (1-14) and practice (15+) days
+        // Simple logic: all published days are available (no date-based locking)
         const marathonDays = allDays
           .filter((d: any) => d.dayNumber <= 14)
           .map((d: any) => ({
@@ -148,7 +143,6 @@ function* getDayExerciseSaga(
             description: d.description,
             dayDate: d.dayDate,
             progress: dayProgress[d.dayNumber] || 0,
-            isLocked: d.dayNumber > maxAvailableDay,
           }));
         
         const greatExtensionDays = allDays
@@ -160,7 +154,6 @@ function* getDayExerciseSaga(
             description: d.description,
             dayDate: d.dayDate,
             progress: dayProgress[d.dayNumber] || 0,
-            isLocked: d.dayNumber > maxAvailableDay,
           }));
         
         yield put({

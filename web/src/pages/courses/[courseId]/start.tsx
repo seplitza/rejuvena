@@ -80,8 +80,14 @@ export default function CourseStartPage() {
   // Get welcome message and rules from marathon data
   const welcomeMessage = marathonData?.welcomeMessage?.welcomeMessage || '';
   const rules = marathonData?.rule?.rule || marathonData?.marathonDays?.[0]?.description || '';
+  
+  // IMPORTANT: Combine marathonDays (1-14) and greatExtensionDays (15+) to get ALL days
   const marathonDays = marathonData?.marathonDays || [];
-  const lastPublishedDay = marathonDays[marathonDays.length - 1];
+  const greatExtensionDays = marathonData?.greatExtensionDays || [];
+  const allDays = [...marathonDays, ...greatExtensionDays];
+  
+  // Current day = last published day (последний опубликованный день)
+  const lastPublishedDay = allDays[allDays.length - 1];
 
   // CRITICAL: Check if marathonData belongs to current course
   // If not, treat as if no data loaded yet
