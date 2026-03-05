@@ -152,19 +152,63 @@ const CoursesPage = () => {
       }
       
       // Already activated and rules accepted - navigate to current day
-      // Get current day from marathon data
-      const allDays = [
-        ...(marathonData.marathonDays || []),
-        ...(marathonData.greatExtensionDays || []),
-      ];
-      const currentDay = allDays[allDays.length - 1]; // Last published day
-      
-      if (currentDay?.id) {
-        console.log('📍 Navigating to current day:', currentDay.day, 'with ID:', currentDay.id);
-        router.push(`/courses/${courseId}/day/${currentDay.id}`);
-      } else {
-        // Fallback to 'current' if no day ID found
-        router.push(`/courses/${courseId}/day/current`);
+      // Use new MongoDB API to get all days and calculate current available day
+      try {
+        const [marathonResponse, daysResponse] = await Promise.all([
+          request.get(`/api/marathons/${courseId}`, {}),
+          request.get(`/api/marathons/${courseId}/days`, {})
+        ]);
+
+        if (marathonResponse.success && daysResponse.success) {
+          const marathon = marathonResponse.marathon;
+          const allDays = daysResponse.days || [];
+
+          // Calculate current available day based on start date
+          const now = new Date();
+          const startDate = new Date(marathon.startDate);
+          const daysSinceStart = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+          const maxAvailableDay = daysSinceStart + 1;
+
+          console.log('📅 Marathon date calculation:', {
+            startDate: marathon.startDate,
+            today: now.toISOString(),
+            daysSinceStart,
+            maxAvailableDay,
+            totalDaysInDB: allDays.length
+          });
+
+          // Find the last available (unlocked) day
+          const availableDays = allDays.filter((d: any) => d.dayNumber <= maxAvailableDay);
+          const currentDay = availableDays.length > 0 
+            ? availableDays[availableDays.length - 1] 
+            : allDays[0]; // Fallback to day 1
+
+          if (currentDay?._id) {
+            console.log('📍 Navigating to current available day:', currentDay.dayNumber, 'with ID:', currentDay._id);
+            router.push(`/courses/${courseId}/day/${currentDay._id}`);
+          } else {
+            // Fallback to 'current' if no day ID found
+            console.log('⚠️ No current day found,  using /day/current fallback');
+            router.push(`/courses/${courseId}/day/current`);
+          }
+        } else {
+          throw new Error('Failed to load marathon  data');
+        }
+      } catch (dayError) {
+        console.warn('Failed to load days from new API, using fallback:', dayError);
+        // Fallback to old logic with Azure API
+        const allDays = [
+          ...(marathonData.marathonDays || []),
+          ...(marathonData.greatExtensionDays || []),
+        ];
+        const currentDay = allDays[allDays.length - 1];
+        
+        if (currentDay?.id) {
+          console.log('📍 Fallback: Navigating to day:', currentDay.day, 'with ID:', currentDay.id);
+          router.push(`/courses/${courseId}/day/${currentDay.id}`);
+        } else {
+          router.push(`/courses/${courseId}/day/current`);
+        }
       }
     } catch (error) {
       console.error('❌ Failed to check marathon status:', error);
