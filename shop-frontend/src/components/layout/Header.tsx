@@ -4,6 +4,7 @@ import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { useAppSelector } from '@/store';
 import { selectFavoritesCount } from '@/store/favoritesSlice';
+import SearchBar from '@/components/SearchBar';
 import { ShoppingCartIcon, UserIcon, HeartIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
@@ -27,7 +28,7 @@ const Header = () => {
       <div className="container-custom">
         <div className="flex justify-between items-center h-16 md:h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
             <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-primary rounded-full flex items-center justify-center">
               <span className="text-white font-bold text-xl md:text-2xl">S</span>
             </div>
@@ -36,25 +37,13 @@ const Header = () => {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-8">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`text-sm font-medium transition-colors hover:text-primary-600 ${
-                  router.pathname === item.href
-                    ? 'text-primary-600'
-                    : 'text-gray-700'
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
-          </nav>
+          {/* Search Bar - Desktop */}
+          <div className="hidden md:block flex-1">
+            <SearchBar />
+          </div>
 
           {/* Right Icons */}
-          <div className="flex items-center space-x-4 md:space-x-6">
+          <div className="flex items-center space-x-4 md:space-x-6 flex-shrink-0">
             {/* Favorites */}
             <Link
               href="/favorites"
@@ -108,13 +97,18 @@ const Header = () => {
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-gray-200">
+          <div className="lg:hidden py-4 border-t border-gray-200 space-y-4">
+            {/* Mobile Search */}
+            <div className="px-4">
+              <SearchBar isMobile />
+            </div>
+            
             <nav className="flex flex-col space-y-3">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`text-base font-medium transition-colors hover:text-primary-600 ${
+                  className={`text-base font-medium transition-colors hover:text-primary-600 px-4 ${
                     router.pathname === item.href
                       ? 'text-primary-600'
                       : 'text-gray-700'
@@ -127,6 +121,23 @@ const Header = () => {
             </nav>
           </div>
         )}
+        
+        {/* Desktop Navigation */}
+        <nav className="hidden lg:flex items-center justify-center space-x-8 py-3 border-t border-gray-100">
+          {navigation.map((item) => (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={`text-sm font-medium transition-colors hover:text-primary-600 ${
+                router.pathname === item.href
+                  ? 'text-primary-600'
+                  : 'text-gray-700'
+              }`}
+            >
+              {item.name}
+            </Link>
+          ))}
+        </nav>
       </div>
     </header>
   );
