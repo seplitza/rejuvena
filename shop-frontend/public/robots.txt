@@ -1,0 +1,49 @@
+# Robots.txt for seplitza.ru
+# Allow all search engines to index the site
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://seplitza.ru/sitemap.xml
+
+# Crawl delay (optional - helps reduce server load)
+Crawl-delay: 1
+
+# Disallow private/admin pages
+Disallow: /api/
+Disallow: /admin/
+Disallow: /profile
+Disallow: /checkout
+Disallow: /cart
+Disallow: /order-success
+Disallow: /login
+Disallow: /register
+
+# Allow important public pages
+Allow: /catalog
+Allow: /products/
+Allow: /about
+Allow: /contacts
+Allow: /fortune-wheel
+Allow: /favorites
+
+# Specific rules for common bots
+User-agent: Googlebot
+Allow: /
+
+User-agent: Yandex
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Block bad bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
