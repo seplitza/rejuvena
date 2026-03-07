@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useDispatch } from 'react-redux';
-import { loginSuccess } from '@/store/slices/authSlice';
+import { setUser } from '@/store/authSlice';
 import { motion } from 'framer-motion';
 import { 
   EnvelopeIcon, 
@@ -50,7 +50,7 @@ export default function LoginPage() {
         localStorage.setItem('token', response.data.token);
         
         // Обновляем Redux state
-        dispatch(loginSuccess({
+        dispatch(setUser({
           user: response.data.user,
           token: response.data.token
         }));

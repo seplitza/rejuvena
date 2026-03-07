@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store';
-import { clearCart, applyPromoCode } from '@/store/slices/cartSlice';
+import { clearCart, applyPromoCode } from '@/store/cartSlice';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   CheckCircleIcon, 
@@ -85,8 +85,11 @@ const PAYMENT_METHODS = [
 export default function CheckoutPage() {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { items, totalAmount, discount, promoCode } = useSelector((state: RootState) => state.cart);
+  const { items, discount, promoCode } = useSelector((state: RootState) => state.cart);
   const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
+  
+  // Calculate total amount from items
+  const totalAmount = items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
   
   const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
