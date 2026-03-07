@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { motion } from 'framer-motion';
+import ProductGrid from '@/components/products/ProductGrid';
 import { 
   UserIcon,
   ShoppingBagIcon,
@@ -35,6 +36,7 @@ interface Order {
 export default function ProfilePage() {
   const router = useRouter();
   const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const favorites = useSelector((state: RootState) => state.favorites.items);
   
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -264,11 +266,22 @@ export default function ProfilePage() {
               {activeTab === 'favorites' && (
                 <div className="bg-white rounded-2xl shadow-md p-6">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Избранное</h2>
-                  <div className="text-center py-12">
-                    <HeartIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Избранные товары</h3>
-                    <p className="text-gray-600">Здесь появятся товары, которые вы добавите в избранное</p>
-                  </div>
+                  {favorites.length > 0 ? (
+                    <ProductGrid products={favorites} loading={false} />
+                  ) : (
+                    <div className="text-center py-12">
+                      <HeartIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Избранных товаров пока нет</h3>
+                      <p className="text-gray-600 mb-4">Добавляйте товары в избранное, чтобы не потерять их</p>
+                      <Link
+                        href="/catalog"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl font-semibold hover:scale-105 transform transition-all shadow-lg"
+                      >
+                        <ShoppingBagIcon className="w-5 h-5" />
+                        Перейти в каталог
+                      </Link>
+                    </div>
+                  )}
                 </div>
               )}
 

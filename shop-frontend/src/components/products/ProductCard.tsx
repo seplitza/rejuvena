@@ -3,8 +3,9 @@ import Image from 'next/image';
 import { Product } from '@/types/shop';
 import { HeartIcon, ShoppingCartIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
-import { useAppDispatch } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store';
 import { addToCart } from '@/store/cartSlice';
+import { toggleFavorite as toggleFavoriteAction, selectIsFavorite } from '@/store/favoritesSlice';
 import { useState } from 'react';
 
 interface ProductCardProps {
@@ -13,7 +14,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const dispatch = useAppDispatch();
-  const [isFavorite, setIsFavorite] = useState(false);
+  const isFavorite = useAppSelector(selectIsFavorite(product._id));
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const hasDiscount = product.oldPrice && product.oldPrice > product.price;
@@ -38,9 +39,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
     }
   };
 
-  const toggleFavorite = (e: React.MouseEvent) => {
+  const handleToggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
-    setIsFavorite(!isFavorite);
+    dispatch(toggleFavoriteAction(product));
   };
 
   return (
@@ -85,7 +86,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
           {/* Favorite Button */}
           <button
-            onClick={toggleFavorite}
+            onClick={handleToggleFavorite}
             className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:scale-110 transition-transform"
           >
             {isFavorite ? (

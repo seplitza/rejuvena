@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
+import { useAppSelector } from '@/store';
+import { selectFavoritesCount } from '@/store/favoritesSlice';
 import { ShoppingCartIcon, UserIcon, HeartIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
@@ -9,6 +11,7 @@ const Header = () => {
   const router = useRouter();
   const { itemsCount } = useCart();
   const { user, isAuthenticated } = useAuth();
+  const favoritesCount = useAppSelector(selectFavoritesCount);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navigation = [
@@ -55,10 +58,15 @@ const Header = () => {
             {/* Favorites */}
             <Link
               href="/favorites"
-              className="text-gray-700 hover:text-primary-600 transition-colors"
+              className="relative text-gray-700 hover:text-primary-600 transition-colors"
               title="Избранное"
             >
               <HeartIcon className="w-6 h-6" />
+              {favoritesCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {favoritesCount}
+                </span>
+              )}
             </Link>
 
             {/* Cart */}
