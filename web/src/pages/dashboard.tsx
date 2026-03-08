@@ -464,11 +464,21 @@ const DashboardPage: React.FC = () => {
                 };
 
                 const getPrizeTitle = (prize: FortunePrize) => {
+                  // Приоритет: name > description > discountPercent > type
+                  if ((prize as any).name) return (prize as any).name;
                   if (prize.description) return prize.description;
                   if (prize.type === 'discount' && prize.discountPercent) {
                     return `Скидка ${prize.discountPercent}%`;
                   }
-                  return prize.type;
+                  // Fallback на читаемое название типа
+                  const typeNames: Record<string, string> = {
+                    'discount': 'Скидка',
+                    'freeShipping': 'Бесплатная доставка',
+                    'product': 'Товар',
+                    'freeProduct': 'Подарок',
+                    'personalDiscount': 'Персональная скидка'
+                  };
+                  return typeNames[prize.type] || prize.type;
                 };
 
                 return (
