@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { logout } from '../store/modules/auth/slice';
@@ -36,6 +36,19 @@ interface Marathon {
   currentDay?: number;
 }
 
+interface FortunePrize {
+  _id: string;
+  type: string;
+  description?: string;
+  value: any;
+  discountPercent?: number;
+  expiryDate: string;
+  isUsed: boolean;
+  usedAt?: string;
+  orderId?: string;
+  prizeId?: string;
+}
+
 // Функция форматирования названия продукта
 const formatProductName = (payment: Payment): string => {
   const meta = payment.metadata;
@@ -63,7 +76,41 @@ const DashboardPage: React.FC = () => {
   const [recentPayments, setRecentPayments] = useState<Payment[]>([]);
   const [enrolledMarathons, setEnrolledMarathons] = useState<Marathon[]>([]);
   const [marathonCountdowns, setMarathonCountdowns] = useState<Record<string, { days: number; hours: number; minutes: number; seconds: number; hasStarted: boolean }>>({});
+  const [fortunePrizes, setFortunePrizes] = useState<FortunePrize[]>([]);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
+
+  // Объединенный список активностей: платежи + призы
+  const recentActivities = useMemo(() => {
+    const activities: Array<{
+      id: string;
+      type: 'payment' | 'prize';
+      date: Date;
+      data: Payment | FortunePrize;
+    }> = [];
+
+    // Добавляем платежи
+    recentPayments.forEach(payment => {
+      activities.push({
+        id: payment.id,
+        type: 'payment',
+        date: new Date(payment.createdAt),
+        data: payment
+      });
+    });
+
+    // Добавляем призы (только активированные)
+    fortunePrizes.filter(p => p.isUsed && p.usedAt).forEach(prize => {
+      activities.push({
+        id: prize._id,
+        type: 'prize',
+        date: new Date(prize.usedAt!),
+        data: prize
+      });
+    });
+
+    // Сортируем по дате (новые сначала)
+    return activities.sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 10);
+  }, [recentPayments, fortunePrizes]);
 
   useEffect(() => {
     // Wait for auth to initialize from localStorage
@@ -120,6 +167,20 @@ const DashboardPage: React.FC = () => {
       }
     };
     
+    const loadFortunePrizes = async () => {
+      try {
+        const token = AuthTokenManager.get();
+        if (!token) return;
+        
+        const response = await request.get(endpoints.get_my_fortune_prizes) as any;
+        if (response && Array.isArray(response.prizes)) {
+          setFortunePrizes(response.prizes);
+        }
+      } catch (error) {
+        console.error('💥 Failed to load fortune prizes:', error);
+      }
+    };
+    
     if (isAuthenticated) {
       console.log('🔍 Dashboard user data:', {
         isPremium: user?.isPremium,
@@ -129,6 +190,7 @@ const DashboardPage: React.FC = () => {
       });
       loadPayments();
       loadMarathons();
+      loadFortunePrizes();
     }
   }, [isAuthenticated, user]);
 
@@ -369,9 +431,113 @@ const DashboardPage: React.FC = () => {
           <OffersGrid />
         </div>
 
+        {/* Fortune Wheel Prizes */}
+        {fortunePrizes.length > 0 && (
+          <div className="bg-white rounded-lg shadow p-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <span className="text-3xl">🎁</span>
+                Призы Колеса Фортуны
+              </h2>
+              <button
+                onClick={() => router.push('/fortune-wheel')}
+                className="text-purple-600 hover:text-purple-700 font-semibold text-sm"
+              >
+                Крутить колесо →
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {fortunePrizes.slice(0, 4).map((prize) => {
+                const isExpired = new Date(prize.expiryDate) < new Date();
+                const isActive = !prize.isUsed && !isExpired;
+                
+                const getPrizeIcon = (type: string) => {
+                  switch (type) {
+                    case 'discount': return '🏷️';
+                    case 'freeShipping': return '📦';
+                    case 'product': return '🎁';
+                    case 'freeProduct': return '🎁';
+                    case 'personalDiscount': return '💎';
+                    default: return '🎉';
+                  }
+                };
+
+                const getPrizeTitle = (prize: FortunePrize) => {
+                  if (prize.description) return prize.description;
+                  if (prize.type === 'discount' && prize.discountPercent) {
+                    return `Скидка ${prize.discountPercent}%`;
+                  }
+                  return prize.type;
+                };
+
+                return (
+                  <div
+                    key={prize._id}
+                    className={`border-2 rounded-lg p-4 transition-all ${
+                      isActive 
+                        ? 'border-green-300 bg-green-50' 
+                        : prize.isUsed 
+                        ? 'border-gray-300 bg-gray-50' 
+                        : 'border-orange-300 bg-orange-50'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-3 flex-1">
+                        <div className="text-3xl">{getPrizeIcon(prize.type)}</div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900">
+                            {getPrizeTitle(prize)}
+                          </h3>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Действует до: {new Date(prize.expiryDate).toLocaleDateString('ru-RU')}
+                          </p>
+                          {prize.isUsed && prize.usedAt && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              Использован: {new Date(prize.usedAt).toLocaleDateString('ru-RU')}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        {isActive && (
+                          <span className="inline-block px-3 py-1 bg-green-600 text-white text-xs font-semibold rounded-full">
+                            Активен
+                          </span>
+                        )}
+                        {prize.isUsed && (
+                          <span className="inline-block px-3 py-1 bg-gray-600 text-white text-xs font-semibold rounded-full">
+                            Использован
+                          </span>
+                        )}
+                        {isExpired && !prize.isUsed && (
+                          <span className="inline-block px-3 py-1 bg-orange-600 text-white text-xs font-semibold rounded-full">
+                            Истёк
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {fortunePrizes.length > 4 && (
+              <div className="mt-4 text-center">
+                <button
+                  onClick={() => router.push('/profile/prizes')}
+                  className="text-purple-600 hover:text-purple-700 font-semibold text-sm"
+                >
+                  Показать все призы ({fortunePrizes.length}) →
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Quick Actions with colorful icons like burger menu */}
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <button
                 className="flex items-center space-x-3 p-4 rounded-lg transition-colors text-left group border"
                 style={{ 
@@ -487,6 +653,35 @@ const DashboardPage: React.FC = () => {
                   Профиль
                 </span>
               </button>
+
+              <button
+                className="flex items-center space-x-3 p-4 rounded-lg transition-colors text-left group border"
+                style={{ 
+                  backgroundColor: 'var(--color-primary-light, rgba(147, 51, 234, 0.1))',
+                  borderColor: 'var(--color-primary-border, rgba(147, 51, 234, 0.3))'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary-light-hover, rgba(147, 51, 234, 0.2))';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary-light, rgba(147, 51, 234, 0.1))';
+                }}
+                onClick={() => router.push('/fortune-wheel')}
+              >
+                <span className="text-3xl">🎰</span>
+                <span 
+                  className="text-base font-medium"
+                  style={{ color: '#1F2937' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = 'var(--color-primary)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = '#1F2937';
+                  }}
+                >
+                  Колесо Фортуны
+                </span>
+              </button>
             </div>
         </div>
 
@@ -494,7 +689,7 @@ const DashboardPage: React.FC = () => {
         {isAuthenticated && (
           <div className="bg-white rounded-lg shadow p-6 mb-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Последняя активность</h2>
-            {recentPayments.length === 0 ? (
+            {recentActivities.length === 0 ? (
             <div className="text-center py-8">
               <div className="text-gray-400 text-5xl mb-2">📭</div>
               <p className="text-gray-500">Активности пока нет</p>
@@ -502,37 +697,90 @@ const DashboardPage: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              {recentPayments.map((payment) => (
-                <div 
-                  key={payment.id} 
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                  onClick={() => payment.status === 'succeeded' && router.push(`/payment/success?orderId=${payment.id}`)}
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="text-2xl">
-                      {payment.status === 'succeeded' ? '✅' : 
-                       payment.status === 'processing' ? '⏳' : 
-                       payment.status === 'failed' ? '❌' : '⏸️'}
+              {recentActivities.map((activity) => {
+                if (activity.type === 'payment') {
+                  const payment = activity.data as Payment;
+                  return (
+                    <div 
+                      key={activity.id} 
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                      onClick={() => payment.status === 'succeeded' && router.push(`/payment/success?orderId=${payment.id}`)}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="text-2xl">
+                          {payment.status === 'succeeded' ? '✅' : 
+                           payment.status === 'processing' ? '⏳' : 
+                           payment.status === 'failed' ? '❌' : '⏸️'}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-800">
+                            {payment.status === 'succeeded' ? 'Оплата принята' : 
+                             payment.status === 'processing' ? 'Обработка оплаты' : 
+                             payment.status === 'failed' ? 'Оплата не прошла' : 'Ожидание оплаты'}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {formatProductName(payment)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-gray-800">{payment.amount} ₽</p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(payment.createdAt).toLocaleDateString('ru-RU')}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-gray-800">
-                        {payment.status === 'succeeded' ? 'Оплата принята' : 
-                         payment.status === 'processing' ? 'Обработка оплаты' : 
-                         payment.status === 'failed' ? 'Оплата не прошла' : 'Ожидание оплаты'}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {formatProductName(payment)}
-                      </p>
+                  );
+                } else {
+                  // Приз колеса фортуны
+                  const prize = activity.data as FortunePrize;
+                  const getPrizeIcon = (type: string) => {
+                    switch (type) {
+                      case 'discount': return '🏷️';
+                      case 'freeShipping': return '📦';
+                      case 'product': return '🎁';
+                      case 'freeProduct': return '🎁';
+                      case 'personalDiscount': return '💎';
+                      default: return '🎉';
+                    }
+                  };
+
+                  const getPrizeTitle = (prize: FortunePrize) => {
+                    if (prize.description) return prize.description;
+                    if (prize.type === 'discount' && prize.discountPercent) {
+                      return `Скидка ${prize.discountPercent}%`;
+                    }
+                    return prize.type;
+                  };
+
+                  return (
+                    <div 
+                      key={activity.id} 
+                      className="flex items-center justify-between p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="text-2xl">{getPrizeIcon(prize.type)}</div>
+                        <div>
+                          <p className="font-medium text-gray-800">
+                            🎰 Приз Колеса Фортуны
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {getPrizeTitle(prize)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="inline-block px-2 py-1 bg-green-600 text-white text-xs font-semibold rounded">
+                          Активирован
+                        </span>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {new Date(prize.usedAt!).toLocaleDateString('ru-RU')}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-gray-800">{payment.amount} ₽</p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(payment.createdAt).toLocaleDateString('ru-RU')}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                  );
+                }
+              })}
             </div>
           )}
         </div>

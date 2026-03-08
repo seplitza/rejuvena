@@ -76,3 +76,10 @@ export const update_exercise_status = (marathonId: string, dayNumber: string, ex
 export const payment_create = '/api/payment/create';
 export const payment_history = '/api/payment/history';
 export const payment_status = '/api/payment/status';
+
+// Fortune Wheel
+export const get_fortune_wheel_prizes = '/api/fortune-wheel/prizes';
+export const get_available_spins = '/api/fortune-wheel/available-spins';
+export const spin_wheel = '/api/fortune-wheel/spin';
+export const post_fortune_wheel_confirm_prize = '/api/fortune-wheel/confirm-prize';
+export const get_my_fortune_prizes = '/api/fortune-wheel/my-prizes';
