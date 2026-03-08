@@ -50,11 +50,20 @@ const FortuneWheel = ({ prizes, onSpin, onConfirmPrize, spinning }: FortuneWheel
       // Указатель вверху, первый приз начинается с 0°
       // Чтобы приз оказался под стрелой, нужно повернуть на его угол в обратную сторону
       const prizeAngle = prizeIndex * segmentAngle + segmentAngle / 2;
+      
+      // ВАЖНО: Учитываем текущее положение колеса
+      const currentAngle = rotation % 360;
       const targetAngle = 360 - prizeAngle;
+      
+      // Вычисляем необходимый поворот от текущего положения
+      let deltaAngle = targetAngle - currentAngle;
+      if (deltaAngle < 0) deltaAngle += 360; // Всегда крутим по часовой
 
       // Добавляем 5-7 полных оборотов для эффекта
       const fullRotations = 5 + Math.random() * 2;
-      const finalRotation = rotation + fullRotations * 360 + targetAngle;
+      const finalRotation = rotation + fullRotations * 360 + deltaAngle;
+      
+      console.log(`🎯 Prize ${prizeIndex}: angle=${prizeAngle.toFixed(1)}°, current=${currentAngle.toFixed(1)}°, delta=${deltaAngle.toFixed(1)}°, final=${finalRotation.toFixed(1)}°`);
 
       setRotation(finalRotation);
       
