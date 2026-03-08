@@ -57,15 +57,23 @@ const FortuneWheel = ({ prizes, onSpin, onConfirmPrize, spinning }: FortuneWheel
       }
       
       const prizeIndex = localPrizeIndex;
-      console.log(`🎯 Won prize: "${wonPrize.name}" (backend index: ${backendIndex}, local index: ${prizeIndex})`);
       
       const segmentAngle = 360 / prizes.length;
       
-      // Центр приза на колесе
+      console.log(`\n🎲 SPIN DEBUG:`);
+      console.log(`   Prize from backend: "${wonPrize.name}"`);
+      console.log(`   Backend index: ${backendIndex}, Local index: ${prizeIndex}`);
+      console.log(`   Total prizes: ${prizes.length}, Segment angle: ${segmentAngle}°`);
+      console.log(`   All prizes order:`, prizes.map((p, i) => `[${i}] ${p.name}`));
+      
+      // Центр приза на колесе (где должен оказаться указатель)
       const prizeAngle = prizeIndex * segmentAngle + segmentAngle / 2;
       
-      // ВАЖНО: Учитываем текущее положение колеса
+      // Текущее положение колеса (нормализованное)
       const currentAngle = rotation % 360;
+      
+      // Целевой угол: чтобы указатель (0°) показывал на prizeAngle, 
+      // колесо должно быть повернуто на (360 - prizeAngle)
       const targetAngle = 360 - prizeAngle;
       
       // Вычисляем необходимый поворот от текущего положения
@@ -76,7 +84,13 @@ const FortuneWheel = ({ prizes, onSpin, onConfirmPrize, spinning }: FortuneWheel
       const fullRotations = 5 + Math.random() * 2;
       const finalRotation = rotation + fullRotations * 360 + deltaAngle;
       
-      console.log(`🎯 Rotation: prize=${wonPrize.name}, index=${prizeIndex}, angle=${prizeAngle.toFixed(1)}°, current=${currentAngle.toFixed(1)}°, target=${targetAngle.toFixed(1)}°, delta=${deltaAngle.toFixed(1)}°, final=${finalRotation.toFixed(1)}°`);
+      console.log(`   Prize center angle: ${prizeAngle.toFixed(2)}°`);
+      console.log(`   Current rotation: ${rotation.toFixed(2)}° (normalized: ${currentAngle.toFixed(2)}°)`);
+      console.log(`   Target angle: ${targetAngle.toFixed(2)}°`);
+      console.log(`   Delta to rotate: ${deltaAngle.toFixed(2)}°`);
+      console.log(`   Full rotations: ${fullRotations.toFixed(2)}`);
+      console.log(`   Final rotation: ${finalRotation.toFixed(2)}°`);
+      console.log(`   After spin, arrow (0°) should point to prize at angle ${prizeAngle.toFixed(2)}°\n`);
 
       setRotation(finalRotation);
       
