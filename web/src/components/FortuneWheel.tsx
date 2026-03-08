@@ -33,6 +33,7 @@ const FortuneWheel = ({ prizes, onSpin, onConfirmPrize, spinning }: FortuneWheel
   const [confirming, setConfirming] = useState(false);
   const [prizeConfirmed, setPrizeConfirmed] = useState(false);
   const wheelRef = useRef<HTMLDivElement>(null);
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
 
   const handleSpin = async () => {
     if (spinning) return;
@@ -41,6 +42,7 @@ const FortuneWheel = ({ prizes, onSpin, onConfirmPrize, spinning }: FortuneWheel
       // Сбрасываем предыдущий результат
       setSelectedPrize(null);
       setPrizeConfirmed(false);
+      setDebugInfo([]); // Очищаем старый дебаг
       
       const { prize: wonPrize, prizeIndex: backendIndex } = await onSpin();
       
@@ -50,6 +52,7 @@ const FortuneWheel = ({ prizes, onSpin, onConfirmPrize, spinning }: FortuneWheel
       
       if (localPrizeIndex === -1) {
         console.error('❌ Prize not found in local array!', wonPrize);
+        setDebugInfo([`❌ ОШИБКА: Приз "${wonPrize.name}" не найден в массиве!`]);
         // Fallback: используем индекс от backend (может быть неточно)
         const prizeIndex = backendIndex || 0;
         setSelectedPrize(wonPrize);
@@ -59,6 +62,14 @@ const FortuneWheel = ({ prizes, onSpin, onConfirmPrize, spinning }: FortuneWheel
       const prizeIndex = localPrizeIndex;
       
       const segmentAngle = 360 / prizes.length;
+      
+      // Собираем дебаг информацию
+      const debug = [
+        `🎲 ДЕБАГ ВРАЩЕНИЯ:`,
+        `Приз от сервера: "${wonPrize.name}"`,
+        `Индекс от сервера: ${backendIndex}, Локальный индекс: ${prizeIndex}`,
+        `Всего призов: ${prizes.length}, Угол сегмента: ${segmentAngle.toFixed(2)}°`,
+      ];
       
       console.log(`\n🎲 SPIN DEBUG:`);
       console.log(`   Prize from backend: "${wonPrize.name}"`);
@@ -84,6 +95,18 @@ const FortuneWheel = ({ prizes, onSpin, onConfirmPrize, spinning }: FortuneWheel
       const fullRotations = 5 + Math.random() * 2;
       const finalRotation = rotation + fullRotations * 360 + deltaAngle;
       
+      debug.push(
+        `Центр приза: ${prizeAngle.toFixed(2)}°`,
+        `Текущий поворот: ${rotation.toFixed(2)}° (норм: ${currentAngle.toFixed(2)}°)`,
+        `Целевой угол: ${targetAngle.toFixed(2)}°`,
+        `Дельта поворота: ${deltaAngle.toFixed(2)}°`,
+        `Полных оборотов: ${fullRotations.toFixed(2)}`,
+        `Финальный поворот: ${finalRotation.toFixed(2)}°`,
+        `После вращения стрелка (0°) должна указывать на ${prizeAngle.toFixed(2)}°`
+      );
+      
+      setDebugInfo(debug);
+      
       console.log(`   Prize center angle: ${prizeAngle.toFixed(2)}°`);
       console.log(`   Current rotation: ${rotation.toFixed(2)}° (normalized: ${currentAngle.toFixed(2)}°)`);
       console.log(`   Target angle: ${targetAngle.toFixed(2)}°`);
@@ -101,6 +124,7 @@ const FortuneWheel = ({ prizes, onSpin, onConfirmPrize, spinning }: FortuneWheel
       }, 4000);
     } catch (error) {
       console.error('Spin failed:', error);
+      setDebugInfo([`❌ ОШИБКА: ${error}`]);
     }
   };
 
@@ -300,6 +324,17 @@ const FortuneWheel = ({ prizes, onSpin, onConfirmPrize, spinning }: FortuneWheel
               </Link>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Дебаг информация - ВИДИМАЯ НА ЭКРАНЕ */}
+      {debugInfo.length > 0 && (
+        <div className="mt-4 bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4">
+          <div className="text-sm font-mono space-y-1">
+            {debugInfo.map((line, i) => (
+              <div key={i} className="text-yellow-900">{line}</div>
+            ))}
+          </div>
         </div>
       )}
     </div>
