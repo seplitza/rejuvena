@@ -120,9 +120,15 @@ export default function FortuneWheelPage() {
     try {
       const result = await request.post('/api/fortune-wheel/confirm-prize', { 
         prizeId: prize._id 
-      });
+      }) as any;
       
       console.log('✅ Prize confirmed:', result);
+      
+      // Обновляем количество доступных спинов (после активации = 0)
+      if (result.remainingSpins !== undefined) {
+        setAvailableSpins(result.remainingSpins);
+        console.log(`🎰 Spins updated to: ${result.remainingSpins}`);
+      }
     } catch (err: any) {
       console.error('❌ Prize confirmation error:', err);
       const message = err.message || 'Не удалось активировать приз';

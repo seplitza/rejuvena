@@ -38,11 +38,11 @@ const FortuneWheel = ({ prizes, onSpin, onConfirmPrize, spinning }: FortuneWheel
     if (spinning) return;
 
     try {
-      const { prize: wonPrize, prizeIndex } = await onSpin();
-      setSelectedPrize(wonPrize);
-
-      // Сбрасываем состояние подтверждения
+      // Сбрасываем предыдущий результат
+      setSelectedPrize(null);
       setPrizeConfirmed(false);
+      
+      const { prize: wonPrize, prizeIndex } = await onSpin();
       
       // Используем prizeIndex из backend для точной синхронизации
       const segmentAngle = 360 / prizes.length;
@@ -57,6 +57,12 @@ const FortuneWheel = ({ prizes, onSpin, onConfirmPrize, spinning }: FortuneWheel
       const finalRotation = rotation + fullRotations * 360 + targetAngle;
 
       setRotation(finalRotation);
+      
+      // ВАЖНО: Показываем приз ТОЛЬКО после завершения анимации (4 секунды)
+      setTimeout(() => {
+        setSelectedPrize(wonPrize);
+        console.log('🎁 Wheel stopped, showing prize:', wonPrize.name);
+      }, 4000);
     } catch (error) {
       console.error('Spin failed:', error);
     }
