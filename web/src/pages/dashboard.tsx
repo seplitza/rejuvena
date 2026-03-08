@@ -38,6 +38,7 @@ interface Marathon {
 
 interface FortunePrize {
   _id: string;
+  name?: string; // Название приза
   type: string;
   description?: string;
   value: any;
