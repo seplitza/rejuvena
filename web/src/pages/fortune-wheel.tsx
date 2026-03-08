@@ -66,7 +66,7 @@ export default function FortuneWheelPage() {
     }
   };
 
-  const handleSpin = async (): Promise<Prize> => {
+  const handleSpin = async (): Promise<{ prize: Prize; prizeIndex: number }> => {
     if (!isAuthenticated) {
       alert('Войдите, чтобы крутить колесо');
       router.push('/auth/login?returnUrl=' + encodeURIComponent('/fortune-wheel'));
