@@ -42,13 +42,26 @@ const FortuneWheel = ({ prizes, onSpin, onConfirmPrize, spinning }: FortuneWheel
       setSelectedPrize(null);
       setPrizeConfirmed(false);
       
-      const { prize: wonPrize, prizeIndex } = await onSpin();
+      const { prize: wonPrize, prizeIndex: backendIndex } = await onSpin();
       
-      // Используем prizeIndex из backend для точной синхронизации
+      // КРИТИЧЕСКИ ВАЖНО: Находим индекс приза в НАШЕМ массиве по _id
+      // Backend может вернуть индекс из другого снимка данных
+      const localPrizeIndex = prizes.findIndex(p => p._id === wonPrize._id);
+      
+      if (localPrizeIndex === -1) {
+        console.error('❌ Prize not found in local array!', wonPrize);
+        // Fallback: используем индекс от backend (может быть неточно)
+        const prizeIndex = backendIndex || 0;
+        setSelectedPrize(wonPrize);
+        return;
+      }
+      
+      const prizeIndex = localPrizeIndex;
+      console.log(`🎯 Won prize: "${wonPrize.name}" (backend index: ${backendIndex}, local index: ${prizeIndex})`);
+      
       const segmentAngle = 360 / prizes.length;
       
-      // Указатель вверху, первый приз начинается с 0°
-      // Чтобы приз оказался под стрелой, нужно повернуть на его угол в обратную сторону
+      // Центр приза на колесе
       const prizeAngle = prizeIndex * segmentAngle + segmentAngle / 2;
       
       // ВАЖНО: Учитываем текущее положение колеса
@@ -63,7 +76,7 @@ const FortuneWheel = ({ prizes, onSpin, onConfirmPrize, spinning }: FortuneWheel
       const fullRotations = 5 + Math.random() * 2;
       const finalRotation = rotation + fullRotations * 360 + deltaAngle;
       
-      console.log(`🎯 Prize ${prizeIndex}: angle=${prizeAngle.toFixed(1)}°, current=${currentAngle.toFixed(1)}°, delta=${deltaAngle.toFixed(1)}°, final=${finalRotation.toFixed(1)}°`);
+      console.log(`🎯 Rotation: prize=${wonPrize.name}, index=${prizeIndex}, angle=${prizeAngle.toFixed(1)}°, current=${currentAngle.toFixed(1)}°, target=${targetAngle.toFixed(1)}°, delta=${deltaAngle.toFixed(1)}°, final=${finalRotation.toFixed(1)}°`);
 
       setRotation(finalRotation);
       
