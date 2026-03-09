@@ -132,10 +132,25 @@ function* getDayExerciseSaga(
         const dayProgress = progressResponse.progress?.dayProgress || {};
         const marathon = marathonResponse.marathon;
         
-        // Split into training (1-14) and practice (15+) days
-        // Simple logic: all published days are available (no date-based locking)
+        // Determine practice start day based on marathon type
+        // Basic course (14 days): practice starts at day 15
+        // Advanced courses (7 days): practice starts at day 8
+        const practiceStartDay = marathon.numberOfDays === 14 ? 15 : 8;
+        
+        // Calculate available day (from enrollment startDate)
+        const enrollment = progressResponse.progress?.enrollment;
+        let currentAvailableDay = 999; // Default: all unlocked
+        
+        if (enrollment && enrollment.enrolledAt) {
+          const enrolledDate = new Date(enrollment.enrolledAt);
+          const now = new Date();
+          const daysSinceEnroll = Math.floor((now.getTime() - enrolledDate.getTime()) / (1000 * 60 * 60 * 24));
+          currentAvailableDay = daysSinceEnroll + 1;
+        }
+        
+        // Split into training and practice days
         const marathonDays = allDays
-          .filter((d: any) => d.dayNumber <= 14)
+          .filter((d: any) => d.dayNumber < practiceStartDay)
           .map((d: any) => ({
             id: d._id,
             day: d.dayNumber,
@@ -143,17 +158,19 @@ function* getDayExerciseSaga(
             description: d.description,
             dayDate: d.dayDate,
             progress: dayProgress[d.dayNumber] || 0,
+            isLocked: d.dayNumber > currentAvailableDay,
           }));
         
         const greatExtensionDays = allDays
-          .filter((d: any) => d.dayNumber > 14)
+          .filter((d: any) => d.dayNumber >= practiceStartDay)
           .map((d: any) => ({
             id: d._id,
             day: d.dayNumber,
-            title: d.title || `День ${d.dayNumber}`,
+            title: d.title || `Практика`,
             description: d.description,
             dayDate: d.dayDate,
             progress: dayProgress[d.dayNumber] || 0,
+            isLocked: d.dayNumber > currentAvailableDay,
           }));
         
         yield put({
