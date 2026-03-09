@@ -79,6 +79,8 @@ export const payment_status = '/api/payment/status';
 
 // Fortune Wheel
 export const get_fortune_wheel_prizes = '/api/fortune-wheel/prizes';
+export const get_fortune_wheel_status = '/api/fortune-wheel/status';
+export const get_fortune_wheel_settings = '/api/admin/fortune-wheel/settings';
 export const get_available_spins = '/api/fortune-wheel/available-spins';
 export const spin_wheel = '/api/fortune-wheel/spin';
 export const post_fortune_wheel_confirm_prize = '/api/fortune-wheel/confirm-prize';

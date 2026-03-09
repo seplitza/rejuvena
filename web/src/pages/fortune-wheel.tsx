@@ -35,13 +35,31 @@ export default function FortuneWheelPage() {
   const [spinning, setSpinning] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEnabled, setIsEnabled] = useState(true);
+  const [showDisabledModal, setShowDisabledModal] = useState(false);
 
   useEffect(() => {
+    checkSettings();
     loadPrizes();
     if (isAuthenticated) {
       loadAvailableSpins();
     }
   }, [isAuthenticated]);
+
+  const checkSettings = async () => {
+    try {
+      const response = await request.get(endpoints.get_fortune_wheel_status) as any;
+      const enabled = response?.isEnabled ?? true;
+      setIsEnabled(enabled);
+      if (!enabled) {
+        setShowDisabledModal(true);
+      }
+    } catch (err: any) {
+      console.error('Failed to load settings:', err);
+      // По умолчанию показываем колесо если не смогли получить настройки
+      setIsEnabled(true);
+    }
+  };
 
   const loadPrizes = async () => {
     try {
@@ -165,7 +183,66 @@ export default function FortuneWheelPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-100 to-purple-100 py-12">
+    <>
+      {/* Модальное окно - Колесо Фортуны отключено */}
+      {showDisabledModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden animate-fade-in">
+            {/* Градиентный заголовок */}
+            <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 p-8 text-white text-center">
+              <div className="text-7xl mb-4">🎰</div>
+              <h2 className="text-3xl font-bold mb-2">Колесо Фортуны</h2>
+              <p className="text-purple-100 text-lg">временно недоступно</p>
+            </div>
+
+            {/* Контент */}
+            <div className="p-8">
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 mb-6">
+                <div className="flex items-start gap-4">
+                  <div className="text-4xl">💬</div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-lg mb-2">
+                      Свяжитесь с нами
+                    </h3>
+                    <p className="text-gray-700 mb-4">
+                      Колесо Фортуны временно отключено. Пожалуйста, свяжитесь с нами в Telegram для получения информации о призах и акциях.
+                    </p>
+                    <a
+                      href="https://t.me/Seplitza_info_bot"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105"
+                    >
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121L7.773 13.98l-2.887-.9c-.626-.196-.644-.627.136-.93l11.28-4.34c.522-.194.976.125.803.93z"/>
+                      </svg>
+                      Написать в Telegram
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Кнопка закрытия */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => router.push('/dashboard')}
+                  className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                >
+                  На главную
+                </button>
+                <button
+                  onClick={() => setShowDisabledModal(false)}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-shadow"
+                >
+                  Закрыть
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-100 to-purple-100 py-12">
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Заголовок */}
         <div className="text-center mb-12">
@@ -270,6 +347,7 @@ export default function FortuneWheelPage() {
           animation: fadeIn 0.5s ease-out;
         }
       `}</style>
-    </div>
+      </div>
+    </>
   );
 }
