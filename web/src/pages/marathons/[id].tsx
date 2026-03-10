@@ -74,6 +74,26 @@ export default function MarathonDetailPage() {
     }
   }, [id, isAuthenticated]);
 
+  // Пересчитываем доступность дней когда загружены enrollment и marathon
+  useEffect(() => {
+    if (marathon && days.length > 0) {
+      const now = new Date();
+      const start = new Date(marathon.startDate);
+      const daysSinceStart = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+      const currentAvailableDay = daysSinceStart + 1;
+
+      const updatedDays = days.map(day => ({
+        ...day,
+        isAvailable: enrollment ? day.dayNumber <= currentAvailableDay : false
+      }));
+
+      // Обновляем только если изменилась доступность
+      if (JSON.stringify(updatedDays) !== JSON.stringify(days)) {
+        setDays(updatedDays);
+      }
+    }
+  }, [enrollment, marathon]);
+
   const loadMarathon = async () => {
     try {
       const response = await fetch(`${API_URL}/api/marathons/${id}`);

@@ -91,8 +91,49 @@ export default function MarathonsPage() {
     }).format(date);
   };
 
-  const handleMarathonClick = (marathonId: string) => {
-    router.push(`/marathons/${marathonId}`);
+  const handleMarathonClick = async (marathon: Marathon) => {
+    // Если пользователь записан, открываем последний доступный день
+    if (marathon.userEnrolled && marathon.userEnrollmentStatus === 'active') {
+      try {
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+          router.push(`/marathons/${marathon._id}`);
+          return;
+        }
+
+        // Загружаем прогресс и определяем последний доступный день
+        const response = await fetch(`${API_URL}/api/marathons/${marathon._id}/progress`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const enrollment = data.enrollment;
+          
+          // Вычисляем текущий доступный день
+          const now = new Date();
+          const start = new Date(marathon.startDate);
+          const daysSinceStart = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+          const currentAvailableDay = Math.max(1, Math.min(daysSinceStart + 1, marathon.numberOfDays));
+          
+          // Открываем последний доступный день (либо lastAccessedDay, либо текущий)
+          const dayToOpen = enrollment.lastAccessedDay > 0 
+            ? Math.min(enrollment.lastAccessedDay, currentAvailableDay)
+            : currentAvailableDay;
+          
+          console.log(`🎯 Opening day ${dayToOpen} for marathon ${marathon._id}`);
+          router.push(`/marathons/${marathon._id}/day/${dayToOpen}`);
+          return;
+        }
+      } catch (err) {
+        console.error('Error loading enrollment:', err);
+      }
+    }
+    
+    // В остальных случаях открываем страницу марафона
+    router.push(`/marathons/${marathon._id}`);
   };
 
   if (loading) {
@@ -162,7 +203,7 @@ export default function MarathonsPage() {
             return (
               <div
                 key={marathon._id}
-                onClick={() => handleMarathonClick(marathon._id)}
+                onClick={() => handleMarathonClick(marathon)}
                 style={{
                   background: 'white',
                   borderRadius: '16px',
