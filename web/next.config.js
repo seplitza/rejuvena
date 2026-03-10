@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   ...(process.env.NODE_ENV === 'production' && { output: 'export' }), // Enable static export for GitHub Pages only in production  
   generateBuildId: async () => {
-    return `build-${Date.now()}`
+    return `build-marathon-fix-${Date.now()}`
   },
   images: {
     unoptimized: true, // GitHub Pages doesn't support Next.js Image Optimization
