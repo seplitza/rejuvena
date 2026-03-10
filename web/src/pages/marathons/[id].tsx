@@ -76,23 +76,29 @@ export default function MarathonDetailPage() {
 
   // Пересчитываем доступность дней когда загружены enrollment и marathon
   useEffect(() => {
-    if (marathon && days.length > 0) {
+    if (marathon && days.length > 0 && enrollment) {
       const now = new Date();
-      const start = new Date(marathon.startDate);
-      const daysSinceStart = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-      const currentAvailableDay = daysSinceStart + 1;
+      const enrollmentStart = new Date(enrollment.enrolledAt);
+      const daysSinceEnrollment = Math.floor((now.getTime() - enrollmentStart.getTime()) / (1000 * 60 * 60 * 24));
+      const currentAvailableDay = daysSinceEnrollment + 1;
 
       const updatedDays = days.map(day => ({
         ...day,
-        isAvailable: enrollment ? day.dayNumber <= currentAvailableDay : false
+        isAvailable: day.dayNumber <= currentAvailableDay
       }));
 
       // Обновляем только если изменилась доступность
       if (JSON.stringify(updatedDays) !== JSON.stringify(days)) {
         setDays(updatedDays);
       }
+    } else if (!enrollment && days.length > 0) {
+      // Если не записан - все дни недоступны
+      const updatedDays = days.map(day => ({ ...day, isAvailable: false }));
+      if (JSON.stringify(updatedDays) !== JSON.stringify(days)) {
+        setDays(updatedDays);
+      }
     }
-  }, [enrollment, marathon]);
+  }, [enrollment, marathon, days.length]);
 
   const loadMarathon = async () => {
     try {
@@ -514,8 +520,8 @@ export default function MarathonDetailPage() {
                       {!day.isAvailable && (
                         <div style={{
                           padding: '4px 12px',
-                          background: '#6B7280',
-                          color: 'white',
+                          background: '#FCD34D',
+                          color: '#78350F',
                           borderRadius: '12px',
                           fontSize: '12px',
                           fontWeight: '600'

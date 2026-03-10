@@ -112,16 +112,14 @@ export default function MarathonsPage() {
           const data = await response.json();
           const enrollment = data.enrollment;
           
-          // Вычисляем текущий доступный день
+          // Вычисляем текущий доступный день от даты записи пользователя
           const now = new Date();
-          const start = new Date(marathon.startDate);
-          const daysSinceStart = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-          const currentAvailableDay = Math.max(1, Math.min(daysSinceStart + 1, marathon.numberOfDays));
+          const enrollmentStart = new Date(enrollment.enrolledAt);
+          const daysSinceEnrollment = Math.floor((now.getTime() - enrollmentStart.getTime()) / (1000 * 60 * 60 * 24));
+          const currentAvailableDay = Math.max(1, Math.min(daysSinceEnrollment + 1, marathon.numberOfDays));
           
-          // Открываем последний доступный день (либо lastAccessedDay, либо текущий)
-          const dayToOpen = enrollment.lastAccessedDay > 0 
-            ? Math.min(enrollment.lastAccessedDay, currentAvailableDay)
-            : currentAvailableDay;
+          // Открываем текущий доступный день
+          const dayToOpen = currentAvailableDay;
           
           console.log(`🎯 Opening day ${dayToOpen} for marathon ${marathon._id}`);
           router.push(`/marathons/${marathon._id}/day/${dayToOpen}`);
