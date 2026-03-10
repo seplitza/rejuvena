@@ -34,8 +34,13 @@ jobs:
       - name: Install dependencies
         run: npm install
       
+      - name: Clear Next.js cache
+        run: rm -rf .next
+      
       - name: Build
         run: npm run build
+        env:
+          NODE_ENV: production
       
       - name: Create .nojekyll file
         run: touch ./out/.nojekyll
