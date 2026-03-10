@@ -118,6 +118,14 @@ export default function MarathonsPage() {
           const daysSinceEnrollment = Math.floor((now.getTime() - enrollmentStart.getTime()) / (1000 * 60 * 60 * 24));
           const currentAvailableDay = Math.max(1, Math.min(daysSinceEnrollment + 1, marathon.numberOfDays));
           
+          console.log('📊 Enrollment Debug:', {
+            enrolledAt: enrollment.enrolledAt,
+            daysSinceEnrollment,
+            currentAvailableDay,
+            marathonId: marathon._id,
+            marathonTitle: marathon.title
+          });
+          
           // Открываем текущий доступный день
           const dayToOpen = currentAvailableDay;
           

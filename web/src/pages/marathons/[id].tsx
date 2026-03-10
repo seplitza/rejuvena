@@ -82,6 +82,13 @@ export default function MarathonDetailPage() {
       const daysSinceEnrollment = Math.floor((now.getTime() - enrollmentStart.getTime()) / (1000 * 60 * 60 * 24));
       const currentAvailableDay = daysSinceEnrollment + 1;
 
+      console.log('🔍 Days Availability Calculation:', {
+        enrolledAt: enrollment.enrolledAt,
+        daysSinceEnrollment,
+        currentAvailableDay,
+        totalDays: days.length
+      });
+
       const updatedDays = days.map(day => ({
         ...day,
         isAvailable: day.dayNumber <= currentAvailableDay
