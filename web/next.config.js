@@ -9,8 +9,8 @@ const nextConfig = {
     unoptimized: true, // GitHub Pages doesn't support Next.js Image Optimization
     domains: ['faceliftnaturally.me'],
   },
-  basePath: '', // User page - no basePath needed
-  assetPrefix: '',
+  basePath: process.env.NODE_ENV === 'production' ? '/rejuvena' : '', // Project page - matches GitHub repo name
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/rejuvena' : '',
   env: {
     API_URL: process.env.NODE_ENV === 'production' ? 'https://api-rejuvena.duckdns.org' : (process.env.API_URL || 'http://localhost:9527'),
     NEXT_PUBLIC_API_URL: process.env.NODE_ENV === 'production' ? 'https://api-rejuvena.duckdns.org' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9527'),
