@@ -28,20 +28,38 @@ jobs:
         with:
           node-version: '18'
       
-      - name: Clear caches and build
+      - name: Build Rejuvena Web App
         working-directory: ./web
         run: |
           rm -rf .next node_modules/.cache .npm
           npm ci --legacy-peer-deps
-          echo "Building with timestamp: $(date)"
+          echo "Building Rejuvena with timestamp: $(date)"
           NODE_ENV=production npm run build
           touch ./out/.nojekyll
+      
+      - name: Build Shop Frontend
+        working-directory: ./shop-frontend
+        run: |
+          rm -rf .next node_modules/.cache .npm
+          npm ci --legacy-peer-deps
+          echo "Building Shop with timestamp: $(date)"
+          NODE_ENV=production npm run build
+          touch ./out/.nojekyll
+      
+      - name: Combine builds
+        run: |
+          mkdir -p combined-output
+          cp -r web/out/* combined-output/
+          mkdir -p combined-output/shop
+          cp -r shop-frontend/out/* combined-output/shop/
+          echo "Combined structure:"
+          ls -la combined-output/
       
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./web/out
+          publish_dir: ./combined-output
           publish_branch: gh-pages
           force_orphan: true
-          commit_message: 'Deploy from main ${{ github.sha }}'
+          commit_message: 'Deploy Rejuvena + Shop from main ${{ github.sha }}'
