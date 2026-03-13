@@ -48,12 +48,95 @@ jobs:
       
       - name: Combine builds
         run: |
-          mkdir -p combined-output
-          cp -r web/out/* combined-output/
-          mkdir -p combined-output/shop
+          mkdir -p combined-output/rejuvena combined-output/shop
+          
+          # Copy Rejuvena app to /rejuvena
+          cp -r web/out/* combined-output/rejuvena/
+          
+          # Copy Shop to /shop
           cp -r shop-frontend/out/* combined-output/shop/
+          
+          # Create root index.html redirecting to /rejuvena
+          cat > combined-output/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="ru">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta http-equiv="refresh" content="0; url=/rejuvena">
+            <title>Seplitza - Redirecting...</title>
+            <style>
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                margin: 0;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+              }
+              .container {
+                text-align: center;
+                padding: 2rem;
+              }
+              h1 {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+              }
+              p {
+                font-size: 1.2rem;
+                margin-bottom: 2rem;
+              }
+              .links {
+                display: flex;
+                gap: 1rem;
+                justify-content: center;
+                flex-wrap: wrap;
+              }
+              a {
+                display: inline-block;
+                padding: 1rem 2rem;
+                background: white;
+                color: #667eea;
+                text-decoration: none;
+                border-radius: 0.5rem;
+                font-weight: 600;
+                transition: transform 0.2s;
+              }
+              a:hover {
+                transform: translateY(-2px);
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>Seplitza</h1>
+              <p>Перенаправление на Rejuvena App...</p>
+              <div class="links">
+                <a href="/rejuvena">Rejuvena App</a>
+                <a href="/shop">Shop</a>
+              </div>
+            </div>
+            <script>
+              // Redirect to rejuvena if not already there
+              if (window.location.pathname === '/') {
+                window.location.href = '/rejuvena';
+              }
+            </script>
+          </body>
+          </html>
+          EOF
+          
+          # Copy .nojekyll to root
+          touch combined-output/.nojekyll
+          
           echo "Combined structure:"
           ls -la combined-output/
+          echo "Rejuvena files:"
+          ls -la combined-output/rejuvena/ | head -20
+          echo "Shop files:"
+          ls -la combined-output/shop/ | head -20
       
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v3
