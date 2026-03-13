@@ -151,11 +151,23 @@ export default function MarathonDetailPage() {
       
       if (response.ok) {
         const data = await response.json();
-        setEnrollment(data.enrollment);
+        
+        // Backend возвращает данные в data.progress
+        const progressData = data.progress || {};
+        const enrollmentData = {
+          _id: progressData._id || '',
+          status: progressData.status || 'active',
+          currentDay: progressData.currentDay || 1,
+          completedDays: progressData.completedDays || [],
+          enrolledAt: progressData.enrollment?.enrolledAt || progressData.enrolledAt || new Date().toISOString(),
+          isPaid: progressData.isPaid !== undefined ? progressData.isPaid : true
+        };
+        
+        setEnrollment(enrollmentData);
         
         // Сразу пересчитываем доступность дней после загрузки enrollment
-        if (data.enrollment && days.length > 0 && marathon) {
-          recalculateDaysAvailability(data.enrollment, marathon, days);
+        if (enrollmentData.enrolledAt && days.length > 0 && marathon) {
+          recalculateDaysAvailability(enrollmentData, marathon, days);
         }
       }
     } catch (err) {
