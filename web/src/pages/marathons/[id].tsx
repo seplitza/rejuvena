@@ -74,38 +74,38 @@ export default function MarathonDetailPage() {
     }
   }, [id, isAuthenticated]);
 
+  // Функция пересчета доступности дней
+  const recalculateDaysAvailability = (enrollmentData: Enrollment, marathonData: Marathon, currentDays: MarathonDay[]) => {
+    const now = new Date();
+    const enrollmentStart = new Date(enrollmentData.enrolledAt);
+    const daysSinceEnrollment = Math.floor((now.getTime() - enrollmentStart.getTime()) / (1000 * 60 * 60 * 24));
+    const currentAvailableDay = daysSinceEnrollment + 1;
+
+    console.log('🔍 Days Availability Calculation:', {
+      enrolledAt: enrollmentData.enrolledAt,
+      daysSinceEnrollment,
+      currentAvailableDay,
+      totalDays: currentDays.length
+    });
+
+    const updatedDays = currentDays.map(day => ({
+      ...day,
+      isAvailable: day.dayNumber <= currentAvailableDay
+    }));
+
+    setDays(updatedDays);
+  };
+
   // Пересчитываем доступность дней когда загружены enrollment и marathon
   useEffect(() => {
     if (marathon && days.length > 0 && enrollment) {
-      const now = new Date();
-      const enrollmentStart = new Date(enrollment.enrolledAt);
-      const daysSinceEnrollment = Math.floor((now.getTime() - enrollmentStart.getTime()) / (1000 * 60 * 60 * 24));
-      const currentAvailableDay = daysSinceEnrollment + 1;
-
-      console.log('🔍 Days Availability Calculation:', {
-        enrolledAt: enrollment.enrolledAt,
-        daysSinceEnrollment,
-        currentAvailableDay,
-        totalDays: days.length
-      });
-
-      const updatedDays = days.map(day => ({
-        ...day,
-        isAvailable: day.dayNumber <= currentAvailableDay
-      }));
-
-      // Обновляем только если изменилась доступность
-      if (JSON.stringify(updatedDays) !== JSON.stringify(days)) {
-        setDays(updatedDays);
-      }
+      recalculateDaysAvailability(enrollment, marathon, days);
     } else if (!enrollment && days.length > 0) {
       // Если не записан - все дни недоступны
       const updatedDays = days.map(day => ({ ...day, isAvailable: false }));
-      if (JSON.stringify(updatedDays) !== JSON.stringify(days)) {
-        setDays(updatedDays);
-      }
+      setDays(updatedDays);
     }
-  }, [enrollment, marathon, days.length]);
+  }, [enrollment?.enrolledAt, marathon?._id, days.length]);
 
   const loadMarathon = async () => {
     try {
@@ -126,7 +126,13 @@ export default function MarathonDetailPage() {
       const response = await fetch(`${API_URL}/api/marathons/${id}/days`);
       if (!response.ok) throw new Error('Failed to load days');
       const data = await response.json();
-      setDays(data.days || []);
+      const loadedDays = data.days || [];
+      setDays(loadedDays);
+      
+      // Пересчитываем доступность если enrollment уже загружен
+      if (enrollment && marathon && loadedDays.length > 0) {
+        recalculateDaysAvailability(enrollment, marathon, loadedDays);
+      }
     } catch (err) {
       console.error('Error loading days:', err);
     }
@@ -146,6 +152,11 @@ export default function MarathonDetailPage() {
       if (response.ok) {
         const data = await response.json();
         setEnrollment(data.enrollment);
+        
+        // Сразу пересчитываем доступность дней после загрузки enrollment
+        if (data.enrollment && days.length > 0 && marathon) {
+          recalculateDaysAvailability(data.enrollment, marathon, days);
+        }
       }
     } catch (err) {
       console.error('Error loading enrollment:', err);
