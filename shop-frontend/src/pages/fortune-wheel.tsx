@@ -175,8 +175,9 @@ export default function FortuneWheelPage() {
                             {gift.description}
                           </h3>
                           <p className="text-sm text-gray-500">
-                            Тип: {gift.prizeType === 'discount' ? '🏷️ Скидка' : 
-                                  gift.prizeType === 'freeProduct' ? '🎁 Товар' : 
+                            Тип: {gift.prizeType === 'personalDiscount' ? '🏷️ Скидка' : 
+                                  gift.prizeType === 'discount' ? '🏷️ Скидка' :
+                                  gift.prizeType === 'product' ? '🎁 Товар' : 
                                   gift.prizeType === 'freeShipping' ? '📦 Доставка' : 
                                   '✨ Бонус'}
                           </p>
