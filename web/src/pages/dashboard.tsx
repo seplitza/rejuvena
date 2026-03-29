@@ -34,6 +34,8 @@ interface Marathon {
   userEnrollmentStatus?: 'pending' | 'active' | 'completed' | 'cancelled';
   lastAccessedDay?: number;
   currentDay?: number;
+  practiceRenewalCount?: number;
+  practiceStartDate?: string;
 }
 
 interface FortunePrize {
@@ -158,7 +160,9 @@ const DashboardPage: React.FC = () => {
             const enrolled = data.enrollments.map((e: any) => ({
               ...e.marathonId,
               lastAccessedDay: e.lastAccessedDay || 0,
-              currentDay: e.currentDay || 1
+              currentDay: e.currentDay || 1,
+              practiceRenewalCount: e.practiceRenewalCount || 0,
+              practiceStartDate: e.practiceStartDate || null,
             })).filter((m: any) => m._id);
             setEnrolledMarathons(enrolled);
           }
@@ -342,6 +346,47 @@ const DashboardPage: React.FC = () => {
                 return Math.max(1, currentLearningDay);
               };
 
+              // Calculate current practice day (1-based within the practice block)
+              const getPracticeDay = () => {
+                if (!hasStarted) return 0;
+                const practiceStartDate = marathon.practiceStartDate
+                  ? new Date(marathon.practiceStartDate)
+                  : (() => {
+                      const s = new Date(marathon.startDate);
+                      s.setDate(s.getDate() + marathon.numberOfDays);
+                      return s;
+                    })();
+                const now = new Date();
+                const daysPassed = Math.floor((now.getTime() - practiceStartDate.getTime()) / (1000 * 60 * 60 * 24));
+                return Math.max(0, daysPassed + 1);
+              };
+
+              const practiceDay = getPracticeDay();
+              const practiceTotal = marathon.tenure - marathon.numberOfDays; // 30
+              const showRenewalButton = hasStarted && practiceDay >= 25;
+              const renewalCount = marathon.practiceRenewalCount || 0;
+
+              const handleRenewalClick = async (e: React.MouseEvent) => {
+                e.stopPropagation();
+                const token = localStorage.getItem('auth_token');
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527';
+                try {
+                  const res = await fetch(`${apiUrl}/api/payment/create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ type: 'practice_renewal', marathonId: marathon._id })
+                  });
+                  const data = await res.json();
+                  if (data.success && data.paymentUrl) {
+                    window.location.href = data.paymentUrl;
+                  } else {
+                    alert(data.error || 'Ошибка создания платежа');
+                  }
+                } catch {
+                  alert('Ошибка соединения с сервером');
+                }
+              };
+
               // If marathon has started, always go to current day
               // Otherwise, show welcome/rules on start page
               const targetUrl = hasStarted 
@@ -410,6 +455,26 @@ const DashboardPage: React.FC = () => {
                         {hasStarted && (
                           <div className="mt-2 text-orange-100">
                             ✨ Разблокирован доступ ко всем упражнениям марафона
+                          </div>
+                        )}
+
+                        {hasStarted && renewalCount > 0 && (
+                          <div className="mt-2 text-orange-100 flex items-center gap-2">
+                            <span>🔄</span>
+                            <span>Практика продлена: {renewalCount} {renewalCount === 1 ? 'раз' : renewalCount < 5 ? 'раза' : 'раз'} (цикл {renewalCount + 1})</span>
+                          </div>
+                        )}
+
+                        {showRenewalButton && (
+                          <div className="mt-3">
+                            <button
+                              onClick={handleRenewalClick}
+                              className="bg-white/20 hover:bg-white/30 border border-white/50 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm flex items-center gap-2"
+                            >
+                              <span>🔄</span>
+                              <span>Продлить практику — 1 500 ₽</span>
+                              {practiceDay >= practiceTotal && <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">завершена</span>}
+                            </button>
                           </div>
                         )}
                       </div>
