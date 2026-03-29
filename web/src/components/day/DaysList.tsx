@@ -6,7 +6,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import { useAppSelector } from '@/store/hooks';
-import { selectMarathonData } from '@/store/modules/day/selectors';
+import { selectMarathonData, selectCurrentMarathon } from '@/store/modules/day/selectors';
 
 interface MarathonDay {
   id: string;
@@ -88,14 +88,20 @@ export default function DaysList({ marathonId, currentDayNumber }: DaysListProps
   
   // Use marathon data from Redux (already loaded by saga)
   const marathonData = useAppSelector(selectMarathonData);
+  const currentMarathon = useAppSelector(selectCurrentMarathon);
   
   const marathonDays = marathonData?.marathonDays || [];
   const greatExtensionDays = marathonData?.greatExtensionDays || [];
-  
-  // Debug logging
-  console.log('📋 DaysList - Current day number:', currentDayNumber);
-  console.log('📋 DaysList - Marathon days:', marathonDays.map((d: any) => ({ id: d.id, day: d.day, progress: d.progress })));
-  console.log('📋 DaysList - Practice days:', greatExtensionDays.map((d: any) => ({ id: d.id, day: d.day, progress: d.progress })));
+
+  // Calculate the TRUE current day from marathon startDate
+  const truCurrentDay = React.useMemo(() => {
+    if (!currentMarathon?.startDate) return currentDayNumber;
+    const now = new Date();
+    const start = new Date(currentMarathon.startDate);
+    const daysPassed = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    const total = currentMarathon.tenure || (marathonDays.length + greatExtensionDays.length);
+    return Math.max(1, Math.min(daysPassed + 1, total));
+  }, [currentMarathon, currentDayNumber, marathonDays.length, greatExtensionDays.length]);
 
   const handleDayClick = (dayNumber: number) => {
     router.push(`/marathons/${marathonId}/day/${dayNumber}`);
@@ -138,7 +144,7 @@ export default function DaysList({ marathonId, currentDayNumber }: DaysListProps
           </h4>
           <div className="grid grid-cols-7 gap-2">
             {marathonDays.map((day) => {
-              const isActive = day.day === currentDayNumber;
+              const isActive = day.day === truCurrentDay;
               const rating = getRatingFromProgress(day.progress || 0, false); // false = training
               
               return (
@@ -207,7 +213,7 @@ export default function DaysList({ marathonId, currentDayNumber }: DaysListProps
           </h4>
           <div className="grid grid-cols-7 gap-2">
             {greatExtensionDays.map((day) => {
-              const isActive = day.day === currentDayNumber;
+              const isActive = day.day === truCurrentDay;
               const rating = getRatingFromProgress(day.progress || 0, true); // true = practice
               
               return (

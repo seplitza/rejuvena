@@ -66,6 +66,7 @@ export interface CurrentMarathon {
   title: string;
   imagePath?: string;
   numberOfDays: number;
+  tenure: number;
   startDate: string;
 }
 

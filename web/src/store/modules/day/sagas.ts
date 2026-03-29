@@ -120,6 +120,7 @@ function* getDayExerciseSaga(
           title: marathon.title,
           imagePath: marathon.imagePath,
           numberOfDays: marathon.numberOfDays,
+          tenure: marathon.tenure,
           startDate: marathon.startDate,
         }));
         console.log('✅ Marathon info loaded:', marathon.title);
@@ -137,15 +138,14 @@ function* getDayExerciseSaga(
         // Advanced courses (7 days): practice starts at day 8
         const practiceStartDay = marathon.numberOfDays === 14 ? 15 : 8;
         
-        // Calculate available day (from enrollment startDate)
-        const enrollment = progressResponse.progress?.enrollment;
+        // Calculate available day from marathon startDate (all users progress together)
         let currentAvailableDay = 999; // Default: all unlocked
         
-        if (enrollment && enrollment.enrolledAt) {
-          const enrolledDate = new Date(enrollment.enrolledAt);
+        if (marathon && marathon.startDate) {
+          const startDate = new Date(marathon.startDate);
           const now = new Date();
-          const daysSinceEnroll = Math.floor((now.getTime() - enrolledDate.getTime()) / (1000 * 60 * 60 * 24));
-          currentAvailableDay = daysSinceEnroll + 1;
+          const daysPassed = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+          currentAvailableDay = daysPassed + 1;
         }
         
         // Split into training and practice days

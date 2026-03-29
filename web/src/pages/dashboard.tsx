@@ -342,8 +342,8 @@ const DashboardPage: React.FC = () => {
                 const now = new Date();
                 const start = new Date(marathon.startDate);
                 const daysPassed = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-                const currentLearningDay = Math.min(daysPassed + 1, marathon.numberOfDays);
-                return Math.max(1, currentLearningDay);
+                const total = marathon.tenure || (marathon.numberOfDays + 30);
+                return Math.max(1, Math.min(daysPassed + 1, total));
               };
 
               // Calculate current practice day (1-based within the practice block)
