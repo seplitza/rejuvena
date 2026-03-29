@@ -385,7 +385,7 @@ export default function ExercisesPage() {
                           uniqueId={uniqueId}
                           isDone={isDone}
                           isChanging={false}
-                          onToggle={() => handleExerciseToggle(uniqueId)}
+                          onToggle={() => handleExerciseClick(exercise)}
                           onCheck={() => handleExerciseCheck(exercise, uniqueId)}
                         />
                         
