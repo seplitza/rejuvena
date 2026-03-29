@@ -257,10 +257,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
             </h1>
             {formatSubtitle(landing.heroSection.subtitle)}
             <button
-              onClick={() => handleCtaClick(landing.heroSection.ctaButton.link)}
+              onClick={() => handleCtaClick(landing.heroSection.ctaButton?.link)}
               className="px-8 py-4 bg-white text-purple-600 rounded-full font-bold text-lg hover:shadow-2xl transform hover:scale-105 transition-all"
             >
-              {landing.heroSection.ctaButton.text}
+              {landing.heroSection.ctaButton?.text}
             </button>
           </div>
         </section>
@@ -435,7 +435,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
                         false
                       )
                     })}
-                    buttonText={landing.marathonsSection.basic.ctaButton.text}
+                    buttonText={landing.marathonsSection.basic.ctaButton?.text}
                   />
                 )}
 
@@ -472,7 +472,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
                         true
                       )
                     })}
-                    buttonText={landing.marathonsSection.advanced.ctaButton.text}
+                    buttonText={landing.marathonsSection.advanced.ctaButton?.text}
                   />
                 )}
               </div>
@@ -565,7 +565,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ landing: landingProp, error: 
                 onClick={() => handleCtaClick(landing.ctaSection!.ctaButton.link)}
                 className="px-8 py-4 bg-white text-purple-600 rounded-full font-bold text-lg hover:shadow-2xl transform hover:scale-105 transition-all"
               >
-                {landing.ctaSection.ctaButton.text}
+                {landing.ctaSection.ctaButton?.text}
               </button>
             </div>
           </section>
