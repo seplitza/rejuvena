@@ -1,10 +1,12 @@
 name: Deploy to GitHub Pages
 
+# DISABLED: This workflow was overwriting working gh-pages branch
+# Use manual deployment instead: cd web && npm run build && npx gh-pages -d out
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+  workflow_dispatch:  # Only manual trigger
+  # push:             # DISABLED auto-deploy
+  #   branches:
+  #     - main
 
 permissions:
   contents: write
