@@ -191,16 +191,26 @@ export default function ExercisesPage() {
   };
 
   const handleExerciseClick = (exercise: ExtendedExercise) => {
+    console.log('🎯 Exercise clicked:', exercise.exerciseName);
+    console.log('  - Exercise ID:', exercise.id);
+    console.log('  - Tags:', exercise.tags);
+    
     // Check if exercise is premium and user doesn't have access
     const accessInfo = getExerciseAccess(exercise.tags || []);
     const userHasAccess = hasUserAccess(exercise.id, user?.isPremium);
     
+    console.log('  - Access info:', accessInfo);
+    console.log('  - User has access:', userHasAccess);
+    console.log('  - User isPremium:', user?.isPremium);
+    
     if (!accessInfo.isFree && !userHasAccess) {
       // Show payment modal for premium exercises
+      console.log('🔒 Showing payment modal for premium exercise');
       setSelectedPremiumExercise(exercise);
       setPaymentModalOpen(true);
     } else {
       // Show exercise details for free or purchased exercises
+      console.log('✅ Showing exercise details modal');
       setSelectedExercise(exercise);
     }
   };
@@ -415,6 +425,15 @@ export default function ExercisesPage() {
                             </div>
                           </div>
                         )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
 
       {/* Payment Modal */}
       {modalMounted && selectedPremiumExercise && (
@@ -431,15 +450,6 @@ export default function ExercisesPage() {
           }}
         />
       )}
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
 
       {/* Exercise Detail Modal */}
       {modalMounted && selectedExercise && (
