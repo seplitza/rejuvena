@@ -7,6 +7,7 @@ import * as endpoints from '../api/endpoints';
 import OffersGrid from "../components/OffersGrid";
 import PremiumPlanCard from '../components/payment/PremiumPlanCard';
 import PracticeRenewalModal from '../components/PracticeRenewalModal';
+import ProductCarousel from '../components/ProductCarousel';
 
 interface Payment {
   id: string;
@@ -651,6 +652,11 @@ const DashboardPage: React.FC = () => {
         {/* Marathons and Offers - Always visible */}
         <div className="mb-6">
           <OffersGrid />
+        </div>
+
+        {/* Featured Products Carousel */}
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <ProductCarousel />
         </div>
 
         {/* Fortune Wheel Prizes */}

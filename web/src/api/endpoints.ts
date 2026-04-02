@@ -85,3 +85,9 @@ export const get_available_spins = '/api/fortune-wheel/available-spins';
 export const spin_wheel = '/api/fortune-wheel/spin';
 export const post_fortune_wheel_confirm_prize = '/api/fortune-wheel/confirm-prize';
 export const get_my_fortune_prizes = '/api/fortune-wheel/my-prizes';
+
+// Shop / Products
+export const get_products = '/api/shop/products';
+export const get_product_by_id = (id: string) => `/api/shop/products/${id}`;
+export const get_featured_products = '/api/shop/products?isFeatured=true';
+export const get_product_categories = '/api/shop/categories';
