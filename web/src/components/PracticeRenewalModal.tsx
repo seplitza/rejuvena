@@ -32,26 +32,44 @@ export default function PracticeRenewalModal({
   useEffect(() => {
     if (!isOpen) return;
 
+    // Check if offer was already used this month
     const lastUsed = localStorage.getItem(`${SPECIAL_OFFER_KEY}_${marathonId}`);
-    if (!lastUsed) {
-      // First time - show special offer
-      setShowSpecialOffer(true);
-      const timerStart = Date.now();
-      localStorage.setItem(`practiceRenewalTimer_${marathonId}`, timerStart.toString());
-    } else {
+    if (lastUsed) {
       const lastUsedDate = new Date(parseInt(lastUsed));
       const now = new Date();
       const monthDiff = (now.getFullYear() - lastUsedDate.getFullYear()) * 12 + 
                        (now.getMonth() - lastUsedDate.getMonth());
       
-      if (monthDiff >= 1) {
-        // More than a month passed - show special offer again
-        setShowSpecialOffer(true);
-        const timerStart = Date.now();
-        localStorage.setItem(`practiceRenewalTimer_${marathonId}`, timerStart.toString());
-      } else {
+      if (monthDiff < 1) {
+        // Used this month - no special offer
         setShowSpecialOffer(false);
+        return;
       }
+    }
+
+    // Check existing timer
+    const timerStart = localStorage.getItem(`practiceRenewalTimer_${marathonId}`);
+    
+    if (timerStart) {
+      // Timer exists - check if still valid
+      const elapsed = Date.now() - parseInt(timerStart);
+      const remaining = Math.max(0, TIMER_DURATION - elapsed);
+      
+      if (remaining > 0) {
+        // Timer still active
+        setShowSpecialOffer(true);
+        setTimeRemaining(remaining);
+      } else {
+        // Timer expired
+        setShowSpecialOffer(false);
+        localStorage.removeItem(`practiceRenewalTimer_${marathonId}`);
+      }
+    } else {
+      // First time - create timer
+      setShowSpecialOffer(true);
+      const now = Date.now();
+      localStorage.setItem(`practiceRenewalTimer_${marathonId}`, now.toString());
+      setTimeRemaining(TIMER_DURATION);
     }
   }, [isOpen, marathonId]);
 
@@ -125,6 +143,7 @@ export default function PracticeRenewalModal({
       // Mark special offer as used if applicable
       if (useSpecialOffer) {
         localStorage.setItem(`${SPECIAL_OFFER_KEY}_${marathonId}`, Date.now().toString());
+        localStorage.removeItem(`practiceRenewalTimer_${marathonId}`);
       }
 
       // Redirect to payment page
