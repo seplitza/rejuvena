@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Layout from '@/components/layout/Layout';
 import ProductGrid from '@/components/products/ProductGrid';
+import ProductCarousel from '@/components/ProductCarousel';
 import SEO, { createOrganizationSchema, createWebPageSchema } from '@/components/SEO';
 import { getProducts, getCategories } from '@/api/shop';
 import type { Product, Category } from '@/types/shop';
@@ -20,21 +21,24 @@ import {
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [newProducts, setNewProducts] = useState<Product[]>([]);
+  const [carouselProducts, setCarouselProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [featuredData, newData, categoriesData] = await Promise.all([
+        const [featuredData, newData, categoriesData, carouselData] = await Promise.all([
           getProducts({ isFeatured: true, limit: 8 }),
           getProducts({ sortBy: 'createdAt', sortOrder: 'desc', limit: 8 }),
           getCategories(),
+          getProducts({ limit: 10, sortBy: 'createdAt', sortOrder: 'desc' }), // Товары для карусели
         ]);
 
         setFeaturedProducts(featuredData.products);
         setNewProducts(newData.products);
         setCategories(categoriesData);
+        setCarouselProducts(carouselData.products);
       } catch (error) {
         console.error('Failed to load data:', error);
       } finally {
@@ -173,16 +177,14 @@ export default function Home() {
                 transition={{ duration: 0.7, delay: 0.2 }}
                 className="hidden lg:block"
               >
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-3xl" />
-                  <div className="relative bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-12 flex items-center justify-center">
-                    <img
-                      src="/seplitza-logo.png"
-                      alt="Seplitza - Товары для красоты и здоровья"
-                      className="w-full h-auto max-w-md object-contain"
-                    />
+                {/* Product Carousel */}
+                {loading ? (
+                  <div className="relative bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl h-96 flex items-center justify-center">
+                    <div className="animate-pulse text-gray-400">Загрузка товаров...</div>
                   </div>
-                </div>
+                ) : (
+                  <ProductCarousel products={carouselProducts} autoplayInterval={3000} />
+                )}
               </motion.div>
             </div>
           </div>
