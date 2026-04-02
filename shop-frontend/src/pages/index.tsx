@@ -175,15 +175,13 @@ export default function Home() {
               >
                 <div className="relative">
                   <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-3xl" />
-                  <img
-                    src="/images/hero-products.png"
-                    alt="Товары для красоты"
-                    className="relative rounded-3xl shadow-2xl"
-                    onError={(e) => {
-                      // Fallback если изображение не загрузилось
-                      e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="600" height="600"%3E%3Crect fill="%23f3f4f6" width="600" height="600"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" fill="%239ca3af"%3ESeplitza%3C/text%3E%3C/svg%3E';
-                    }}
-                  />
+                  <div className="relative bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-12 flex items-center justify-center">
+                    <img
+                      src="/seplitza-logo.png"
+                      alt="Seplitza - Товары для красоты и здоровья"
+                      className="w-full h-auto max-w-md object-contain"
+                    />
+                  </div>
                 </div>
               </motion.div>
             </div>
