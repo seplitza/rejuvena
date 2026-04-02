@@ -302,8 +302,139 @@ const DashboardPage: React.FC = () => {
           </p>
         </div>
 
+        {/* Medals Gallery - Achievements Rail */}
+        {enrolledMarathons.length > 0 && (
+          <div className="mb-6 py-4 px-4 bg-gradient-to-r from-orange-50 to-purple-50 rounded-lg">
+            <h3 className="text-lg font-semibold mb-3" style={{ color: 'var(--color-primary)' }}>
+              🏆 Мои достижения
+            </h3>
+            <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'thin' }}>
+              {enrolledMarathons.map((marathon) => {
+                const getMarathonEndDate = () => {
+                  const start = new Date(marathon.startDate);
+                  const totalDays = marathon.tenure || (marathon.numberOfDays + 30);
+                  return new Date(start.getTime() + totalDays * 24 * 60 * 60 * 1000);
+                };
+                const hasEnded = new Date() > getMarathonEndDate();
+                
+                // Calculate current day for active marathons
+                const getCurrentDay = () => {
+                  const now = new Date();
+                  const start = new Date(marathon.startDate);
+                  const daysPassed = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+                  const total = marathon.tenure || (marathon.numberOfDays + 30);
+                  return Math.max(1, Math.min(daysPassed + 1, total));
+                };
+                
+                const handleMedalClick = async () => {
+                  if (hasEnded) {
+                    const token = localStorage.getItem('auth_token');
+                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527';
+                    const confirmed = confirm(`Марафон "${marathon.title}" завершён.\n\nХотите продлить доступ к материалам?\nСтоимость: 1 500 ₽`);
+                    if (!confirmed) return;
+                    
+                    try {
+                      const res = await fetch(`${apiUrl}/api/payment/create`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({ type: 'practice_renewal', marathonId: marathon._id })
+                      });
+                      const data = await res.json();
+                      if (data.success && data.paymentUrl) {
+                        window.location.href = data.paymentUrl;
+                      } else {
+                        alert(data.error || 'Ошибка создания платежа');
+                      }
+                    } catch {
+                      alert('Ошибка соединения с сервером');
+                    }
+                  } else {
+                    router.push(`/marathons/${marathon._id}/day/${getCurrentDay()}`);
+                  }
+                };
+
+                return (
+                  <div
+                    key={marathon._id}
+                    onClick={handleMedalClick}
+                    className="flex-shrink-0 w-32 cursor-pointer transform hover:scale-105 transition-transform"
+                  >
+                    <div className="relative">
+                      <div 
+                        className="w-24 h-24 mx-auto rounded-full shadow-lg flex items-center justify-center text-4xl mb-2"
+                        style={{ 
+                          background: hasEnded 
+                            ? 'linear-gradient(135deg, #9CA3AF 0%, #6B7280 100%)'
+                            : 'linear-gradient(135deg, #F59E0B 0%, #F97316 100%)',
+                          border: '4px solid white'
+                        }}
+                      >
+                        {hasEnded ? '⏰' : '🎯'}
+                      </div>
+                      {hasEnded && (
+                        <div className="absolute top-0 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                          ⏱
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-center font-semibold text-gray-700 line-clamp-2">
+                      {marathon.title}
+                    </p>
+                    <p className="text-xs text-center text-gray-500 mt-1">
+                      {hasEnded ? 'Завершён' : 'Активен'}
+                    </p>
+                  </div>
+                );
+              })}
+              
+              {user?.isPremium && user?.premiumEndDate && (
+                <div
+                  onClick={() => {
+                    if (!user.premiumEndDate) return;
+                    const hasExpired = new Date(user.premiumEndDate) <= new Date();
+                    if (hasExpired) {
+                      const confirmed = confirm('Премиум доступ истёк.\n\nХотите продлить премиум?');
+                      if (confirmed) {
+                        router.push('/payment/premium');
+                      }
+                    } else {
+                      alert(`Премиум активен до ${new Date(user.premiumEndDate).toLocaleDateString('ru-RU')}`);
+                    }
+                  }}
+                  className="flex-shrink-0 w-32 cursor-pointer transform hover:scale-105 transition-transform"
+                >
+                  <div className="relative">
+                    <div 
+                      className="w-24 h-24 mx-auto rounded-full shadow-lg flex items-center justify-center text-4xl mb-2"
+                      style={{ 
+                        background: new Date(user.premiumEndDate!) > new Date()
+                          ? 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)'
+                          : 'linear-gradient(135deg, #9CA3AF 0%, #6B7280 100%)',
+                        border: '4px solid white'
+                      }}
+                    >
+                      👑
+                    </div>
+                    {new Date(user.premiumEndDate!) <= new Date() && (
+                      <div className="absolute top-0 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                        ⏱
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-center font-semibold text-gray-700">
+                    Премиум
+                  </p>
+                  <p className="text-xs text-center text-gray-500 mt-1">
+                    {new Date(user.premiumEndDate!) > new Date() ? 'Активен' : 'Истёк'}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Premium Status or Plan Card */}
-        {user?.isPremium && (
+        {user?.isPremium && user?.premiumEndDate && new Date(user.premiumEndDate) > new Date() && (
           <div 
             className="mb-6 rounded-lg shadow-lg p-6 text-white"
             style={{ backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))' }}
@@ -335,6 +466,17 @@ const DashboardPage: React.FC = () => {
               const countdown = marathonCountdowns[marathon._id];
               const hasStarted = countdown?.hasStarted ?? true;
               const hasViewedStart = (marathon.lastAccessedDay || 0) > 0;
+              
+              // Calculate if marathon has ended (tenure expired)
+              const getMarathonEndDate = () => {
+                const start = new Date(marathon.startDate);
+                const totalDays = marathon.tenure || (marathon.numberOfDays + 30);
+                const endDate = new Date(start.getTime() + totalDays * 24 * 60 * 60 * 1000);
+                return endDate;
+              };
+
+              const marathonEndDate = getMarathonEndDate();
+              const hasEnded = new Date() > marathonEndDate;
               
               // Calculate current day of marathon based on start date
               const getCurrentDay = () => {
@@ -386,6 +528,50 @@ const DashboardPage: React.FC = () => {
                   alert('Ошибка соединения с сервером');
                 }
               };
+
+              // If marathon has ended, show expiration message (only for 30 days)
+              const daysSinceEnded = Math.floor((new Date().getTime() - marathonEndDate.getTime()) / (1000 * 60 * 60 * 24));
+              if (hasEnded && daysSinceEnded <= 30) {
+                return (
+                  <div 
+                    key={marathon._id}
+                    className="rounded-lg shadow-lg p-6 text-white"
+                    style={{ backgroundImage: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))', opacity: 0.85 }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-3">
+                          <h3 className="text-2xl font-bold">🎯 {marathon.title}</h3>
+                          <span className="text-xs bg-white/30 px-3 py-1 rounded-full font-semibold">Доступ окончен</span>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <p className="text-orange-100 flex items-center gap-2">
+                            <span>⏰</span>
+                            <span>Доступ к материалам марафона окончен {marathonEndDate.toLocaleDateString('ru-RU')}</span>
+                          </p>
+                          <p className="text-orange-100 flex items-center gap-2">
+                            <span>💡</span>
+                            <span>Вы можете продлить доступ к практическим материалам</span>
+                          </p>
+                          
+                          <div className="mt-4">
+                            <button
+                              onClick={handleRenewalClick}
+                              className="bg-white text-red-600 font-bold px-6 py-3 rounded-lg hover:bg-orange-50 transition-colors"
+                            >
+                              💳 Продлить доступ — 1 500 ₽
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="ml-6 flex-shrink-0">
+                        <div className="text-7xl mb-2">⏱️</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
 
               // If marathon has started, always go to current day
               // Otherwise, show welcome/rules on start page

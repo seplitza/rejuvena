@@ -399,6 +399,19 @@ curl -s "https://seplitza.github.io/rejuvena/exercises.html" | grep -o '<title>.
 - GitHub Pages был настроен на другой источник, наши деплои шли "в пустоту"
 - После настройки публикации из ветки `gh-pages` все заработало
 
+**Альтернативный метод деплоя (если gh-pages CLI глючит):**
+```bash
+# Этот метод гарантированно работает - клонируем gh-pages во временную папку
+cd /tmp && rm -rf rejuvena-deploy
+git clone --branch gh-pages --single-branch --depth 1 https://github.com/seplitza/rejuvena.git rejuvena-deploy
+cd rejuvena-deploy
+find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+cp -R /Users/alexeipinaev/Documents/Rejuvena/web/out/. .
+git add -A
+git commit -m "Deploy: описание изменений"
+git push origin gh-pages
+```
+
 ---
 
 ## 📂 **Структура проектов**
