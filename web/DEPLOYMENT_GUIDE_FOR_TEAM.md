@@ -1,6 +1,7 @@
 # 📘 Rejuvena - Инструкция по управлению проектом
 
 **Дата создания:** 17 февраля 2026 г.  
+**Последнее обновление:** 2 апреля 2026 г. - Добавлен troubleshooting для деплоя фронтенда  
 **Статус:** Актуально для production
 
 ---
@@ -74,6 +75,48 @@ cd /var/www/rejuvena-backend
 ├── backups/                         # Бэкапы кода
 ├── node_modules/                    # Зависимости
 └── .env                             # Переменные окружения (СЕКРЕТНО!)
+```
+
+---
+
+## 🚀 **БЫСТРЫЙ СТАРТ: Деплой фронтенда (Frontend)**
+
+**ВАЖНО:** GitHub Actions отключен (ломал деплой). Используйте только ручной деплой!
+
+### Пошаговая инструкция:
+
+```bash
+# 1. Перейти в папку фронтенда
+cd /Users/alexeipinaev/Documents/Rejuvena/web
+
+# 2. Внести изменения в код (например, в src/pages/exercises.tsx)
+
+# 3. Собрать проект
+npm run build
+
+# 4. Задеплоить на GitHub Pages
+npx gh-pages -d out -b gh-pages -m "Deploy: описание изменений" --repo https://github.com/seplitza/rejuvena.git
+
+# 5. Закоммитить исходники в main (опционально, но рекомендуется)
+cd /Users/alexeipinaev/Documents/Rejuvena
+git add web/src/
+git commit -m "feat: описание изменений"
+git push origin main
+
+# 6. Подождать 2-3 минуты
+# 7. Проверить: https://seplitza.github.io/rejuvena/
+```
+
+### ✅ Проверка деплоя:
+
+```bash
+# Проверить что попало в gh-pages
+git fetch origin gh-pages
+git log origin/gh-pages --oneline -1
+
+# Проверить на сайте (обойти кеш)
+# Открыть в браузере с параметром: https://seplitza.github.io/rejuvena/?v=2
+# Или жесткая перезагрузка: Cmd+Shift+R
 ```
 
 ---
@@ -312,10 +355,49 @@ cd /Users/alexeipinaev/Documents/Rejuvena/web
 npm run build
 
 # Задеплоить на GitHub Pages
-npx gh-pages -d out -m "Deploy: описание изменений"
+npx gh-pages -d out -b gh-pages -m "Deploy: описание изменений" --repo https://github.com/seplitza/rejuvena.git
 
-# Подождать 2-3 минуты (GitHub Pages CDN cache)
+# Подождать 2-3 минуты (GitHub Pages обновление)
 ```
+
+### ⚠️ TROUBLESHOOTING: Деплой фронтенда не появляется на сайте
+
+**Проблема:** После деплоя изменения не появляются на https://seplitza.github.io/rejuvena/
+
+**Диагностика:**
+```bash
+# 1. Проверить что изменения попали в ветку gh-pages
+cd /Users/alexeipinaev/Documents/Rejuvena
+git fetch origin gh-pages
+git log origin/gh-pages --oneline -3
+
+# 2. Проверить что на сайте отдается старая версия
+curl -s "https://seplitza.github.io/rejuvena/exercises.html" | grep -o '<title>.*</title>'
+# Должно быть: <title>Все упражнения - Rejuvena</title>
+```
+
+**Решение:**
+
+1. **Проверить настройки GitHub Pages:**
+   - Откройте https://github.com/seplitza/rejuvena/settings/pages
+   - **Source (Branch)** должна быть: `gh-pages` и папка `/ (root)`
+   - Если там указано что-то другое (например `main` или GitHub Actions) - **ВОТ ПРИЧИНА!**
+   - Измените на `gh-pages` ветку
+
+2. **После изменения настроек:**
+   - GitHub Pages пересоберет сайт автоматически (~2 минуты)
+   - Проверьте с принудительным обходом кеша: https://seplitza.github.io/rejuvena/exercises?v=2
+   - Или жесткая перезагрузка в браузере: Cmd+Shift+R (macOS) или Ctrl+Shift+F5 (Windows)
+
+3. **Если все еще не работает:**
+   - Очистить кеш браузера для сайта
+   - Открыть в режиме инкогнито
+   - Подождать 10 минут (CDN кеш GitHub Pages)
+
+**История проблемы (апрель 2026):**
+- GitHub Actions workflow был сломан и перезаписывал ветку `gh-pages` неправильной структурой
+- GitHub Pages был настроен на другой источник, наши деплои шли "в пустоту"
+- После настройки публикации из ветки `gh-pages` все заработало
 
 ---
 
