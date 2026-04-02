@@ -6,6 +6,7 @@ import { AuthTokenManager, request } from '../api';
 import * as endpoints from '../api/endpoints';
 import OffersGrid from "../components/OffersGrid";
 import PremiumPlanCard from '../components/payment/PremiumPlanCard';
+import PracticeRenewalModal from '../components/PracticeRenewalModal';
 
 interface Payment {
   id: string;
@@ -81,6 +82,8 @@ const DashboardPage: React.FC = () => {
   const [marathonCountdowns, setMarathonCountdowns] = useState<Record<string, { days: number; hours: number; minutes: number; seconds: number; hasStarted: boolean }>>({});
   const [fortunePrizes, setFortunePrizes] = useState<FortunePrize[]>([]);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [renewalModalOpen, setRenewalModalOpen] = useState(false);
+  const [selectedMarathon, setSelectedMarathon] = useState<{ id: string; name: string } | null>(null);
 
   // Объединенный список активностей: платежи + призы
   const recentActivities = useMemo(() => {
@@ -326,28 +329,10 @@ const DashboardPage: React.FC = () => {
                   return Math.max(1, Math.min(daysPassed + 1, total));
                 };
                 
-                const handleMedalClick = async () => {
+                const handleMedalClick = () => {
                   if (hasEnded) {
-                    const token = localStorage.getItem('auth_token');
-                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527';
-                    const confirmed = confirm(`Марафон "${marathon.title}" завершён.\n\nХотите продлить доступ к материалам?\nСтоимость: 1 500 ₽`);
-                    if (!confirmed) return;
-                    
-                    try {
-                      const res = await fetch(`${apiUrl}/api/payment/create`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                        body: JSON.stringify({ type: 'practice_renewal', marathonId: marathon._id })
-                      });
-                      const data = await res.json();
-                      if (data.success && data.paymentUrl) {
-                        window.location.href = data.paymentUrl;
-                      } else {
-                        alert(data.error || 'Ошибка создания платежа');
-                      }
-                    } catch {
-                      alert('Ошибка соединения с сервером');
-                    }
+                    setSelectedMarathon({ id: marathon._id, name: marathon.title });
+                    setRenewalModalOpen(true);
                   } else {
                     router.push(`/marathons/${marathon._id}/day/${getCurrentDay()}`);
                   }
@@ -508,30 +493,14 @@ const DashboardPage: React.FC = () => {
               const showRenewalButton = hasStarted && practiceDay >= 25;
               const renewalCount = marathon.practiceRenewalCount || 0;
 
-              const handleRenewalClick = async (e: React.MouseEvent) => {
+              const handleRenewalClick = (e: React.MouseEvent) => {
                 e.stopPropagation();
-                const token = localStorage.getItem('auth_token');
-                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://37.252.20.170:9527';
-                try {
-                  const res = await fetch(`${apiUrl}/api/payment/create`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ type: 'practice_renewal', marathonId: marathon._id })
-                  });
-                  const data = await res.json();
-                  if (data.success && data.paymentUrl) {
-                    window.location.href = data.paymentUrl;
-                  } else {
-                    alert(data.error || 'Ошибка создания платежа');
-                  }
-                } catch {
-                  alert('Ошибка соединения с сервером');
-                }
+                setSelectedMarathon({ id: marathon._id, name: marathon.title });
+                setRenewalModalOpen(true);
               };
 
-              // If marathon has ended, show expiration message (only for 30 days)
-              const daysSinceEnded = Math.floor((new Date().getTime() - marathonEndDate.getTime()) / (1000 * 60 * 60 * 24));
-              if (hasEnded && daysSinceEnded <= 30) {
+              // If marathon has ended, show expiration message
+              if (hasEnded) {
                 return (
                   <div 
                     key={marathon._id}
@@ -558,9 +527,10 @@ const DashboardPage: React.FC = () => {
                           <div className="mt-4">
                             <button
                               onClick={handleRenewalClick}
-                              className="bg-white text-red-600 font-bold px-6 py-3 rounded-lg hover:bg-orange-50 transition-colors"
+                              className="bg-white font-bold px-6 py-3 rounded-lg hover:bg-orange-50 transition-colors"
+                              style={{ color: 'var(--color-primary)' }}
                             >
-                              💳 Продлить доступ — 1 500 ₽
+                              💳 Продлить доступ
                             </button>
                           </div>
                         </div>
@@ -1048,6 +1018,20 @@ const DashboardPage: React.FC = () => {
         </div>
         )}
       </main>
+
+      {/* Practice Renewal Modal */}
+      {selectedMarathon && (
+        <PracticeRenewalModal
+          isOpen={renewalModalOpen}
+          onClose={() => {
+            setRenewalModalOpen(false);
+            setSelectedMarathon(null);
+          }}
+          marathonId={selectedMarathon.id}
+          marathonName={selectedMarathon.name}
+        />
+      )}
+
       {/* deploy-test: v20260329-currentday-fix */}
     </div>
   );
