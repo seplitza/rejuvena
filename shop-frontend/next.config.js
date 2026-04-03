@@ -1,7 +1,11 @@
 /** @type {import('next').NextConfig} */
+// STATIC_EXPORT=true используется только для деплоя на GitHub Pages (npm run deploy)
+// Серверный деплой (shop.seplitza.ru) НЕ использует STATIC_EXPORT
+const isStaticExport = process.env.STATIC_EXPORT === 'true'
+
 const nextConfig = {
   reactStrictMode: true,
-  ...(process.env.NODE_ENV === 'production' && { output: 'export' }),
+  ...(isStaticExport && { output: 'export' }),
   generateBuildId: async () => {
     return `build-shop-${Date.now()}`
   },
@@ -27,8 +31,10 @@ const nextConfig = {
       'cdn3.ozone.ru'
     ]
   },
-  basePath: process.env.NODE_ENV === 'production' ? '/shop' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/shop' : '',
+  // basePath для GitHub Pages: STATIC_EXPORT=true NEXT_PUBLIC_BASE_PATH=/shop
+  // Для сервера shop.seplitza.ru: basePath пустой (сайт на корне домена)
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
+  assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH || '',
   webpack: (config) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
@@ -38,13 +44,11 @@ const nextConfig = {
     };
     return config;
   },
+  // Не переопределяем env — используем значения из .env.production / .env.local
+  // Дефолты на случай если .env файл не найден
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NODE_ENV === 'production' 
-      ? 'https://api-rejuvena.duckdns.org' 
-      : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'),
-    NEXT_PUBLIC_SITE_URL: process.env.NODE_ENV === 'production'
-      ? 'https://seplitza.github.io/shop'
-      : (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001')
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9527',
+    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3001'
   }
 }
 

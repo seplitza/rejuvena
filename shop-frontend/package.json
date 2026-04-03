@@ -7,8 +7,9 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
-    "export": "NODE_ENV=production next build && touch out/.nojekyll",
+    "export": "STATIC_EXPORT=true NEXT_PUBLIC_BASE_PATH=/shop next build && touch out/.nojekyll",
     "deploy": "npm run export && gh-pages -d out",
+    "deploy:server": "bash deploy-to-server.sh",
     "lint": "next lint",
     "type-check": "tsc --noEmit"
   },
