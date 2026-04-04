@@ -15,7 +15,7 @@ export default function CatalogPage() {
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
-    limit: 12,
+    limit: 50,
     totalPages: 1,
   });
 
@@ -24,8 +24,8 @@ export default function CatalogPage() {
     search: router.query.search as string || '',
     minPrice: router.query.minPrice as string || '',
     maxPrice: router.query.maxPrice as string || '',
-    sortBy: router.query.sort as string || 'createdAt',
-    sortOrder: (router.query.order as 'asc' | 'desc') || 'desc',
+    sortBy: router.query.sort as string || 'popularity',
+    sortOrder: (router.query.order as 'asc' | 'desc') || 'asc',
     isFeatured: router.query.featured === 'true',
   });
 
@@ -51,7 +51,7 @@ export default function CatalogPage() {
     try {
       const params: any = {
         page: parseInt(router.query.page as string) || 1,
-        limit: 12,
+        limit: 50,
       };
 
       if (router.query.category) params.category = router.query.category;
@@ -82,8 +82,8 @@ export default function CatalogPage() {
     if (newFilters.search) query.search = newFilters.search;
     if (newFilters.minPrice) query.minPrice = newFilters.minPrice;
     if (newFilters.maxPrice) query.maxPrice = newFilters.maxPrice;
-    if (newFilters.sortBy !== 'createdAt') query.sort = newFilters.sortBy;
-    if (newFilters.sortOrder !== 'desc') query.order = newFilters.sortOrder;
+    if (newFilters.sortBy !== 'popularity') query.sort = newFilters.sortBy;
+    if (newFilters.sortOrder !== 'asc') query.order = newFilters.sortOrder;
     if (newFilters.isFeatured) query.featured = 'true';
 
     router.push({ pathname: '/catalog', query }, undefined, { shallow: true });
@@ -95,8 +95,8 @@ export default function CatalogPage() {
       search: '',
       minPrice: '',
       maxPrice: '',
-      sortBy: 'createdAt',
-      sortOrder: 'desc',
+      sortBy: 'popularity',
+      sortOrder: 'asc',
       isFeatured: false,
     });
     router.push('/catalog', undefined, { shallow: true });

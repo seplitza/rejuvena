@@ -10,6 +10,12 @@ interface ProductCarouselProps {
   className?: string;
 }
 
+// Strip HTML tags from text
+function stripHtml(html: string): string {
+  if (!html) return '';
+  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+}
+
 export default function ProductCarousel({ 
   products, 
   autoplayInterval = 3000,
@@ -82,7 +88,7 @@ export default function ProductCarousel({
                     {currentProduct.name}
                   </h3>
                   <p className="text-lg text-gray-600 max-w-2xl mx-auto line-clamp-2">
-                    {currentProduct.description}
+                    {stripHtml(currentProduct.shortDescription || currentProduct.description)}
                   </p>
                 </motion.div>
 
