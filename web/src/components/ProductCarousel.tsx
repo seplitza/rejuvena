@@ -44,11 +44,10 @@ export default function ProductCarousel() {
     }
   };
 
-  const formatPrice = (priceInCents: number) => {
-    const rubles = priceInCents / 100;
-    return rubles.toLocaleString('ru-RU', {
+  const formatPrice = (price: number) => {
+    return price.toLocaleString('ru-RU', {
       minimumFractionDigits: 0,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 0
     });
   };
 

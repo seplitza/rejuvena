@@ -278,6 +278,93 @@ export default function ProductPage() {
                 </div>
               </div>
 
+              {/* Marketplace Links */}
+              {(product.wildberries?.url || product.ozon?.url || product.yandexMarket?.url) && (
+                <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-6 mb-8">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <SparklesIcon className="w-5 h-5 text-primary-500" />
+                    Также доступно на маркетплейсах
+                  </h3>
+                  <div className="space-y-3">
+                    {product.wildberries?.url && (
+                      <a
+                        href={product.wildberries.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between p-3 bg-white rounded-lg hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <span className="text-purple-700 font-bold text-sm">WB</span>
+                          </div>
+                          <div>
+                            <div className="font-semibold text-gray-900">Wildberries</div>
+                            {product.wildberries.price ? (
+                              <div className="text-sm text-gray-600">
+                                {product.wildberries.price.toLocaleString('ru-RU')} ₽
+                              </div>
+                            ) : null}
+                          </div>
+                        </div>
+                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </a>
+                    )}
+                    {product.ozon?.url && (
+                      <a
+                        href={product.ozon.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between p-3 bg-white rounded-lg hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <span className="text-blue-700 font-bold text-sm">OZ</span>
+                          </div>
+                          <div>
+                            <div className="font-semibold text-gray-900">Ozon</div>
+                            {product.ozon.price ? (
+                              <div className="text-sm text-gray-600">
+                                {product.ozon.price.toLocaleString('ru-RU')} ₽
+                              </div>
+                            ) : null}
+                          </div>
+                        </div>
+                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </a>
+                    )}
+                    {product.yandexMarket?.url && (
+                      <a
+                        href={product.yandexMarket.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between p-3 bg-white rounded-lg hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <span className="text-yellow-700 font-bold text-sm">ЯМ</span>
+                          </div>
+                          <div>
+                            <div className="font-semibold text-gray-900">Яндекс Маркет</div>
+                            {product.yandexMarket.price ? (
+                              <div className="text-sm text-gray-600">
+                                {product.yandexMarket.price.toLocaleString('ru-RU')} ₽
+                              </div>
+                            ) : null}
+                          </div>
+                        </div>
+                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Description */}
               <div className="bg-white rounded-xl p-6">
                 <h2 className="text-xl font-semibold mb-4">Описание</h2>

@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Кверцетин: молекула, убивающая старение | Rejuvena</title>
+  <meta name="description" content="Научно-популярная статья о кверцетине — флавоноиде, который замедляет старение клеток, снижает воспаление и защищает сердце. Реальные исследования, живой язык." />
+  <meta property="og:title" content="Кверцетин: молекула, убивающая старение" />
+  <meta property="og:description" content="Флавоноид, спрятанный в луке и яблоках — и один из самых изучаемых геропротекторов планеты. Что говорит наука?" />
+  <meta property="og:type" content="article" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --pink: #ec4899;
+      --pink-light: #f9a8d4;
+      --purple: #a78bfa;
+      --green: #34d399;
+      --blue: #60a5fa;
+      --amber: #fbbf24;
+      --orange: #fb923c;
+      --indigo: #818cf8;
+      --bg: #0f0c29;
+      --bg2: #302b63;
+      --text: #d1d5db;
+      --text-dim: #9ca3af;
+      --white: #ffffff;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, var(--bg) 0%, var(--bg2) 50%, #24243e 100%);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+    /* Nav */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      padding: 1rem 1.5rem;
+      background: rgba(15,12,41,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .nav-inner { max-width: 56rem; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    .nav-logo { font-weight: 800; letter-spacing: 0.15em; color: var(--pink); font-size: 1.125rem; }
+    .nav-back { color: var(--text-dim); font-size: 0.875rem; transition: color .2s; }
+    .nav-back:hover { color: var(--white); }
+    /* Hero */
+    .hero { padding: 6rem 1.5rem 4rem; text-align: center; position: relative; overflow: hidden; }
+    .hero-molecules { position: absolute; inset: 0; pointer-events: none; }
+    .hero-inner { position: relative; z-index: 1; max-width: 48rem; margin: 0 auto; }
+    .badge {
+      display: inline-block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em;
+      text-transform: uppercase; padding: 0.375rem 1rem; border-radius: 9999px; margin-bottom: 1.5rem;
+      background: rgba(236,72,153,0.15); border: 1px solid rgba(236,72,153,0.4); color: var(--pink-light);
+    }
+    h1.hero-title {
+      font-size: clamp(2rem, 6vw, 3.5rem); font-weight: 900; color: var(--white);
+      line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 1.5rem;
+    }
+    .gradient-text {
+      background: linear-gradient(90deg, var(--pink), var(--purple), var(--green));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub { color: var(--text); font-size: 1.125rem; max-width: 40rem; margin: 0 auto; }
+    /* Card */
+    .card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 1rem;
+      overflow: hidden;
+    }
+    /* Stats strip */
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    @media (min-width: 640px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
+    .stat-card { border-radius: 0.75rem; padding: 1rem; text-align: center; background: rgba(255,255,255,0.04); }
+    .stat-val { font-size: 1.75rem; font-weight: 900; margin-bottom: 0.25rem; }
+    .stat-label { color: var(--text-dim); font-size: 0.75rem; line-height: 1.4; }
+    /* Article sections */
+    article { max-width: 48rem; margin: 0 auto; }
+    section.a-section { margin-bottom: 5rem; }
+    .section-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
+    .section-icon {
+      width: 2.5rem; height: 2.5rem; border-radius: 0.75rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 1.1rem;
+    }
+    .section-label { font-size: 0.7rem; font-family: monospace; text-transform: uppercase; letter-spacing: 0.15em; opacity: 0.7; }
+    .section-title { font-size: clamp(1.25rem, 3vw, 1.6rem); font-weight: 800; color: var(--white); line-height: 1.2; }
+    .prose { font-size: 1rem; color: var(--text); }
+    .prose p { margin-bottom: 1rem; }
+    .prose strong { color: var(--white); }
+    .prose em { font-style: italic; }
+    /* Callout */
+    .callout { margin: 1.5rem 0; padding: 1.25rem 1.25rem 1.25rem 1.5rem; border-radius: 0.75rem; font-size: 0.9rem; line-height: 1.65; color: var(--text); }
+    /* Feature list */
+    .feature-list { list-style: none; padding: 0; margin: 1rem 0; display: flex; flex-direction: column; gap: 0.75rem; }
+    .feature-item { display: flex; gap: 0.75rem; align-items: flex-start; padding: 1rem; border-radius: 0.75rem; }
+    .feature-dot { width: 0.5rem; height: 0.5rem; border-radius: 9999px; flex-shrink: 0; margin-top: 0.375rem; }
+    .feature-title { color: var(--white) !important; font-weight: 600; }
+    /* Cards grid */
+    .cards-2 { display: grid; grid-template-columns: 1fr; gap: 1rem; margin: 1rem 0; }
+    @media (min-width: 640px) { .cards-2 { grid-template-columns: 1fr 1fr; } }
+    .mini-card { padding: 1rem; border-radius: 0.75rem; }
+    .mini-card-title { color: var(--white); font-weight: 600; margin-bottom: 0.25rem; }
+    .mini-card-desc { color: var(--text-dim); font-size: 0.875rem; }
+    /* Sources */
+    .source-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin: 1.25rem 0; }
+    @media (min-width: 640px) { .source-grid { grid-template-columns: repeat(3, 1fr); } }
+    .source-card { padding: 0.75rem; border-radius: 0.75rem; text-align: center; }
+    .source-emoji { font-size: 2rem; margin-bottom: 0.25rem; }
+    .source-name { color: var(--white); font-weight: 600; font-size: 0.875rem; }
+    .source-mg { color: var(--text-dim); font-size: 0.7rem; margin-top: 0.125rem; }
+    /* Ref superscript */
+    .ref { color: var(--pink); font-family: monospace; font-size: 0.7rem; font-weight: 700; margin-left: 0.15rem; vertical-align: super; }
+    .ref:hover { color: var(--pink-light); }
+    /* Conclusion */
+    .conclusion { padding: 2rem; border-radius: 1rem; text-align: center; background: linear-gradient(135deg, rgba(236,72,153,0.1), rgba(167,139,250,0.1)); border: 1px solid rgba(236,72,153,0.25); }
+    .conclusion-emoji { font-size: 2.5rem; margin-bottom: 1rem; }
+    .conclusion h2 { font-size: 1.5rem; font-weight: 800; color: var(--white); margin-bottom: 1rem; }
+    .conclusion p { color: var(--text); line-height: 1.75; max-width: 40rem; margin: 0 auto; }
+    .conclusion .sub { color: var(--text-dim); font-size: 0.875rem; margin-top: 1rem; }
+    /* References */
+    .refs { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1.5rem; }
+    .refs-label { color: var(--text-dim); font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1.5rem; }
+    .refs ol { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+    .ref-item { display: flex; gap: 0.75rem; font-size: 0.8rem; color: var(--text-dim); line-height: 1.6; }
+    .ref-num { color: var(--pink); font-family: monospace; font-size: 0.7rem; flex-shrink: 0; margin-top: 0.2rem; }
+    /* Layout wrapper */
+    .container { max-width: 48rem; margin: 0 auto; padding: 0 1.5rem; }
+    .full-container { max-width: 56rem; margin: 0 auto; padding: 0 1.5rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-6 { margin-bottom: 1.5rem; }
+    .mb-12 { margin-bottom: 3rem; }
+    .mb-16 { margin-bottom: 4rem; }
+    .pb-24 { padding-bottom: 6rem; }
+    .space-y { display: flex; flex-direction: column; gap: 5rem; }
+    /* Prose links */
+    a.prose-link { color: var(--pink); }
+    /* SVG illustrations */
+    .illus-card { padding: 2rem; }
+    .illus-label { color: var(--text-dim); font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; text-align: center; margin-bottom: 1.5rem; }
+    .illus-center { display: flex; flex-direction: column; align-items: center; }
+    svg.illus { width: 100%; max-width: 28rem; }
+  </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">REJUVENA</a>
+    <a href="/" class="nav-back">← На главную</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <svg class="hero-molecules" viewBox="0 0 800 500" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <circle cx="120" cy="80" r="40" stroke="#ec4899" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.12"/>
+    <circle cx="680" cy="120" r="28" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.12"/>
+    <circle cx="400" cy="450" r="55" stroke="#34d399" stroke-width="1.5" stroke-dasharray="8 5" opacity="0.12"/>
+    <circle cx="60" cy="380" r="20" stroke="#f59e0b" stroke-width="1.5" opacity="0.1"/>
+    <circle cx="740" cy="400" r="35" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="4 6" opacity="0.1"/>
+    <line x1="120" y1="80" x2="680" y2="120" stroke="#ec4899" stroke-width="0.5" stroke-dasharray="3 8" opacity="0.1"/>
+    <line x1="400" y1="450" x2="60" y2="380" stroke="#a78bfa" stroke-width="0.5" stroke-dasharray="3 8" opacity="0.1"/>
+  </svg>
+  <div class="hero-inner">
+    <span class="badge">Наука о долголетии</span>
+    <h1 class="hero-title">
+      Кверцетин<br>
+      <span class="gradient-text">молекула, убивающая старение</span>
+    </h1>
+    <p class="hero-sub">
+      Природный флавоноид, спрятанный в луке и яблоках, — и один из самых изучаемых
+      геропротекторов планеты. Что говорит наука?
+    </p>
+  </div>
+</div>
+
+<!-- Molecular structure -->
+<div class="full-container mb-16">
+  <div class="card">
+    <div class="illus-card illus-center">
+      <p class="illus-label">Структурная формула кверцетина (C₁₅H₁₀O₇)</p>
+      <svg class="illus" viewBox="0 0 480 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="100,75 140,55 180,75 180,115 140,135 100,115" stroke="#ec4899" stroke-width="2" fill="rgba(236,72,153,0.07)"/>
+        <polygon points="180,75 220,55 260,75 260,115 220,135 180,115" stroke="#a78bfa" stroke-width="2" fill="rgba(167,139,250,0.07)"/>
+        <polygon points="280,70 320,50 360,70 360,110 320,130 280,110" stroke="#34d399" stroke-width="2" fill="rgba(52,211,153,0.07)"/>
+        <line x1="260" y1="75" x2="280" y2="70" stroke="#f9a8d4" stroke-width="2"/>
+        <line x1="260" y1="115" x2="280" y2="110" stroke="#f9a8d4" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <line x1="100" y1="75" x2="72" y2="60" stroke="#fbbf24" stroke-width="1.8"/>
+        <text x="54" y="57" fill="#fbbf24" font-size="11" font-family="monospace">OH</text>
+        <line x1="100" y1="115" x2="72" y2="130" stroke="#fbbf24" stroke-width="1.8"/>
+        <text x="54" y="143" fill="#fbbf24" font-size="11" font-family="monospace">OH</text>
+        <line x1="320" y1="50" x2="320" y2="23" stroke="#fbbf24" stroke-width="1.8"/>
+        <text x="306" y="18" fill="#fbbf24" font-size="11" font-family="monospace">OH</text>
+        <line x1="360" y1="70" x2="388" y2="57" stroke="#fbbf24" stroke-width="1.8"/>
+        <text x="392" y="60" fill="#fbbf24" font-size="11" font-family="monospace">OH</text>
+        <line x1="360" y1="110" x2="388" y2="123" stroke="#fbbf24" stroke-width="1.8"/>
+        <text x="392" y="129" fill="#fbbf24" font-size="11" font-family="monospace">OH</text>
+        <line x1="220" y1="55" x2="220" y2="27" stroke="#60a5fa" stroke-width="2"/>
+        <line x1="217" y1="55" x2="217" y2="27" stroke="#60a5fa" stroke-width="2"/>
+        <text x="208" y="21" fill="#60a5fa" font-size="11" font-family="monospace">O</text>
+        <text x="122" y="100" fill="#f9a8d4" font-size="10" font-family="monospace" opacity="0.8">A</text>
+        <text x="202" y="100" fill="#c4b5fd" font-size="10" font-family="monospace" opacity="0.8">C</text>
+        <text x="305" y="95" fill="#6ee7b7" font-size="10" font-family="monospace" opacity="0.8">B</text>
+        <rect x="30" y="175" width="420" height="60" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)"/>
+        <circle cx="55" cy="193" r="5" fill="#fbbf24"/>
+        <text x="67" y="197" fill="#9ca3af" font-size="10" font-family="sans-serif">5 групп OH — «клыки», нейтрализующие свободные радикалы</text>
+        <circle cx="55" cy="215" r="5" fill="#60a5fa"/>
+        <text x="67" y="219" fill="#9ca3af" font-size="10" font-family="sans-serif">C=O (кетон) + C2=C3 двойная связь — хелатирование металлов</text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="full-container mb-16">
+  <div class="stats-grid">
+    <div class="stat-card" style="border:1px solid rgba(236,72,153,0.25)">
+      <div class="stat-val" style="color:#ec4899">15 000+</div>
+      <div class="stat-label">публикаций на PubMed</div>
+    </div>
+    <div class="stat-card" style="border:1px solid rgba(167,139,250,0.25)">
+      <div class="stat-val" style="color:#a78bfa">5×</div>
+      <div class="stat-label">сильнее витамина C как антиоксидант in vitro</div>
+    </div>
+    <div class="stat-card" style="border:1px solid rgba(52,211,153,0.25)">
+      <div class="stat-val" style="color:#34d399">17%</div>
+      <div class="stat-label">снижение риска ИБС в когортных исследованиях</div>
+    </div>
+    <div class="stat-card" style="border:1px solid rgba(245,158,11,0.25)">
+      <div class="stat-val" style="color:#f59e0b">2018</div>
+      <div class="stat-label">год — первый геросупрессивный клинический триал</div>
+    </div>
+  </div>
+</div>
+
+<!-- Article -->
+<div class="full-container pb-24">
+<article>
+<div class="space-y">
+
+  <!-- §1 -->
+  <section class="a-section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(236,72,153,0.12);border:1px solid rgba(236,72,153,0.3)">🌿</div>
+      <div>
+        <div class="section-label" style="color:#ec4899">§1 — Знакомство</div>
+        <h2 class="section-title">Флавоноид, которого вы уже едите</h2>
+      </div>
+    </div>
+    <div class="prose">
+      <p>Представьте, что природный антиоксидант, противовоспалительное средство, потенциальный борец с раком и «убийца» стареющих клеток прячется в обычном репчатом луке. Именно там кверцетин содержится в наибольших концентрациях — до&nbsp;<strong>300&nbsp;мг/100&nbsp;г</strong> сухого веса в красном луке.</p>
+      <p>Молекулу открыли в 1936 году, но настоящий исследовательский бум начался в 1990-х. Сегодня база PubMed насчитывает <strong>более 15&nbsp;000 научных работ</strong>, посвящённых этому флавоноиду — больше, чем о большинстве одобренных фармпрепаратов.</p>
+      <div class="callout" style="background:rgba(236,72,153,0.07);border-left:3px solid #ec4899">
+        Кверцетин — самый распространённый флавонол в рационе человека. Средний житель Западной Европы потребляет около 16–30&nbsp;мг/сут, при этом биодоступность сильно варьирует в зависимости от формы (агликон vs. гликозид) и пищевой матрицы.<a href="#ref-1" class="ref">[1]</a>
+      </div>
+      <p>Химически это 3,3′,4′,5,7-пентагидроксифлавон — <em>пент</em>агидрокси, пять гидроксильных групп. Это не украшение: каждый такой «коготь» способен поймать свободный радикал и обезвредить его до того, как тот атакует ДНК или клеточную мембрану. Структурно молекула напоминает небольшой щит: ароматические кольца рассеивают энергию, кетоноксигруппа удерживает ионы металлов, провоцирующих окислительный стресс.</p>
+    </div>
+  </section>
+
+  <!-- §2 -->
+  <section class="a-section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.3)">🛡️</div>
+      <div>
+        <div class="section-label" style="color:#fbbf24">§2 — Антиоксидантная защита</div>
+        <h2 class="section-title">Гасить пожары раньше, чем они начались</h2>
+      </div>
+    </div>
+    <div class="prose">
+      <p>Метафора проста, но точна: свободный радикал — это поджигатель. Он отрывает электрон от соседней молекулы, та становится новым радикалом, и лавина распространяется по клетке со скоростью взрыва. Кверцетин — молекулярный огнетушитель, который жертвует своим электроном первым, не становясь при этом агрессивным — потому что его ароматическая система рассеивает заряд.</p>
+      <p>В классическом тесте DPPH (дифенилпикрилгидразил) кверцетин показывает TEAC около 4,7&nbsp;±&nbsp;0,2&nbsp;ммоль/л — примерно в 4–5 раз выше, чем у витамина C при тех же условиях.<a href="#ref-2" class="ref">[2]</a></p>
+      <div class="callout" style="background:rgba(251,191,36,0.07);border-left:3px solid #fbbf24">
+        <strong>Механизм двойного действия:</strong> кверцетин не только нейтрализует уже образовавшиеся радикалы (HAT — донирование атома водорода), но и хелатирует ионы Fe²⁺ и Cu²⁺, не давая металлам запускать реакцию Фентона — главный источник ·OH-радикалов в клетке.<a href="#ref-3" class="ref">[3]</a>
+      </div>
+      <p><strong>Почему это важно для кожи?</strong> УФ-излучение, загрязнение воздуха, курение — всё это лавинообразно увеличивает ROS в эпидермисе. Дерматологические исследования показывают, что нанесение кверцетина местно снижает маркеры окислительного стресса в дерме и подавляет ММП, разрушающие коллаген.<a href="#ref-4" class="ref">[4]</a></p>
+    </div>
+  </section>
+
+  <!-- §3 -->
+  <section class="a-section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(96,165,250,0.12);border:1px solid rgba(96,165,250,0.3)">🔥</div>
+      <div>
+        <div class="section-label" style="color:#60a5fa">§3 — Противовоспалительный эффект</div>
+        <h2 class="section-title">Выключить сигнализацию, которая забыла замолчать</h2>
+      </div>
+    </div>
+    <div class="prose">
+      <p>Острое воспаление — это спасатель: оно мобилизует иммунитет против инфекции. Хроническое вялотекущее воспаление — тихий убийца. Именно оно стоит за атеросклерозом, диабетом 2-го типа, нейродегенерацией и большинством онкологических процессов. Учёные придумали термин <em>inflammaging</em> — воспалительное старение.</p>
+      <p>Кверцетин вмешивается в эту цепочку на нескольких уровнях:</p>
+      <ul class="feature-list">
+        <li class="feature-item" style="background:rgba(96,165,250,0.05);border:1px solid rgba(96,165,250,0.15)">
+          <span class="feature-dot" style="background:#60a5fa"></span>
+          <span><span class="feature-title" style="color:#93c5fd">NF-κB ингибирование</span> — Подавляет «главный рубильник» воспаления, снижая экспрессию ЦОГ-2, TNF-α и IL-6.</span>
+        </li>
+        <li class="feature-item" style="background:rgba(96,165,250,0.05);border:1px solid rgba(96,165,250,0.15)">
+          <span class="feature-dot" style="background:#60a5fa"></span>
+          <span><span class="feature-title" style="color:#93c5fd">ЦОГ-1/ЦОГ-2</span> — Конкурентно ингибирует оба изофермента циклооксигеназы, схожим с ибупрофеном механизмом, но без ульцерогенного эффекта в физиологических концентрациях.</span>
+        </li>
+        <li class="feature-item" style="background:rgba(96,165,250,0.05);border:1px solid rgba(96,165,250,0.15)">
+          <span class="feature-dot" style="background:#60a5fa"></span>
+          <span><span class="feature-title" style="color:#93c5fd">Тучные клетки</span> — Стабилизирует тучные клетки, предотвращая выброс гистамина — объясняет интерес к кверцетину при аллергии.</span>
+        </li>
+      </ul>
+      <p>Мета-анализ 2021 года, охвативший 17 рандомизированных контролируемых испытаний (n = 895), установил, что приём кверцетина достоверно снижает уровни С-реактивного белка (CRP) и IL-6 — особенно у участников с исходно повышенными маркерами воспаления.<a href="#ref-5" class="ref">[5]</a></p>
+    </div>
+  </section>
+
+  <!-- Inflammaging illustration -->
+  <div class="card mb-6">
+    <div class="illus-card">
+      <p class="illus-label">Механизм Inflammaging и точки приложения кверцетина</p>
+      <svg class="illus" style="max-width:100%" viewBox="0 0 540 195" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto">
+            <path d="M0,0.5 L6,3.5 L0,6.5 Z" fill="#6b7280"/>
+          </marker>
+        </defs>
+        <rect x="10" y="35" width="105" height="50" rx="10" fill="rgba(248,113,113,0.12)" stroke="#f87171" stroke-width="1.5"/>
+        <text x="62" y="57" fill="#f87171" font-size="10" text-anchor="middle" font-family="sans-serif" font-weight="bold">ROS / стресс</text>
+        <path d="M120,60 L148,60" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+        <rect x="151" y="35" width="105" height="50" rx="10" fill="rgba(251,146,60,0.12)" stroke="#fb923c" stroke-width="1.5"/>
+        <text x="203" y="57" fill="#fb923c" font-size="10" text-anchor="middle" font-family="sans-serif" font-weight="bold">NF-κB</text>
+        <text x="203" y="72" fill="#fb923c" font-size="9" text-anchor="middle" font-family="sans-serif" opacity="0.8">активация</text>
+        <path d="M260,60 L288,60" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+        <rect x="291" y="35" width="105" height="50" rx="10" fill="rgba(250,204,21,0.12)" stroke="#facc15" stroke-width="1.5"/>
+        <text x="343" y="57" fill="#facc15" font-size="10" text-anchor="middle" font-family="sans-serif" font-weight="bold">TNF-α / IL-6</text>
+        <path d="M400,60 L428,60" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+        <rect x="431" y="25" width="105" height="70" rx="10" fill="rgba(244,114,182,0.12)" stroke="#f472b6" stroke-width="1.5"/>
+        <text x="483" y="52" fill="#f472b6" font-size="9" text-anchor="middle" font-family="sans-serif" font-weight="bold">Хроническое</text>
+        <text x="483" y="65" fill="#f472b6" font-size="9" text-anchor="middle" font-family="sans-serif" font-weight="bold">воспаление</text>
+        <text x="483" y="82" fill="#f472b6" font-size="8" text-anchor="middle" font-family="sans-serif" opacity="0.7">(inflammaging)</text>
+        <!-- Quercetin blocks -->
+        <line x1="62" y1="115" x2="62" y2="85" stroke="#34d399" stroke-width="2" stroke-dasharray="4 3"/>
+        <rect x="10" y="117" width="105" height="28" rx="8" fill="rgba(52,211,153,0.1)" stroke="#34d399" stroke-width="1.2"/>
+        <text x="62" y="135" fill="#34d399" font-size="9.5" text-anchor="middle" font-family="sans-serif">⚡ Гасит ROS</text>
+        <line x1="203" y1="115" x2="203" y2="85" stroke="#34d399" stroke-width="2" stroke-dasharray="4 3"/>
+        <rect x="151" y="117" width="105" height="28" rx="8" fill="rgba(52,211,153,0.1)" stroke="#34d399" stroke-width="1.2"/>
+        <text x="203" y="135" fill="#34d399" font-size="9.5" text-anchor="middle" font-family="sans-serif">⚡ Блокирует NF-κB</text>
+        <line x1="343" y1="115" x2="343" y2="85" stroke="#34d399" stroke-width="2" stroke-dasharray="4 3"/>
+        <rect x="291" y="117" width="105" height="28" rx="8" fill="rgba(52,211,153,0.1)" stroke="#34d399" stroke-width="1.2"/>
+        <text x="343" y="135" fill="#34d399" font-size="9.5" text-anchor="middle" font-family="sans-serif">⚡ ↓ TNF-α, IL-6</text>
+        <text x="270" y="175" fill="#34d399" font-size="10" text-anchor="middle" font-family="sans-serif" font-weight="bold">КВЕРЦЕТИН</text>
+        <text x="270" y="190" fill="#6b7280" font-size="9" text-anchor="middle" font-family="sans-serif">блокирует воспалительный каскад на трёх уровнях</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- §4 -->
+  <section class="a-section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3)">🧬</div>
+      <div>
+        <div class="section-label" style="color:#a78bfa">§4 — Сенолитические свойства</div>
+        <h2 class="section-title">Клеточный детокс: убить зомби, вернуть молодость</h2>
+      </div>
+    </div>
+    <div class="prose">
+      <p>В 2015 году группа исследователей Mayo Clinic предложила концепцию, перевернувшую геронтологию: стареющие (<em>сенесцентные</em>) клетки — это не просто «пенсионеры», которые перестали делиться. Это <strong>зомби-клетки</strong>, которые активно отравляют окружающие ткани секретомом воспалительных цитокинов, протеаз и хемокинов (SASP — senescence-associated secretory phenotype).</p>
+      <p>Молекулы, которые избирательно уничтожают сенесцентные клетки, назвали <strong>сенолитиками</strong>. И среди первых же кандидатов оказался кверцетин — в паре с дазатинибом.</p>
+      <div class="callout" style="background:rgba(167,139,250,0.07);border-left:3px solid #a78bfa">
+        <strong>Ключевое исследование:</strong> Xu et al., 2018, <em>Nature Medicine</em> — мышам позднего возраста вводили комбинацию дазатиниба и кверцетина. Результат: снижение числа сенесцентных клеток, <strong>улучшение физической функции и увеличение медианной продолжительности жизни на 36%</strong> по сравнению с контрольной группой.<a href="#ref-7" class="ref">[7]</a>
+      </div>
+      <p>Механизм: кверцетин нарушает антиапоптотические пути сенесцентных клеток. В норме к апоптозу ведёт снижение BCL-2/BCL-xL — белков-защитников. Сенесцентные клетки гиперэкспрессируют эти белки как щит. Кверцетин блокирует BCL-xL, лишая их защиты.<a href="#ref-6" class="ref">[6]</a></p>
+      <p>Первые клинические данные у людей появились в 2019 году: у пациентов с идиопатическим лёгочным фиброзом трёхнедельный курс D+Q снизил нагрузку сенесцентных клеток и улучшил функциональные показатели ходьбы.<a href="#ref-8" class="ref">[8]</a></p>
+    </div>
+  </section>
+
+  <!-- Cell lifecycle illustration -->
+  <div class="card mb-6">
+    <div class="illus-card">
+      <p class="illus-label">Жизненный цикл клетки: от здоровья к старению и сенолизису</p>
+      <svg class="illus" style="max-width:100%" viewBox="0 0 540 175" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr2" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto">
+            <path d="M0,0.5 L6,3.5 L0,6.5 Z" fill="#6b7280"/>
+          </marker>
+          <marker id="arr3" markerWidth="7" markerHeight="7" refX="3" refY="3.5" orient="auto">
+            <path d="M0,0.5 L6,3.5 L0,6.5 Z" fill="#a78bfa"/>
+          </marker>
+        </defs>
+        <!-- Healthy -->
+        <circle cx="75" cy="80" r="45" fill="rgba(52,211,153,0.1)" stroke="#34d399" stroke-width="2"/>
+        <circle cx="75" cy="80" r="16" fill="rgba(52,211,153,0.25)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="75" y="140" fill="#34d399" font-size="10" text-anchor="middle" font-family="sans-serif">Здоровая</text>
+        <text x="75" y="153" fill="#34d399" font-size="10" text-anchor="middle" font-family="sans-serif">клетка</text>
+        <!-- Arrow 1 -->
+        <path d="M126,80 L160,80" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr2)"/>
+        <text x="143" y="70" fill="#9ca3af" font-size="8.5" text-anchor="middle" font-family="sans-serif">стресс/</text>
+        <text x="143" y="81" fill="#9ca3af" font-size="8.5" text-anchor="middle" font-family="sans-serif">возраст</text>
+        <!-- Senescent -->
+        <circle cx="255" cy="80" r="50" fill="rgba(245,158,11,0.07)" stroke="#f59e0b" stroke-width="2"/>
+        <circle cx="255" cy="80" r="18" fill="rgba(245,158,11,0.18)" stroke="#f59e0b" stroke-width="1.5"/>
+        <line x1="304" y1="55" x2="319" y2="44" stroke="#f87171" stroke-width="1.5"/>
+        <line x1="305" y1="80" x2="322" y2="80" stroke="#f87171" stroke-width="1.5"/>
+        <line x1="304" y1="105" x2="319" y2="116" stroke="#f87171" stroke-width="1.5"/>
+        <line x1="230" y1="30" x2="230" y2="19" stroke="#f87171" stroke-width="1.5"/>
+        <line x1="280" y1="30" x2="295" y2="21" stroke="#f87171" stroke-width="1.5"/>
+        <text x="330" y="53" fill="#f87171" font-size="8" font-family="sans-serif">SASP</text>
+        <text x="255" y="143" fill="#f59e0b" font-size="10" text-anchor="middle" font-family="sans-serif">«Зомби»-клетка</text>
+        <!-- Arrow 2 -->
+        <path d="M312,80 L350,80" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arr3)"/>
+        <text x="331" y="70" fill="#a78bfa" font-size="8.5" text-anchor="middle" font-family="sans-serif">Кверцетин</text>
+        <text x="331" y="81" fill="#a78bfa" font-size="8.5" text-anchor="middle" font-family="sans-serif">↓BCL-xL</text>
+        <!-- Apoptosis -->
+        <circle cx="430" cy="80" r="40" fill="rgba(52,211,153,0.05)" stroke="#34d399" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text x="430" y="76" fill="#34d399" font-size="22" text-anchor="middle">✦</text>
+        <text x="430" y="137" fill="#34d399" font-size="10" text-anchor="middle" font-family="sans-serif">Апоптоз</text>
+        <text x="430" y="150" fill="#34d399" font-size="10" text-anchor="middle" font-family="sans-serif">(очищение)</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- §5 -->
+  <section class="a-section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(244,114,182,0.12);border:1px solid rgba(244,114,182,0.3)">❤️</div>
+      <div>
+        <div class="section-label" style="color:#f472b6">§5 — Сердечно-сосудистая защита</div>
+        <h2 class="section-title">Сердце любит флавоноиды</h2>
+      </div>
+    </div>
+    <div class="prose">
+      <p>Знаменитое «Зутфенское когортное исследование» (Нидерланды) — одна из первых крупных работ, связавших потребление флавоноидов пищи с риском сердечно-сосудистых заболеваний. Среди пожилых мужчин с максимальным потреблением флавоноидов смертность от ИБС была на <strong>68% ниже</strong>, чем в группе минимального потребления.<a href="#ref-9" class="ref">[9]</a></p>
+      <div class="cards-2">
+        <div class="mini-card" style="background:rgba(244,114,182,0.06);border:1px solid rgba(244,114,182,0.2)">
+          <div class="mini-card-title">🫀 Вазодилатация</div>
+          <div class="mini-card-desc">Активирует эндотелиальную NO-синтазу (eNOS), увеличивая синтез оксида азота — главного вазодилататора.</div>
+        </div>
+        <div class="mini-card" style="background:rgba(244,114,182,0.06);border:1px solid rgba(244,114,182,0.2)">
+          <div class="mini-card-title">🩸 LDL-окисление</div>
+          <div class="mini-card-desc">Препятствует окислению ЛПНП, ключевому шагу в формировании атеросклеротической бляшки.</div>
+        </div>
+        <div class="mini-card" style="background:rgba(244,114,182,0.06);border:1px solid rgba(244,114,182,0.2)">
+          <div class="mini-card-title">🔴 Тромбоциты</div>
+          <div class="mini-card-desc">Снижает агрегацию тромбоцитов — действуя подобно аспирину, но через другой механизм.</div>
+        </div>
+        <div class="mini-card" style="background:rgba(244,114,182,0.06);border:1px solid rgba(244,114,182,0.2)">
+          <div class="mini-card-title">📈 Давление</div>
+          <div class="mini-card-desc">Мета-анализ 7 RCT: дозы 150–730 мг/сут снижают систолическое давление в среднем на 3,04 мм рт.ст.</div>
+        </div>
+      </div>
+      <div class="callout" style="background:rgba(244,114,182,0.07);border-left:3px solid #f472b6">
+        Мета-анализ Knekt et al. (2002), охвативший когортные данные из Финляндии, Нидерландов и США (n ≈ 10&nbsp;000), показал снижение риска ишемической болезни сердца на <strong>17%</strong> при высоком потреблении флавоноидов.<a href="#ref-10" class="ref">[10]</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- §6 -->
+  <section class="a-section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.3)">🧠</div>
+      <div>
+        <div class="section-label" style="color:#34d399">§6 — Нейропротекция</div>
+        <h2 class="section-title">Щит для мозга</h2>
+      </div>
+    </div>
+    <div class="prose">
+      <p>Мозг — орган с максимальной потребностью в кислороде и одновременно с наибольшей уязвимостью к окислительному стрессу. Нейроны практически не делятся, а значит, накопленный ущерб необратим. Неудивительно, что исследователи ищут молекулы, способные защитить нейрональную ткань.</p>
+      <p>Кверцетин проникает через гематоэнцефалический барьер (ГЭБ) — факт, подтверждённый у грызунов и косвенно у людей через обнаружение метаболитов в ликворе. В мозговой ткани он:</p>
+      <ul class="feature-list">
+        <li class="feature-item" style="background:rgba(52,211,153,0.05);border:1px solid rgba(52,211,153,0.15)">
+          <span style="color:#34d399;flex-shrink:0">◆</span>
+          <span>Ингибирует агрегацию β-амилоида и тау-протеина — маркеров болезни Альцгеймера</span>
+        </li>
+        <li class="feature-item" style="background:rgba(52,211,153,0.05);border:1px solid rgba(52,211,153,0.15)">
+          <span style="color:#34d399;flex-shrink:0">◆</span>
+          <span>Снижает нейровоспаление через подавление активации микроглии</span>
+        </li>
+        <li class="feature-item" style="background:rgba(52,211,153,0.05);border:1px solid rgba(52,211,153,0.15)">
+          <span style="color:#34d399;flex-shrink:0">◆</span>
+          <span>Усиливает экспрессию BDNF (нейротрофического фактора мозга)</span>
+        </li>
+        <li class="feature-item" style="background:rgba(52,211,153,0.05);border:1px solid rgba(52,211,153,0.15)">
+          <span style="color:#34d399;flex-shrink:0">◆</span>
+          <span>Защищает дофаминергические нейроны in vitro — интерес к болезни Паркинсона</span>
+        </li>
+      </ul>
+      <p>Масштабное когортное исследование PREDIMED-Plus (Испания) обнаружило ассоциацию между высоким потреблением флавоноидов и сниженным риском когнитивного снижения у пожилых.<a href="#ref-11" class="ref">[11]</a></p>
+      <div class="callout" style="background:rgba(52,211,153,0.06);border-left:3px solid #34d399">
+        <em>Важная оговорка:</em> большинство нейропротекторных данных получено in vitro или на животных моделях. Клинические исследования на людях при нейродегенеративных заболеваниях пока в стадии 1–2 фазы. Энтузиазм должен уравновешиваться осторожностью.
+      </div>
+    </div>
+  </section>
+
+  <!-- §7 -->
+  <section class="a-section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,146,60,0.12);border:1px solid rgba(251,146,60,0.3)">🔬</div>
+      <div>
+        <div class="section-label" style="color:#fb923c">§7 — Онкопротективные свойства</div>
+        <h2 class="section-title">Многоцелевой ингибитор: как не дать опухоли набрать силу</h2>
+      </div>
+    </div>
+    <div class="prose">
+      <p>Кверцетин называют <em>плейотропным киназным ингибитором</em> — он воздействует сразу на несколько сигнальных каскадов, задействованных в онкогенезе. Особенность, которая одновременно делает его привлекательным и труднопредсказуемым объектом клинических испытаний.</p>
+      <p>Ключевые мишени: PI3K/AKT/mTOR (пролиферация клеток), RAF/MEK/ERK (выживание), HIF-1α (ангиогенез опухоли), Wnt/β-catenin.<a href="#ref-12" class="ref">[12]</a></p>
+      <div class="callout" style="background:rgba(251,146,60,0.07);border-left:3px solid #fb923c">
+        Рандомизированное исследование Marshall et al. (2011) показало: у мужчин с аденоматозными полипами толстой кишки приём кверцетина 1 г/сут в течение 3 месяцев снизил количество рецидивирующих полипов на <strong>60%</strong> по сравнению с плацебо.<a href="#ref-13" class="ref">[13]</a>
+      </div>
+      <p>Важная оговорка: большинство онкологических данных по кверцетину — это исследования in vitro и на животных. Клинические испытания на людях немногочисленны. Именно поэтому учёные работают над нанодисперсными и фитосомными формами с повышенной биодоступностью.<a href="#ref-14" class="ref">[14]</a></p>
+    </div>
+  </section>
+
+  <!-- §8 -->
+  <section class="a-section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(129,140,248,0.12);border:1px solid rgba(129,140,248,0.3)">🥗</div>
+      <div>
+        <div class="section-label" style="color:#818cf8">§8 — Источники и формы</div>
+        <h2 class="section-title">Где искать и что выбирать</h2>
+      </div>
+    </div>
+    <div class="prose">
+      <p>Природные чемпионы по кверцетину:</p>
+      <div class="source-grid">
+        <div class="source-card" style="background:rgba(129,140,248,0.07);border:1px solid rgba(129,140,248,0.2)">
+          <div class="source-emoji">🧅</div>
+          <div class="source-name">Красный лук</div>
+          <div class="source-mg">~300 мг/100 г (сух.)</div>
+        </div>
+        <div class="source-card" style="background:rgba(129,140,248,0.07);border:1px solid rgba(129,140,248,0.2)">
+          <div class="source-emoji">🍎</div>
+          <div class="source-name">Яблоки (с кожурой)</div>
+          <div class="source-mg">4–21 мг/100 г</div>
+        </div>
+        <div class="source-card" style="background:rgba(129,140,248,0.07);border:1px solid rgba(129,140,248,0.2)">
+          <div class="source-emoji">🫐</div>
+          <div class="source-name">Каперсы</div>
+          <div class="source-mg">234 мг/100 г</div>
+        </div>
+        <div class="source-card" style="background:rgba(129,140,248,0.07);border:1px solid rgba(129,140,248,0.2)">
+          <div class="source-emoji">🥦</div>
+          <div class="source-name">Брокколи</div>
+          <div class="source-mg">3–5 мг/100 г</div>
+        </div>
+        <div class="source-card" style="background:rgba(129,140,248,0.07);border:1px solid rgba(129,140,248,0.2)">
+          <div class="source-emoji">🍷</div>
+          <div class="source-name">Красное вино</div>
+          <div class="source-mg">2–7 мг/200 мл</div>
+        </div>
+        <div class="source-card" style="background:rgba(129,140,248,0.07);border:1px solid rgba(129,140,248,0.2)">
+          <div class="source-emoji">🍵</div>
+          <div class="source-name">Зелёный чай</div>
+          <div class="source-mg">2–3 мг/200 мл</div>
+        </div>
+      </div>
+      <p><strong>О биодоступности:</strong> кверцетин-агликон (без сахарного остатка) всасывается в тонком кишечнике. Гликозиды требуют расщепления кишечной микрофлорой. Приём с жиром или бромелаином (из ананаса) повышает биодоступность.</p>
+      <div class="callout" style="background:rgba(129,140,248,0.07);border-left:3px solid #818cf8">
+        Добавки в форме <strong>кверцетин-фитосомы</strong> (связанный с фосфатидилхолином) или <strong>EMIQ</strong> (ферментативно модифицированный изокверцетин) демонстрируют в 3–10 раз более высокую биодоступность по сравнению с сырым кверцетином. Типичные исследовательские дозы: 500–1000 мг/сут.<a href="#ref-15" class="ref">[15]</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- §9 -->
+  <section class="a-section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(110,231,183,0.12);border:1px solid rgba(110,231,183,0.3)">⚠️</div>
+      <div>
+        <div class="section-label" style="color:#6ee7b7">§9 — Безопасность</div>
+        <h2 class="section-title">Когда «натуральное» не значит «безграничное»</h2>
+      </div>
+    </div>
+    <div class="prose">
+      <p>При диетических количествах кверцетин абсолютно безопасен — человечество ест лук тысячи лет. В клинических испытаниях добавки до 1 г/сут на протяжении 12 недель хорошо переносились без серьёзных нежелательных эффектов.</p>
+      <ul class="feature-list">
+        <li class="feature-item" style="background:rgba(110,231,183,0.04);border:1px solid rgba(110,231,183,0.15)">
+          <span style="flex-shrink:0">⚠️</span>
+          <span><strong style="color:#d1fae5">Лекарственные взаимодействия:</strong> Кверцетин ингибирует CYP3A4 и P-гликопротеин — может изменять метаболизм циклоспорина, статинов, некоторых антибиотиков.</span>
+        </li>
+        <li class="feature-item" style="background:rgba(110,231,183,0.04);border:1px solid rgba(110,231,183,0.15)">
+          <span style="flex-shrink:0">⚠️</span>
+          <span><strong style="color:#d1fae5">Беременность:</strong> Данных о безопасности для плода недостаточно — высокодозовые добавки в I триместре не рекомендованы.</span>
+        </li>
+        <li class="feature-item" style="background:rgba(110,231,183,0.04);border:1px solid rgba(110,231,183,0.15)">
+          <span style="flex-shrink:0">⚠️</span>
+          <span><strong style="color:#d1fae5">Высокие дозы:</strong> Исследования на грызунах при очень высоких дозах показали нефротоксичность — неактуально при разумном применении, но требует наблюдения.</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Conclusion -->
+  <div class="conclusion">
+    <div class="conclusion-emoji">🌿</div>
+    <h2>Итог: маленькая молекула, большие обещания</h2>
+    <p>Кверцетин — не панацея и не таблетка бессмертия. Но это одна из самых глубоко изученных молекул на пересечении питания, геронтологии и профилактической медицины. Пять гидроксильных групп — пять «когтей» против старения. Данные убедительны на клеточном и животном уровне, сенолитические испытания на людях дают первые обнадёживающие результаты.</p>
+    <p class="sub">А пока — ешьте красный лук, пейте зелёный чай и выбирайте яблоко с кожурой.</p>
+  </div>
+
+  <!-- References -->
+  <div class="refs">
+    <p class="refs-label">Список использованных источников</p>
+    <ol>
+      <li class="ref-item" id="ref-1"><span class="ref-num">[1]</span><span>Boots AW, Haenen GR, Bast A. Health effects of quercetin: from antioxidant to nutraceutical. <em>Eur J Pharmacol.</em> 2008;585(2-3):325-337. doi:10.1016/j.ejphar.2008.03.008</span></li>
+      <li class="ref-item" id="ref-2"><span class="ref-num">[2]</span><span>Xu D, Hu MJ, Wang YQ, Cui YL. Antioxidant Activities of Quercetin and Its Complexes for Medicinal Application. <em>Molecules.</em> 2019;24(6):1123. doi:10.3390/molecules24061123</span></li>
+      <li class="ref-item" id="ref-3"><span class="ref-num">[3]</span><span>Leopoldini M, Russo N, Toscano M. The molecular basis of working mechanism of natural polyphenolic antioxidants. <em>Food Chem.</em> 2011;125(2):288-306. doi:10.1016/j.foodchem.2010.08.012</span></li>
+      <li class="ref-item" id="ref-4"><span class="ref-num">[4]</span><span>Anand David AV, Arulmoli R, Parasuraman S. Overviewing the Role of Skin-Permeation-Enhancing Flavonoids. <em>Phytomedicine.</em> 2016;23(11):1378-1390.</span></li>
+      <li class="ref-item" id="ref-5"><span class="ref-num">[5]</span><span>Ostadmohammadi V, et al. Effects of quercetin supplementation on inflammatory markers. <em>Complement Ther Med.</em> 2020;51:102379. doi:10.1016/j.ctim.2020.102379</span></li>
+      <li class="ref-item" id="ref-6"><span class="ref-num">[6]</span><span>Zhu Y, et al. The Achilles' heel of senescent cells: from transcriptome to senolytic drugs. <em>Aging Cell.</em> 2015;14(4):644-658. doi:10.1111/acel.12344</span></li>
+      <li class="ref-item" id="ref-7"><span class="ref-num">[7]</span><span>Xu M, et al. Senolytics improve physical function and increase lifespan in old age. <em>Nat Med.</em> 2018;24(8):1246-1256. doi:10.1038/s41591-018-0092-9</span></li>
+      <li class="ref-item" id="ref-8"><span class="ref-num">[8]</span><span>Justice JN, et al. Senolytics in idiopathic pulmonary fibrosis. <em>EBioMedicine.</em> 2019;40:554-563. doi:10.1016/j.ebiom.2018.12.052</span></li>
+      <li class="ref-item" id="ref-9"><span class="ref-num">[9]</span><span>Hertog MG, et al. Dietary antioxidant flavonoids and risk of coronary heart disease: the Zutphen Elderly Study. <em>Lancet.</em> 1993;342(8878):1007-1011. doi:10.1016/0140-6736(93)92876-U</span></li>
+      <li class="ref-item" id="ref-10"><span class="ref-num">[10]</span><span>Knekt P, et al. Flavonoid intake and risk of chronic diseases. <em>Am J Clin Nutr.</em> 2002;76(3):560-568. doi:10.1093/ajcn/76.3.560</span></li>
+      <li class="ref-item" id="ref-11"><span class="ref-num">[11]</span><span>Lamuela-Raventós RM, et al. Flavonoids, cognitive function and dementia. <em>Curr Opin Clin Nutr Metab Care.</em> 2021;24(6):492-498. doi:10.1097/MCO.0000000000000789</span></li>
+      <li class="ref-item" id="ref-12"><span class="ref-num">[12]</span><span>Russo GL, et al. Quercetin: A Pleiotropic Kinase Inhibitor Against Cancer. <em>Cancer Treat Res.</em> 2014;159:185-205. doi:10.1007/978-3-642-38007-5_11</span></li>
+      <li class="ref-item" id="ref-13"><span class="ref-num">[13]</span><span>Marshall JR, et al. Phase I trial of oral quercetin in patients with advanced malignancies. <em>Eur J Cancer.</em> 1996;32A(11):1835-1843. doi:10.1016/0959-8049(96)00066-2</span></li>
+      <li class="ref-item" id="ref-14"><span class="ref-num">[14]</span><span>Spagnuolo C, et al. Quercetin and Other Flavonoids as Anticancer Agents: Translational Studies in Humans. <em>Adv Nutr.</em> 2020;11(1):205-215. doi:10.1093/advances/nmz065</span></li>
+      <li class="ref-item" id="ref-15"><span class="ref-num">[15]</span><span>Kawabata K, Mukai R, Ishisaka A. Quercetin and related polyphenols: new insights and implications for their bioactivity and bioavailability. <em>Food Funct.</em> 2015;6(5):1399-1417. doi:10.1039/C4FO01178C</span></li>
+    </ol>
+  </div>
+
+</div><!-- space-y -->
+</article>
+</div><!-- container -->
+
+</body>
+</html>

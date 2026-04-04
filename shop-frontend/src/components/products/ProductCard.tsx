@@ -150,11 +150,42 @@ const ProductCard = ({ product }: ProductCardProps) => {
             </div>
           </div>
 
-          {/* Marketplace Comparison Hint */}
-          {(product.articleWB || product.skuOzon) && (
-            <div className="mt-2 text-xs text-success-600 flex items-center gap-1">
-              <SparklesIcon className="w-3 h-3" />
-              <span>Выгоднее, чем на маркетплейсах</span>
+          {/* Marketplace Links */}
+          {(product.wildberries?.url || product.ozon?.url || product.yandexMarket?.url) && (
+            <div className="mt-2 flex flex-wrap gap-1">
+              {product.wildberries?.url && (
+                <a
+                  href={product.wildberries.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-[10px] px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition-colors font-medium"
+                >
+                  📦 WB
+                </a>
+              )}
+              {product.ozon?.url && (
+                <a
+                  href={product.ozon.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-[10px] px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors font-medium"
+                >
+                  📦 Ozon
+                </a>
+              )}
+              {product.yandexMarket?.url && (
+                <a
+                  href={product.yandexMarket.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-[10px] px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full hover:bg-yellow-200 transition-colors font-medium"
+                >
+                  📦 Яндекс
+                </a>
+              )}
             </div>
           )}
 

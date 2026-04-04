@@ -27,6 +27,37 @@ export interface Product {
     width: number;
     height: number;
   };
+  // Marketplace data
+  wildberries?: {
+    nmId?: string;
+    url?: string;
+    price?: number;
+  };
+  ozon?: {
+    sku?: string;
+    fboSku?: string;
+    fbsSku?: string;
+    url?: string;
+    price?: number;
+    categoryId?: number;
+  };
+  yandexMarket?: {
+    sku?: string;
+    shopSku?: string;
+    url?: string;
+    price?: number;
+    warranty?: string;
+  };
+  marketplacePrices?: {
+    wildberries?: {
+      price: number;
+      fetchedAt: string;
+    };
+    ozon?: {
+      price: number;
+      fetchedAt: string;
+    };
+  };
   seo?: {
     title?: string;
     description?: string;
