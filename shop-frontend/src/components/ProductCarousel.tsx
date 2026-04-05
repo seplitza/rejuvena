@@ -97,7 +97,7 @@ export default function ProductCarousel({
                   <img
                     src={currentProduct.images?.[0] || '/placeholder-product.png'}
                     alt={currentProduct.name}
-                    className="max-w-full max-h-full object-contain drop-shadow-2xl group-hover:scale-105 transition-transform duration-500"
+                    className="max-w-full max-h-full object-contain drop-shadow-2xl rounded-[20px] group-hover:scale-105 transition-transform duration-500"
                     onError={(e) => {
                       e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23f3f4f6" width="400" height="400"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="20" fill="%239ca3af"%3EФото товара%3C/text%3E%3C/svg%3E';
                     }}
