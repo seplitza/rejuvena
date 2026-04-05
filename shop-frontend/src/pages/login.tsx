@@ -45,7 +45,8 @@ export default function LoginPage() {
         password: formData.password
       });
 
-      if (response.data.success) {
+      // Backend returns token and user directly (no .success field)
+      if (response.data.token && response.data.user) {
         // Сохраняем токен
         localStorage.setItem('token', response.data.token);
         

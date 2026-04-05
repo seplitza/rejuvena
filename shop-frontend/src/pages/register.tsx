@@ -68,11 +68,12 @@ export default function RegisterPage() {
         lastName: formData.lastName.trim(),
         email: formData.email.toLowerCase().trim(),
         phone: formData.phone.trim(),
-        password: formData.password,
-        role: 'customer'
+        password: formData.password
+        // Backend creates users automatically, no need to pass role
       });
 
-      if (response.data.success) {
+      // Backend returns token and user directly (no .success field)
+      if (response.data.token && response.data.user) {
         toast.success('Аккаунт успешно создан!');
         
         // Сразу авторизуем пользователя
